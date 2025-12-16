@@ -1,24 +1,88 @@
-# Compiled class file
+
+# ---------------------------------------------
+# Starter .gitignore for Maven + MuleSoft projects
+# ---------------------------------------------
+
+# MuleSoft / Anypoint Studio
+.mule/
+logs/
+*.log
+mule-artifact.json.backup
+run/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (if some modules use Gradle)
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java / compiled classes
 *.class
 
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+# Packages / archives
 *.jar
 *.war
-*.nar
 *.ear
 *.zip
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# IDEs
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+# Eclipse
+.project
+.classpath
+.settings/
+# VS Code
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Test reports & coverage
+surefire-reports/
+failsafe-reports/
+.jacoco/
+.jacoco.exec
+coverage/
+
+# Logs & temp
+*.log
+*.log.*
+*.tmp
+*.swp
+*.swo
+*~
+
+# Security / certs (avoid committing secrets)
+*.key
+*.pem
+*.crt
+*.p12
+*.jks
+
+# Optional: Node (if UI/tooling present)
+node_modules/
+package-lock.json
+
+## Optional: Python (helper scripts)
+__pycache__/
+*.pyc
+
