@@ -1,7 +1,7 @@
 source:
-  username: "christopher.byam@slalom.com"
-  password: "KUY6nfv!pfv3kaw7rkc"
-  securityToken: "u6VfybNm1B9hAYD56EX0GzIT"
+  username: ""
+  password: ""
+  securityToken: ""
   pbEntryId:
     productA: "01uKa00000AeCAcIAN"
     productB: "01uKa00000AeCAeIAN"
@@ -9,9 +9,9 @@ source:
     productD: "01uKa00000AeDIxIAN"
    
 target:
-  username: "cbyam.ms394@agentforce.com"
-  password: "*i6WpcrVjN2TQub6"
-  securityToken: "9hTNiL8aQOlqsFWVmuEtNZLL"
+  username: ""
+  password: ""
+  securityToken: ""
   pbEntryId:
     productA: "01ugL0000020n61QAA"
     productB: "01ugL0000020n1BQAQ"
