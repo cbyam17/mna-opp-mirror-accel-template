@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="httpListenerAdminReprocessFlow" doc:id="f8087b3f-7d8c-42e0-8777-e9a996423fff" >
+		<http:listener doc:name="Listener" doc:id="1973020a-4bd0-431a-92ee-b78dee8f87b6" path="/api/admin/reprocess" allowedMethods="POST" config-ref="HTTP_Listener_config"/>
+		<logger level="INFO" doc:name="INFO" doc:id="1269d205-dab5-4a30-a238-685a554b25f5" message='#["httpListenerAdminReprocessFlow entry"]'/>
+		<flow-ref doc:name="adminReprocessSubflow" doc:id="a51022ea-78a8-4be6-afd5-9ca4ae9cb8de" name="adminReprocessSubflow"/>
+		<logger level="INFO" doc:name="INFO" doc:id="588db023-6af9-4ba2-9887-b01da6f4729c" message='#["httpListenerAdminReprocessFlow exit"]' />
+	</flow>
+	<flow name="httpListenerPingFlow" doc:id="6793c35e-6c88-4b45-ba70-2e9e87cc8e08" >
+		<http:listener doc:name="Listener" doc:id="ba17db14-c200-4453-8a54-b22a4c041002" config-ref="HTTP_Listener_config" path="/api/ping" allowedMethods="GET" />
+		<logger level="INFO" doc:name="INFO" doc:id="df95315a-9afa-4db2-8cd1-e63fe1674bb6" message='#["httpListenerPingFlow entry"]' />
+		<flow-ref doc:name="pingSubflow" doc:id="33176948-ba48-4b9c-ad7d-d5fbcc19b73a" name="pingSubflow" />
+		<logger level="INFO" doc:name="INFO" doc:id="bdd2c494-060c-4f68-abeb-6271f7361147" message='#["httpListenerPingFlow exit"]' />
+	</flow>
+</mule>

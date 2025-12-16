@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd">
+	<flow name="processBatchOpptyFlow"
+		doc:id="f9d4c643-c4c6-4cef-b546-72c118311eb1">
+		<batch:job jobName="processOpptyBatch"
+			doc:id="e850532a-d8c3-4fbe-a642-090fa9afd132">
+			<batch:process-records>
+				<batch:step
+					name="step01_retrieveExistingErrorHospitalRecords"
+					doc:id="77afca06-aaeb-416b-8d7d-90d4acaf0cc0">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="08740884-7a0a-4c33-8fa9-e1725db5561f"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref
+							doc:name="retrieveRecordsFromErrorHospitalByIdSubflow"
+							doc:id="8b439d35-f634-45c8-9a7f-d0bc40247456"
+							name="retrieveRecordsFromErrorHospitalByIdSubflow"
+							target="existingErrorHospitalRecords"
+							targetValue="#[output application/json --- payload]" />
+						<foreach doc:name="For Each"
+							doc:id="1a692123-dc3f-4978-a1ea-34b18a17789a">
+							<scripting:execute
+								doc:name="Add existingErrorHospitalRecords to record payload"
+								doc:id="bfa65211-0d67-42d6-8a0f-0f5f5bed981c" engine="groovy">
+								<scripting:code><![CDATA[vars['record'].payload.existingErrorHospitalRecords = existingErrorHospitalRecords]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredErrorHospitalRecords = vars.existingErrorHospitalRecords default [] filter ((item, index) -> item.recordId == payload.Id)
+	---
+	{ existingErrorHospitalRecords: filteredErrorHospitalRecords }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step02_retrieveExistingTargetOpptyRecords"
+					doc:id="425bec23-a1f2-4781-83c6-31e5781840c2">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="be16e05d-3df2-4452-9af5-5410e52dae70"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref
+							doc:name="retrieveOpptyFromTargetByExternalIdSubflow"
+							doc:id="762f41b9-a861-4a94-9a59-44940e2cf309"
+							name="retrieveOpptyFromTargetByExternalIdSubflow"
+							target="existingTargetOpptyRecords"
+							targetValue="#[output application/json --- payload.payload..records default []]" />
+						<foreach doc:name="For Each"
+							doc:id="7fa6c88b-f204-443b-9432-678fd1b0ecc8">
+							<scripting:execute engine="groovy"
+								doc:name="Add existingTargetOpptyRecords to record payload"
+								doc:id="87f2261e-949a-4eee-87bc-25020035e3d6">
+								<scripting:code><![CDATA[vars['record'].payload.existingTargetOpptyRecords = existingTargetOpptyRecords]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyRecords = vars.existingTargetOpptyRecords default [] filter ((item, index) -> item.Acquisition_Oppty_Id__c == payload.Id)
+	---
+	{ existingTargetOpptyRecords: filteredOpptyRecords }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="step03_sendOpptyRecordsToTargetCreate"
+					doc:id="e52d4796-bac1-4f5d-9f55-e1ab20574581"
+					acceptExpression="#[isEmpty(payload.existingTargetOpptyRecords)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="03855cde-dadb-4d66-866e-4fe8c6e4c57f"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref doc:name="sendOpptyToTargetCreateSubflow"
+							doc:id="3db10586-8b [STUDIO] -->fc-4dce-9d37-d860343b1b3d"
+							name="sendOpptyToTargetCreateSubflow"
+							target="targetOpptyResponse"
+							targetValue="#[output application/json --- payload.items.payload]" />
+						<foreach doc:name="For Each"
+							doc:id="deb2ff0a-9161-4767-bbc4-f5db037b68c5">
+							<scripting:execute engine="groovy"
+								doc:name="Add targetOpptyResponse to record payload"
+								doc:id="c8caf4d4-bc09-4cc2-95db-c5233ea9ee66">
+								<scripting:code><![CDATA[vars['record'].payload.targetOpptyResponse = targetOpptyResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyResponse = vars.targetOpptyResponse[vars.counter-1] default {} 
+	---
+	{ targetOpptyResponse: filteredOpptyResponse }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="step04_sendOpptyRecordsToTargetUpdate"
+					doc:id="47c9680c-6a80-4d8c-b283-26dc5fde084d"
+					acceptExpression="#[!isEmpty(payload.existingTargetOpptyRecords)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="43380571-6bb8-4490-9c0a-05ae95ba1beb"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref doc:name="sendOpptyToTargetUpdateSubflow"
+							doc:id="0893fc3e-a171-496c-91b2-f4ab2233124a"
+							name="sendOpptyToTargetUpdateSubflow"
+							target="targetOpptyResponse"
+							targetValue="#[output application/json --- payload.items.payload]" />
+						<foreach doc:name="For Each"
+							doc:id="833be867-7139-4ef9-903e-4e632a8d1581">
+							<scripting:execute engine="groovy"
+								doc:name="Add targetOpptyResponse to record payload"
+								doc:id="2d7fc8a9-cd12-45cd-af4d-8dcba5fd2fee">
+								<scripting:code><![CDATA[vars['record'].payload.targetOpptyResponse = targetOpptyResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyResponse = vars.targetOpptyResponse[vars.counter-1] default {} 
+	---
+	{ targetOpptyResponse: filteredOpptyResponse }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step05_retrieveSourceOpptyProductRecords"
+					doc:id="15bcb000-61a2-4fb5-8f52-cd046f557303"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success ]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="4e05ed7a-c01a-4262-afbf-75df18181ce6"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref
+							doc:name="retrieveOpptyProductFromSourceByOpptyIdSubflow"
+							doc:id="b2a17d07-d062-4ae4-a97c-2b79607c997f"
+							name="retrieveOpptyProductFromSourceByOpptyIdSubflow"
+							target="sourceOpptyProductRecords"
+							targetValue="#[output application/json --- payload.payload..records default []]" />
+						<foreach doc:name="For Each"
+							doc:id="47ea3b73-a292-4462-b953-9d2366ab5b9e">
+							<scripting:execute engine="groovy"
+								doc:name="Add sourceOpptyProductRecords to record payload"
+								doc:id="8790fde7-15d9-4c94-a2e9-ed099223ee89">
+								<scripting:code><![CDATA[vars['record'].payload.sourceOpptyProductRecords = sourceOpptyProductRecords]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyProductRecords = vars.sourceOpptyProductRecords default [] filter ((item, index) -> item.OpportunityId == payload.Id)
+	---
+	{ sourceOpptyProductRecords: filteredOpptyProductRecords }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step06_retrieveExistingTargetOpptyProductRecords"
+					doc:id="96e8cbe0-cde5-4fb3-ace2-37fa87dbb06d"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.existingTargetOpptyRecords)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="9a21117a-94b2-40fc-b3e9-49c11b08a99a"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref
+							doc:name="retrieveOpptyProductFromTargetByOpptyIdSubflow"
+							doc:id="99288acf-37c6-487a-abf2-e41b3b3ab2f4"
+							name="retrieveOpptyProductFromTargetByOpptyIdSubflow"
+							targetValue="#[output application/json --- payload.payload..records default []]"
+							target="existingTargetOpptyProductRecords" />
+						<foreach doc:name="For Each"
+							doc:id="0477b418-5356-45a6-9240-fb7ef65428ff">
+							<scripting:execute
+								doc:name="Add existingTargetOpptyProductRecords to record payload"
+								doc:id="74f8584c-dd1b-43d5-807c-6d1d04e0d2a2" engine="groovy">
+								<scripting:code><![CDATA[vars['record'].payload.existingTargetOpptyProductRecords = existingTargetOpptyProductRecords]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyProductRecords = vars.existingTargetOpptyProductRecords default [] 
+	---
+	{ existingTargetOpptyProductRecords: filteredOpptyProductRecords }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step07_sendOpptyProductRecordsToTargetCreate"
+					doc:id="99784586-c6cc-4141-85e5-40f70dacb6c0"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success]">
+					<set-variable
+						value="#[import getTargetOpptyProductsToCreate from module::OpptyProduct
+output application/java
+---
+getTargetOpptyProductsToCreate(payload)]"
+						doc:name="targetOpptyProductsToCreate"
+						doc:id="84024fd7-00ab-47a7-b21a-8162012da610"
+						variableName="targetOpptyProductsToCreate" />
+					<choice doc:name="Choice"
+						doc:id="6071f38a-3c97-4727-961c-b95777617087">
+						<when
+							expression="#[!isEmpty(vars.targetOpptyProductsToCreate)]">
+							<flow-ref
+								doc:name="sendOpptyProductToTargetCreateSubflow"
+								doc:id="f401d128-bb3e-4b39-b897-b45e6618e1c6"
+								name="sendOpptyProductToTargetCreateSubflow"
+								target="targetOpptyProductResponses"
+								targetValue="#[output application/json --- payload.items.payload default []]" />
+							<set-payload
+								value="#[%dw 2.0
+output application/java
+---
+payload ++ { targetOpptyProductResponses: vars.targetOpptyProductResponses default [] }]"
+								doc:name="Add targetOpptyProductResponses to record payload"
+								doc:id="7def394d-cd24-4b4a-8294-df04692ab8c2" />
+						</when>
+					</choice>
+					<remove-variable
+						doc:name="targetOpptyProductsToCreate"
+						doc:id="4112a923-2f78-4964-8f12-c62d5fb0b2bd"
+						variableName="targetOpptyProductsToCreate" />
+				</batch:step>
+				<batch:step
+					name="step08_sendOpptyProductRecordsToTargetUpdate"
+					doc:id="1563e95c-87b7-4bf0-a4e7-9c9d2975988b"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success]">
+					<set-variable
+						value="#[import getTargetOpptyProductsToUpdate from module::OpptyProduct
+output application/java
+---
+getTargetOpptyProductsToUpdate(payload)]"
+						doc:name="targetOpptyProductsToUpdate"
+						doc:id="3662a510-f591-409a-9d7a-5899985d0dc7"
+						variableName="targetOpptyProductsToUpdate" />
+					<choice doc:name="Choice"
+						doc:id="ba411a0e-576b-41ed-8bab-5f9c744f4d14">
+						<when
+							expression="#[!isEmpty(vars.targetOpptyProductsToUpdate)]">
+							<flow-ref
+								doc:name="sendOpptyProductToTargetUpdateSubflow"
+								doc:id="9a58ede0-6959-4327-b7a6-8be06f7fa6c2"
+								name="sendOpptyProductToTargetUpdateSubflow"
+								target="targetOpptyProductResponses"
+								targetValue="#[output application/json --- payload.items.payload]" />
+							<set-payload
+								value="#[%dw 2.0
+output application/java
+---
+if (isEmpty(payload.targetOpptyProductResponses)) payload ++ { targetOpptyProductResponses: vars.targetOpptyProductResponses default [] }
+else payload ++ { targetOpptyProductResponses: (payload.targetOpptyProductResponses ++ vars.targetOpptyProductResponses default []) }]"
+								doc:name="Add targetOpptyProductResponses to record payload"
+								doc:id="551faf93-3ac3-4376-9d1a-c13ea52e394f" />
+						</when>
+					</choice>
+					<remove-variable
+						doc:name="targetOpptyProductsToUpdate"
+						doc:id="95880966-2466-478c-8b8b-860708048e29"
+						variableName="targetOpptyProductsToUpdate" />
+				</batch:step>
+				<batch:step name="step09_writebackOpptyRecordsToSource"
+					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b" acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="773f58e9-fa2f-4a65-a148-8fab7ee875ec"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<vm:publish doc:name="Publish"
+							doc:id="0b40dd68-fb44-4091-b55a-f77e4ba576de"
+							queueName="${vm.sourceOpptyWriteback}" config-ref="vmConfig"
+							sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+							<vm:content><![CDATA[#[import transformWritebackSourceOppty from module::Oppty
+output application/java
+---
+transformWritebackSourceOppty(payload)]]]></vm:content>
+						</vm:publish>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step10_writebackOpptyProductRecordsToSource"
+					doc:id="0528f0fd-4d0b-44b5-a53b-df403ec303b2"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="3dc50401-5193-4814-8161-d4a2f64ec4c2"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<vm:publish doc:name="Publish"
+							doc:id="0c602245-8cca-47f8-bb56-f5ac3a1e9907"
+							queueName="${vm.sourceOpptyProductWriteback}"
+							config-ref="vmConfig" sendCorrelationId="ALWAYS"
+							correlationId="#[correlationId]">
+							<vm:content><![CDATA[#[import transformWritebackSourceOpptyProduct from module::OpptyProduct
+output application/java
+---
+flatten(transformWritebackSourceOpptyProduct(payload))]]]></vm:content>
+						</vm:publish>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="step11_sendErrorRecordsToErrorHospital"
+					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103"
+					acceptExpression="#[(!isEmpty(payload.targetOpptyResponse) and !payload.targetOpptyResponse.success) or (!isEmpty(payload.targetOpptyProductResponses) and (payload.targetOpptyProductResponses.success contains false))]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="9991eb19-ca4e-4525-bc82-284d54679510"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<vm:publish doc:name="Publish"
+							doc:id="ec3d4a94-a799-4764-8826-b747116cebbd"
+							queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig"
+							sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+							<vm:content><![CDATA[#[import buildSendErrorRecordsToErrorHospitalRequest from module::ErrorHospital
+output application/java
+---
+buildSendErrorRecordsToErrorHospitalRequest(payload, correlationId)]]]></vm:content>
+						</vm:publish>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="step13_handleSuccessForRetryRecords"
+					doc:id="286946a8-3c81-4ae6-bdc6-2d3f3daee349"
+					acceptExpression="#[(!isEmpty(vars.isRetryJob) and vars.isRetryJob) and (!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success) and (!isEmpty(payload.targetOpptyProductResponses) and (!payload.targetOpptyProductResponses.success contains false))]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="517ca65b-1e52-4c22-bb9b-a8872fe879f7"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<vm:publish doc:name="Publish"
+							doc:id="36d67a77-2bfa-4124-8f5c-e084e731cd4d"
+							queueName="${vm.errHsptlRecordDelete}" config-ref="vmConfig"
+							sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+							<vm:content><![CDATA[#[import buildDeleteRecordsFromErrorHospitalRequest from module::ErrorHospital
+output application/java
+---
+buildDeleteRecordsFromErrorHospitalRequest(payload)]]]></vm:content>
+						</vm:publish>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step
+					name="step14_sendFailedRecordsToErrorHospital"
+					doc:id="be8289a7-36f2-4e1d-a84d-926d5752576e"
+					acceptPolicy="ONLY_FAILURES">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="6438c5ce-3c90-480e-befc-6e8fc1b7e879"
+						size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<vm:publish doc:name="Publish"
+							doc:id="bd1e265a-cafd-474e-aee5-cd07325123d5"
+							queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig"
+							sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+							<vm:content><![CDATA[#[import buildSendFailedRecordsToErrorHospitalRequest from module::ErrorHospital
+output application/java
+---
+buildSendFailedRecordsToErrorHospitalRequest(payload, correlationId)]]]></vm:content>
+						</vm:publish>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<flow-ref doc:name="processCompletionSubflow"
+					doc:id="073fbf8c-adcb-42fa-b2a3-bb91ac271b5b"
+					name="processCompletionSubflow" />
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<sub-flow name="processCompletionSubflow"
+		doc:id="f482850f-b8a9-46a8-b1eb-d2d432cb8c01">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="49658195-bb55-4c0c-8508-4d6cd14022ed"
+			message='#["processCompletionSubflow entry"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="15f98af9-fff1-4f2e-8daf-6321fe63b5ad"
+			message='#["Batch job summary: " ++ write(payload,"application/json")]' />
+		<choice doc:name="Choice"
+			doc:id="7f8a309e-366c-415e-a366-59114226cfa2">
+			<when
+				expression="#[!isEmpty(vars.isRetryJob) and vars.isRetryJob]">
+				<flow-ref doc:name="clearOsBatchStatusRetrySubflow"
+					doc:id="34d5ccab-25aa-415b-b229-b1f648c1e0d1"
+					name="clearOsBatchStatusRetrySubflow" />
+				<logger level="INFO" doc:name="INFO"
+					doc:id="00bbead0-415c-42b6-b7d7-0afb43336aa1"
+					message='#["No need to send failure email and update watermark for retry job or admin flow"]' />
+			</when>
+			<otherwise>
+				<flow-ref doc:name="clearOsBatchStatusSubflow"
+					doc:id="36c56c53-9fbd-4b9c-8ee8-3c13b0354419"
+					name="clearOsBatchStatusSubflow" />
+				<flow-ref doc:name="processCompletionSendEmailSubflow"
+					doc:id="dc8788b7-665c-4577-8dc6-216f7c842c95"
+					name="processCompletionSendEmailSubflow" />
+				<flow-ref
+					doc:name="processCompletionUpdateWatermarkSubflow"
+					doc:id="80602d16-dc27-49b8-bb4c-379c6b29f6a7"
+					name="processCompletionUpdateWatermarkSubflow" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="4db2af0f-3ac2-46c7-a283-a03c091e9eda"
+			message='#["processCompletionSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="processCompletionSendEmailSubflow"
+		doc:id="2b7bb81c-4f11-4881-8569-8c69a384bce4">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="cd1ca965-01c1-40f6-83dd-7ab2d357340a"
+			message='#["processCompletionSendEmailSubflow entry"]' />
+		<choice doc:name="Choice"
+			doc:id="9b5bafa1-216c-4f44-a727-d5950fa6d56b">
+			<when expression="#[payload.failedRecords &gt; 0]">
+				<flow-ref
+					doc:name="sendSummaryEmailSubflow"
+					doc:id="639012a1-d200-4e83-9c6c-b87a5c91790f"
+					name="sendSummaryEmailSubflow" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="bd6772ed-7300-4477-9766-346204aed46c"
+					message='#["No need to send failure email as failedRecords count is zero"]' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="c7aadce4-883c-480f-b80e-64bc49232660"
+			message='#["processCompletionSendEmailSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="processCompletionUpdateWatermarkSubflow"
+		doc:id="3cb1fdf0-84b6-4ee2-8d48-464353647a34">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="192f0364-b237-48f0-803d-d6624b7aa380"
+			message='#["processCompletionUpdateWatermarkSubflow entry"]' />
+		<flow-ref doc:name="retrieveOsCurrentRunDateTimeSubflow"
+			doc:id="8e372012-9eda-4d64-898f-c78a1caeb1be"
+			name="retrieveOsCurrentRunDateTimeSubflow"
+			target="watermarkLastRunDateTimeUpdated"
+			targetValue="#[output application/json --- payload]" />
+		<choice doc:name="Choice"
+			doc:id="2d0ff0e8-0599-4e09-83d0-45e78ed3e121">
+			<when
+				expression="#[!isEmpty(vars.watermarkLastRunDateTimeUpdated)]">
+				<flow-ref doc:name="updateWatermarkSubflow"
+					doc:id="9beb9821-b6b7-464e-81b9-2f0023b23eaf"
+					name="updateWatermarkSubflow" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger"
+					doc:id="08b15500-e2ad-498a-a2c7-d8f2e9cf1e34"
+					message='#["The watermark value is not available to update back in the watermark service"]' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="94e9090c-6b91-4076-886a-d0d680395f4d"
+			message='#["processCompletionUpdateWatermarkSubflow exit"]' />
+	</sub-flow>
+</mule>

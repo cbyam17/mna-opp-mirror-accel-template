@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_68073e7a_a716_42b9_a6a2_186f69245812_Output_Variables_valSourceConnResp = Any
+

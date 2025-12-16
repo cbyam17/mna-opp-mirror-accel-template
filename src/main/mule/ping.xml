@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="pingSubflow"
+		doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="48be869d-0c7d-4213-b95b-e74271139be4"
+			message='#["pingSubflow entry"]' />
+		<flow-ref doc:name="validateTargetConnectionSubflow"
+			doc:id="fd426013-379a-465b-855e-2fafdf45270e"
+			name="validateTargetConnectionSubflow" target="valTargetConnResp" />
+		<flow-ref doc:name="validateSourceConnectionSubflow"
+			doc:id="ab037f45-e63d-4572-a941-325618760981"
+			name="validateSourceConnectionSubflow" target="valSourceConnResp" />
+		<flow-ref
+			doc:name="validateErrorHospitalConnectionSubflow"
+			doc:id="5ad85ba7-01fd-4b5b-ae99-4aff25d3a947"
+			name="validateErrorHospitalConnectionSubflow"
+			target="valErrHospConnResp" />
+		<flow-ref doc:name="validateWatermarkConnectionSubflow"
+			doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380"
+			name="validateWatermarkConnectionSubflow"
+			target="valWatermarkConnResp" />
+		<ee:transform doc:name="Transform Message"
+			doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import buildPingResponse from module::CommonUtil
+---
+buildPingResponse(vars.valTargetConnResp ++ vars.valSourceConnResp ++ vars.valErrHospConnResp ++ vars.valWatermarkConnResp)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="f3abb8d9-a066-4639-a262-655cf34d084d"
+			message='#["pingSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="validateTargetConnectionSubflow"
+		doc:id="27ad2b57-2b54-43be-a6cd-5993459c9cf2">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="eb83df02-3a0a-4e3b-b956-acd5d2e7e609"
+			message='#["validateTargetConnectionSubflow entry"]' />
+		<set-variable value='#["Target"]' doc:name="systemName"
+			doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a"
+			variableName="systemName" />
+		<try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
+			<salesforce:get-server-timestamp
+				doc:name="Get server timestamp"
+				doc:id="931ef439-df70-4e9f-8711-e9b436302292" config-ref="targetSalesforceConfig"/>
+			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+				doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88"
+				name="buildPingEndpointResponseSubflow" />
+			<error-handler ref="pingErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="9c18c850-1e5d-40b9-ac15-c4930a3ce1ae"
+			message='#["validateTargetConnectionSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="validateSourceConnectionSubflow"
+		doc:id="176b43de-c6ad-4fb4-a397-7740f6dab5cb">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="34b4ba54-7842-4bf4-b97b-13e2c04e8c1f"
+			message='#["validateSourceConnectionSubflow entry"]' />
+		<set-variable value='#["Source"]' doc:name="systemName"
+			doc:id="b4aab529-1343-4104-8bf1-f336e792a380"
+			variableName="systemName" />
+		<try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
+			<salesforce:get-server-timestamp
+				doc:name="Get server timestamp"
+				doc:id="755fb409-8dd5-4873-9b06-20f8c4d44185" config-ref="sourceSalesforceConfig"/>
+			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+				doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe"
+				name="buildPingEndpointResponseSubflow" />
+			<error-handler ref="pingErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="47463875-5d7e-46cf-8ff2-d42ae3efa2dd"
+			message='#["validateSourceConnectionSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="validateErrorHospitalConnectionSubflow"
+		doc:id="de0c1782-0140-44fd-8e54-9a8c6876fdc9">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="4b7068ce-68ae-4f5a-933a-ceebf85ec276"
+			message='#["validateErrorHospitalConnectionSubflow entry"]' />
+		<set-variable value='#["Error Hospital"]'
+			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
+			variableName="systemName" />
+		<try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
+
+			<set-variable variableName="key"
+				value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key"/>
+			<set-variable variableName="value"
+				value="#[{ ts: now(), probe: 'ping' }]" doc:name="value"/>
+
+			<os:store doc:name="Store"
+				doc:id="e9487b87-5833-488d-b0e4-9e0272a5f257"
+				objectStore="errorHospitalStore" key="#[vars.key]">
+				<os:value ><![CDATA[#[vars.value]]]></os:value>
+			</os:store>
+			<os:contains doc:name="Contains"
+				doc:id="fba2953e-0a6d-4976-b535-917adff6d361" key="#[vars.key]" objectStore="errorHospitalStore" target="exists"/>
+			<os:retrieve doc:name="Retrieve" doc:id="b9418019-0b31-4ba7-bd47-e9614e42fd92" key="#[vars.key]" target="retrieved" objectStore="errorHospitalStore"/>
+			<os:remove doc:name="Remove" doc:id="57efab76-086f-413b-999f-9078b58d623c" key="#[vars.key]" objectStore="errorHospitalStore"/>
+			<flow-ref doc:name="buildPingEndpointResponseSubflow" doc:id="aa278e33-77f1-4f8c-8022-2cbbfec85b0f" name="buildPingEndpointResponseSubflow" />
+			<error-handler ref="pingErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="INFO" doc:id="b120c189-d991-4c90-b2bb-c05802d0f39a" message='#["validateErrorHospitalConnectionSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="validateWatermarkConnectionSubflow" doc:id="f8b32a43-b9da-4038-9e08-18b1214438a9" >
+		<logger level="INFO" doc:name="INFO" doc:id="7a63d077-3135-4a66-9547-ff3956173d99" message='#["validateWatermarkConnectionSubflow entry"]' />
+		<set-variable value='#["Watermark"]' doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0" variableName="systemName" />
+		<try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a" >
+			<set-variable value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key" doc:id="39ece61a-ad24-4115-92d1-d4e642852988" variableName="key" />
+			<set-variable value="#[{ ts: now(), probe: 'ping' }]" doc:name="value" doc:id="9008adb2-7572-42e6-8762-faf4795c5e1c" variableName="value" />
+			<os:store doc:name="Store" doc:id="b96f9ff7-8fa0-4a9d-aebb-02a858f09564" key="#[vars.key]" objectStore="watermarkStore">
+				<os:value><![CDATA[#[vars.value]]]></os:value>
+			</os:store>
+			<os:contains doc:name="Contains" doc:id="3694c9bf-7706-41bf-9902-80f4a823f556" key="#[vars.key]" objectStore="watermarkStore" target="exists" />
+			<os:retrieve doc:name="Retrieve" doc:id="0df17b90-e49f-48db-94b3-5e00efae337a" key="#[vars.key]" objectStore="watermarkStore" target="retrieved" />
+			<os:remove doc:name="Remove" doc:id="028e4842-b358-49db-a19f-db14056bb37f" key="#[vars.key]" objectStore="watermarkStore" />
+			<flow-ref doc:name="buildPingEndpointResponseSubflow" doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0" name="buildPingEndpointResponseSubflow" />
+			<error-handler ref="pingErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="INFO" doc:id="84d99420-42ef-4f30-9f9a-10dde6a58790" message='#["validateWatermarkConnectionSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="buildPingEndpointResponseSubflow" doc:id="adeb093c-1900-41be-9be0-554f8def1ed4">
+		<ee:transform doc:name="Transform Message" doc:id="ed021c0f-e826-4811-9863-9751c2e2581a">
+				<ee:message>
+					<ee:set-payload><![CDATA[output application/json
+import buildPingEndpointResponse from module::CommonUtil
+---
+buildPingEndpointResponse(vars.systemName, null)]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+	</sub-flow>
+</mule>

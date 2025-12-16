@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<sub-flow name="sendConnectionFailureEmailSubflow" doc:id="83546b86-1fe6-4d47-b1f7-98cee83a2fa3" >
+		<logger level="INFO" doc:name="INFO" doc:id="e0697047-2716-4ea7-864c-7e85e5e0ecdd" message='#["sendConnectionFailureEmailSubflow entry"]'/>
+		<parse-template doc:name="Parse Template" doc:id="171d904d-60e1-46fb-90ac-10fae2b8459d" location="email/errorSummaryEmailTemplate" target="emailBody"/>
+		<!-- [STUDIO:"Send"]<email:send doc:name="Send" doc:id="b3a545aa-48df-4498-b45e-3e80aa7b40a0" toAddresses="${smtp.summaryToAddress}" subject="${smtp.summarySubject}">
+			<email:body >
+				<email:content ><![CDATA[#[vars.emailBody&#93;&#93;&#93;></email:content>
+			</email:body>
+		</email:send> [STUDIO] -->
+		<logger level="INFO" doc:name="INFO" doc:id="a0c1fa66-ea01-4083-b3aa-f460a981083e" message='#["sendConnectionFailureEmailSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="sendSummaryEmailSubflow" doc:id="88f32288-fa95-4c65-a1a8-bfde365439fb" >
+		<ee:transform doc:name="TBD" doc:id="1a3b8fff-c51d-4389-a1af-7dbe470fa4b1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

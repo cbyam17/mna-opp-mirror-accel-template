@@ -1,0 +1,113 @@
+%dw 2.0
+
+type auto_5ca18ed3_1099_407f_ac9e_cff8ac540617_Output_Variables_records = Array<{|  message: org_mule_runtime_api_message_Message {"typeId": "org.mule.runtime.api.message.Message"},   variables: {|    watermarkCurrentRunDateTime: Any,     watermarkLastRunDateTime: Any,     targetOpptyResponse: Null  |}|}>
+type org_mule_runtime_api_message_Message = {|
+  payload: { _?: Any } & {|
+    targetOpptyResponse: Array<org_mule_extension_salesforce_api_core_Result {"typeAlias": "Result",
+    "class": "org.mule.extension.salesforce.api.core.Result",
+    "typeId": "org.mule.extension.salesforce.api.core.Result"}>
+  |}, 
+  attributes: Null
+|} {"typeId": "org.mule.runtime.api.message.Message"}
+type org_mule_extension_salesforce_api_core_Result = {|
+  errors?: Array<org_mule_extension_salesforce_api_core_Error {"class": "org.mule.extension.salesforce.api.core.Error",
+  "typeAlias": "Error",
+  "typeId": "org.mule.extension.salesforce.api.core.Error"}>, 
+  id?: String, 
+  success?: Boolean {"typeId": "boolean"}
+|} {"typeAlias": "Result",
+"class": "org.mule.extension.salesforce.api.core.Result",
+"typeId": "org.mule.extension.salesforce.api.core.Result"}
+type org_mule_extension_salesforce_api_core_Error = {|
+  duplicateResult?: org_mule_extension_salesforce_api_core_DuplicateResult {"typeAlias": "DuplicateResult",
+  "class": "org.mule.extension.salesforce.api.core.DuplicateResult",
+  "typeId": "org.mule.extension.salesforce.api.core.DuplicateResult"}, 
+  fields?: Array<String>, 
+  message?: String, 
+  statusCode?: String
+|} {"class": "org.mule.extension.salesforce.api.core.Error",
+"typeAlias": "Error",
+"typeId": "org.mule.extension.salesforce.api.core.Error"}
+type org_mule_extension_salesforce_api_core_DuplicateResult = {|
+  allowSave?: Boolean {"typeId": "boolean"}, 
+  duplicateRule?: String, 
+  duplicateRuleEntityType?: String, 
+  errorMessage?: String, 
+  matchResults?: Array<org_mule_extension_salesforce_api_core_MatchResult {"typeId": "org.mule.extension.salesforce.api.core.MatchResult",
+  "typeAlias": "MatchResult",
+  "class": "org.mule.extension.salesforce.api.core.MatchResult"}>
+|} {"typeAlias": "DuplicateResult",
+"class": "org.mule.extension.salesforce.api.core.DuplicateResult",
+"typeId": "org.mule.extension.salesforce.api.core.DuplicateResult"}
+type org_mule_extension_salesforce_api_core_MatchResult = {|
+  entityType?: String, 
+  errors?: Array<org_mule_extension_salesforce_api_core_SimpleError {"class": "org.mule.extension.salesforce.api.core.SimpleError",
+  "typeAlias": "SimpleError",
+  "typeId": "org.mule.extension.salesforce.api.core.SimpleError"}>, 
+  matchEngine?: String, 
+  matchRecords?: Array<org_mule_extension_salesforce_api_utility_MatchRecord {"typeAlias": "MatchRecord",
+  "class": "org.mule.extension.salesforce.api.utility.MatchRecord",
+  "typeId": "org.mule.extension.salesforce.api.utility.MatchRecord"}>, 
+  rule?: String, 
+  size?: Number, 
+  success?: Boolean {"typeId": "boolean"}
+|} {"typeId": "org.mule.extension.salesforce.api.core.MatchResult",
+"typeAlias": "MatchResult",
+"class": "org.mule.extension.salesforce.api.core.MatchResult"}
+type org_mule_extension_salesforce_api_core_SimpleError = {|
+  fields?: Array<String>, 
+  message?: String, 
+  statusCode?: String
+|} {"class": "org.mule.extension.salesforce.api.core.SimpleError",
+"typeAlias": "SimpleError",
+"typeId": "org.mule.extension.salesforce.api.core.SimpleError"}
+
+
+type org_mule_extension_salesforce_api_utility_MatchRecord = {|
+  additionalInformation?: Array<org_mule_extension_salesforce_api_utility_AdditionalInformationMap {"typeAlias": "AdditionalInformationMap",
+  "typeId": "org.mule.extension.salesforce.api.utility.AdditionalInformationMap",
+  "class": "org.mule.extension.salesforce.api.utility.AdditionalInformationMap"}>, 
+  fieldDiffs?: Array<org_mule_extension_salesforce_api_utility_FieldDiff {"class": "org.mule.extension.salesforce.api.utility.FieldDiff",
+  "typeAlias": "FieldDiff",
+  "typeId": "org.mule.extension.salesforce.api.utility.FieldDiff"}>, 
+  matchConfidence?: Number, 
+  record?: { _?: java_lang_Object {"class": "java.lang.Object",
+    "typeAlias": "Object",
+    "typeId": "java.lang.Object"} }
+|} {"typeAlias": "MatchRecord",
+"class": "org.mule.extension.salesforce.api.utility.MatchRecord",
+"typeId": "org.mule.extension.salesforce.api.utility.MatchRecord"}
+type org_mule_extension_salesforce_api_utility_FieldDiff = {|
+  difference?: ("DIFFERENT" | "NULL" | "SAME" | "SIMILAR") {"typeId": "org.mule.extension.salesforce.api.utility.DifferenceType"}, 
+  name?: String
+|} {"class": "org.mule.extension.salesforce.api.utility.FieldDiff",
+"typeAlias": "FieldDiff",
+"typeId": "org.mule.extension.salesforce.api.utility.FieldDiff"}
+
+
+type org_mule_extension_salesforce_api_utility_AdditionalInformationMap = {|
+  name?: String, 
+  value?: String
+|} {"typeAlias": "AdditionalInformationMap",
+"typeId": "org.mule.extension.salesforce.api.utility.AdditionalInformationMap",
+"class": "org.mule.extension.salesforce.api.utility.AdditionalInformationMap"}
+
+
+type java_lang_Object = {|  |} {"class": "java.lang.Object",
+"typeAlias": "Object",
+"typeId": "java.lang.Object"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

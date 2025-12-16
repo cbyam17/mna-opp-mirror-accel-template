@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd">
+	<vm:config name="vmConfig" doc:name="VM Config"
+		doc:id="b066cc4f-96d3-443e-93bf-835f64fd0cf4">
+		<vm:queues>
+			<vm:queue queueName="${vm.errHsptlRecordDelete}" />
+			<vm:queue queueName="${vm.errHsptlRecordCreate}" />
+			<vm:queue queueName="${vm.sourceOpptyWriteback}" />
+			<vm:queue queueName="${vm.sourceOpptyProductWriteback}" />
+		</vm:queues>
+	</vm:config>
+	<configuration-properties
+		doc:name="sharedConfigProperties"
+		doc:id="dfb0576c-cf3b-4b55-abd2-842252cc3183"
+		file="config/shared.yaml" />
+	<configuration-properties
+		doc:name="envConfigProperties"
+		doc:id="3ad3d5a5-f14b-4efa-84ff-dd5effa39beb"
+		file="config/${env}.yaml" />
+	<os:config name="objectStoreConfig"
+		doc:name="ObjectStore Config"
+		doc:id="65dc7685-6812-4ecb-b921-f30f312a92e9" />
+	<os:object-store name="errorHospitalStore"
+		doc:name="Object store" doc:id="016aca5e-9058-494a-92e3-236df837b841"
+		config-ref="objectStoreConfig" />
+	<os:object-store name="batchStatusStore"
+		doc:name="Object store" doc:id="e752a7dc-43b0-4a9e-ae61-aef57c39453c" />
+	<os:object-store name="watermarkStore"
+		doc:name="Object store" doc:id="5bf27458-72b4-4ffc-8956-b93eee9c54c7" />
+	<os:object-store name="currentRunDateTimeStore"
+		doc:name="Object store" doc:id="61676613-7b9d-4101-b40d-e7cdfb03dfec" />
+	<salesforce:sfdc-config
+		name="sourceSalesforceConfig" doc:name="Salesforce Config"
+		doc:id="ef243f98-46cd-49e0-b857-a469de334471">
+		<salesforce:basic-connection username="${source.username}" password="${source.password}" securityToken="${source.securityToken}"/>
+	</salesforce:sfdc-config>
+	<salesforce:sfdc-config
+		name="targetSalesforceConfig" doc:name="Salesforce Config"
+		doc:id="91c035e9-034f-4781-b8d6-30fd94a7473f">
+		<salesforce:basic-connection username="${target.username}" password="${target.password}" securityToken="${target.securityToken}"/>
+	</salesforce:sfdc-config>
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="fec5c408-d70b-4d52-99b0-4fbdfd7592b0">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<global-property doc:name="Global Property"
+		doc:id="16b20f8f-b7c5-4cb6-adff-253554880129" name="env" value="dev" />
+</mule>

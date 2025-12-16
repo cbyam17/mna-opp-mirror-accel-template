@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracing="http://www.mulesoft.org/schema/mule/tracing" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/tracing/current/mule-tracing.xsd">
+	<flow name="schedulerMainFlow" doc:id="88f0347d-0c87-4165-ac1c-3ae661fdcb4d" initialState="stopped">
+		<scheduler doc:name="Main Scheduler" doc:id="2b7e4435-4f23-48ce-95c3-f28cb8e7a31a" >
+			<scheduling-strategy >
+				<cron expression="${batch.main.cronExpression}" timeZone="${batch.main.timezone}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="INFO" doc:id="15351bb9-1c5f-4240-96c0-122c09936e66" message='#["schedulerMainFlow entry"]'/>
+		<flow-ref doc:name="retrieveOsBatchStatusSubflow" doc:id="6a709ed5-1140-4faf-bb41-5f556ed13a67" name="retrieveOsBatchStatusSubflow"/>
+		<choice doc:name="Choice" doc:id="56f92143-0d90-4042-8d90-7859b78ab716" >
+			<when expression="#[!isEmpty(payload)]">
+				<flow-ref doc:name="pingSubflow" doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow" targetValue="#[output applicatin/json --- payload]"/>
+				<logger level="DEBUG" doc:name="DEBUG" doc:id="527738a3-ba85-4553-be2d-095630ccfd74" message='#["Connectivity status response: " ++ write(payload,"application/json")]' />
+				<choice doc:name="Choice" doc:id="ab612b9c-98f1-4a55-97c4-cf3b90946384" >
+					<when expression='#[payload.status == "UP"]'>
+						<flow-ref doc:name="processMainSubflow" doc:id="9f9d7288-cb6e-4e91-b9ac-bfbfb6feb925" name="processMainSubflow"/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="INFO" doc:id="954c1c23-5582-4a89-9f28-fc573e44b3f5" message='#["At least one connection is unsuccessful; cannot proceed"]' />
+						<flow-ref doc:name="sendConnectionFailureEmailSubflow" doc:id="7d2dcca2-f91a-4a28-a108-c7032a1a59a8" name="sendConnectionFailureEmailSubflow"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="WARN" doc:name="WARN" doc:id="a425c1f7-ee23-44c1-8b65-1151643f547a" message='#["Previous batch run is in progress; skipping this run"]'/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO" doc:id="88174f8d-5914-4894-8f02-0a99b5d6c169" message='#["schedulerMainFlow exit"]'/>
+	</flow>
+	<!-- [STUDIO:"schedulerRetryFlow"]<flow name="schedulerRetryFlow" doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" initialState="started" >
+		<scheduler doc:name="Retry Scheduler" doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0" >
+			<scheduling-strategy >
+				<cron expression="${batch.retry.cronExpression}" timeZone="${batch.retry.timezone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="iNFO" doc:id="16741778-e2d1-4bbb-a898-1c77dd105009" message='#["schedulerRetryFlow entry"&#93;'/>
+		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow" doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa" name="retrieveOsBatchStatusRetrySubflow" />
+		<choice doc:name="Choice" doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1" >
+			<when expression="#[!isEmpty(payload)&#93;" >
+				<flow-ref doc:name="pingSubflow" doc:id="c06d6684-436c-431f-a825-0c542f037051" name="pingSubflow" />
+				<logger level="DEBUG" doc:name="DEBUG" doc:id="58b1485a-12e1-4815-b710-a7719628d157" message='#["Connectivity status response: " ++ write(payload,"application/json")&#93;'/>
+				<choice doc:name="Choice" doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9" >
+					<when expression='#[payload.status == "Success"&#93;' >
+						<flow-ref doc:name="processRetrySubflow" doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89" name="processRetrySubflow" />
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="INFO" doc:id="89c3a6c0-8255-4e0f-94fe-f573b7124a44" message='#["At least one connection is unsuccessful; cannot proceed"&#93;' />
+						<flow-ref doc:name="sendConnectionFailureEmailSubflow" doc:id="0c41023e-627e-4918-bd6a-0dff09a621fc" name="sendConnectionFailureEmailSubflow" />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="WARN" doc:name="WARN" doc:id="560fcb44-94c7-48c5-b724-86bd971b2b26" message='#["Previous retry batch run is in progress; skipping this run"&#93;' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO" doc:id="204ffd49-c53d-4d90-995b-07691e9492f2" message='#["schedulerRetryFlow exit"&#93;'/>
+	</flow> [STUDIO] -->
+</mule>

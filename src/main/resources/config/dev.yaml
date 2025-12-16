@@ -1,0 +1,23 @@
+source:
+  username: "christopher.byam@slalom.com"
+  password: "KUY6nfv!pfv3kaw7rkc"
+  securityToken: "u6VfybNm1B9hAYD56EX0GzIT"
+  pbEntryId:
+    productA: "01uKa00000AeCAcIAN"
+    productB: "01uKa00000AeCAeIAN"
+    productC: "01uKa00000AeCAdIAN"
+    productD: "01uKa00000AeDIxIAN"
+   
+target:
+  username: "cbyam.ms394@agentforce.com"
+  password: "*i6WpcrVjN2TQub6"
+  securityToken: "9hTNiL8aQOlqsFWVmuEtNZLL"
+  pbEntryId:
+    productA: "01ugL0000020n61QAA"
+    productB: "01ugL0000020n1BQAQ"
+    productC: "01ugL0000020n62QAA"
+    productD: "01ugL000002193JQAQ"
+    
+smtp:
+  toAddress: "cbyam.ms@gmail.com"
+  

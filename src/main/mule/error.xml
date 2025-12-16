@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="pingErrorHandler" doc:id="baa5e588-002a-49ee-8a98-3edd103ecfa8" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="790d98dd-1436-495a-bf1c-fb459bf01a6d" >
+			<ee:transform doc:name="Transform Message" doc:id="2b81a4b5-aaa9-466f-bfb7-37bfa12ea2c5" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import buildPingEndpointResponse from module::CommonUtil
+---
+buildPingEndpointResponse(vars.systemName, error)]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+	<error-handler name="sourceWritebackErrorHandler" doc:id="18f2873d-e6cd-42a3-80cc-6a5bcc11610e" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fdbfb62c-8de7-4fa3-9c2f-2c6f42709ccd" >
+			<ee:transform doc:name="TBD" doc:id="6086f424-075d-41ad-b46d-355fd765d685" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+	<error-handler name="errorHospitalErrorHandler" doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="148fbd08-4b8c-40bd-82a6-600656eb20c0" >
+			<ee:transform doc:name="TBD" doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

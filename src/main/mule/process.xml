@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="processMainSubflow" doc:id="337dd04f-8ec8-4ed2-a0d1-9cfec9914600" >
+		<logger level="INFO" doc:name="INFO" doc:id="b1603fcc-5706-4267-afe8-ae972c52e83f" message='#["processMainSubflow entry"]'/>
+		<flow-ref doc:name="retrieveWatermarkSubflow" doc:id="df0d3692-7583-4fa0-a253-f40f4d8aae97" name="retrieveWatermarkSubflow" target="watermarkLastRunDateTime" targetValue="#[output application/json --- payload]"/>
+		<set-variable value="#[import getCurrentDateTimeAsWatermark from module::CommonUtil
+output application/json
+---
+getCurrentDateTimeAsWatermark()]" doc:name="watermarkCurrentRunDateTime" doc:id="b60fca7e-8722-4643-8f59-f6d85e9a4d2e" variableName="watermarkCurrentRunDateTime"/>
+		<choice doc:name="Choice" doc:id="06a2f188-2bd1-43a3-a0d3-3ea2f92f6c0a" >
+			<when expression="#[!isEmpty(vars.watermarkLastRunDateTime)]">
+				<ee:transform doc:name="Transform Message" doc:id="73d1e7ae-923e-4a96-a117-ee157a68ea86">
+					<ee:message>
+						<ee:set-payload><![CDATA[import buildQueryOpptyFromSourceByDate from module::Oppty
+output application/json
+---
+buildQueryOpptyFromSourceByDate(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="retrieveOpptyFromSourceByDateSubflow" doc:id="d6fbca34-9721-4218-ba1f-4cdaa0bb98b5" name="retrieveOpptyFromSourceByDateSubflow"/>
+				<choice doc:name="Choice" doc:id="cfa74498-1cc4-41df-bb02-290ede913da1" >
+					<when expression="#[!isEmpty(payload)]">
+						<flow-ref doc:name="storeOsCurrentRunDateTimeSubflow" doc:id="2a397e46-3cf3-4d8b-a95c-0e6e090655c5" name="storeOsCurrentRunDateTimeSubflow"/>
+						<flow-ref doc:name="storeOsBatchStatusInProgressSubflow" doc:id="fc5a4309-093a-4a67-8c76-745390809ce2" name="storeOsBatchStatusInProgressSubflow" />
+						<set-payload value="#[output application/java --- payload]" doc:name="Set Payload" doc:id="5c44348e-843a-47b5-abac-895d4b7696b5" />
+						<logger level="INFO" doc:name="INFO" doc:id="1faacba7-6aeb-4f95-8891-616fa2516cc6" message='#["Starting batch process from main subflow"]'/>
+						<flow-ref doc:name="processBatchOpptyFlow" doc:id="e8c39442-8d44-47cc-a456-3f025ac07d0f" name="processBatchOpptyFlow"/>
+						<logger level="INFO" doc:name="INFO" doc:id="81891116-9db2-451f-aaf4-021e2dc8c615" message='#["Initiated batch process from main subflow"]' />
+					</when>
+					<otherwise >
+						<logger level="WARN" doc:name="WARN" doc:id="674a11c6-796b-40c8-879e-d1eabf1d5168" message='#["No opportunity records available to process"]' />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="WARN" doc:name="WARN" doc:id="34879b03-4a23-4833-93f2-00d9cfd83b81" message='#["The watermark value watermarkLastRunDateTime is not available; cannot proceed"]'/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO" doc:id="87b71b60-30f6-47ab-9d0b-8022d552d7e8" message='#["processMainSubflow exit"]'/>
+	</sub-flow>
+	<!-- [STUDIO:"processRetrySubflow"]<sub-flow name="processRetrySubflow" doc:id="0756293e-ab2d-432c-b26e-8e7a22eea82a" >
+		<logger level="INFO" doc:name="INFO" doc:id="115db724-a8cf-4c30-80f3-ae5601c6fe11" message='#["processRetrySubflow entry"&#93;' />
+		<flow-ref doc:name="retrieveRetryableFromErrorHospitalSubflow" doc:id="7d8061d5-8063-4fc9-bc77-449f20b46e23" name="retrieveRetryableFromErrorHospitalSubflow"/>
+		<choice doc:name="Choice" doc:id="8827d4cd-13bc-4a81-a084-5ef12ec243a9" >
+			<when expression="#[!isEmpty(payload)&#93;" >
+				<flow-ref doc:name="retrieveOpptyFromSourceByIdSubflow" doc:id="704a6f89-934e-448a-a31b-67e575b12cbd" name="retrieveOpptyFromSourceByIdSubflow" target="sourceOpptyRecordsById" targetValue="#[payload default [&#93;&#93;"/>
+				<choice doc:name="Choice" doc:id="04f47323-6cfc-483e-bf7a-cf1d0c7c8353">
+					<when expression="#[sizeOf(payload.recordId default [&#93;) &gt; sizeOf(vars.sourceOpptyRecordsById default [&#93;)&#93;">
+						<ee:transform doc:name="Transform Message" doc:id="e08f5ce1-bb33-4597-a459-2ae6ca51ee83">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+&#45;&#45;-
+{
+	Id: ((payload.recordId default [&#93;) &#45;&#45; (vars.sourceOpptyRecordsById default [&#93;))
+}&#93;&#93;></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="INFO" doc:id="318b23e3-1b3e-48b6-bf6a-cbc78aa84d5d" message='#[write(sizeOf(payload),"application/json") ++ " records will be deleted from error hospital"&#93;' />
+						<flow-ref doc:name="deleteFromErrorHospitalSubflow" doc:id="c0f7acde-96a3-44d2-8db0-336da39bf5a2" name="deleteFromErrorHospitalSubflow" />
+					</when>
+				</choice>
+				<set-payload value="#[output application/java &#45;&#45;- vars.sourceOpptyRecordsById&#93;" doc:name="Set Payload" doc:id="fddb925c-10f7-4e72-a754-7a429d0e0e9b" />
+				<choice doc:name="Choice" doc:id="cff370bb-c73d-4c83-a482-f54f43c16fb0" >
+					<when expression="#[!isEmpty(payload)&#93;" >
+						<flow-ref doc:name="storeOsBatchStatusRetryInProgressSubflow" doc:id="30413803-a497-4e3f-97f1-5984f7a5bd95" name="storeOsBatchStatusRetryInProgressSubflow" />
+						<set-variable value="#[true&#93;" doc:name="isRetryJob" doc:id="90dd3cee-8b56-4916-aec5-6ac773a8d09d" variableName="isRetryJob"/>
+						<logger level="INFO" doc:name="INFO" doc:id="add7784f-dfae-47fc-880f-5e058336ad43" message='#["Starting batch process from retry subflow"&#93;' />
+						<flow-ref doc:name="processBatchOpptyFlow" doc:id="5c90ac83-c6af-4849-abfc-c936697a4eb7" name="processBatchOpptyFlow" />
+						<logger level="INFO" doc:name="INFO" doc:id="d19e10d7-e841-425c-aad8-1e511c98bdc0" message='#["Initiated batch process from retry subflow"&#93;' />
+					</when>
+					<otherwise >
+						<logger level="WARN" doc:name="WARN" doc:id="58740bb2-1f1e-4f87-aa3f-a6b7119b3c0b" message='#["No opportunity records available to process"&#93;' />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="WARN" doc:name="WARN" doc:id="d627c2d6-d594-4b76-810e-29ef03e5bbe8" message='#["No retryable opportunity records available to process"&#93;' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO" doc:id="53f55b14-ecde-4f9e-a3a7-f8460d507fe0" message='#["processRetrySubflow exit"&#93;' />
+	</sub-flow> [STUDIO] -->
+	<sub-flow name="processAdminSubflow" doc:id="af3691a9-9c5d-4ed6-8c36-5311c8ab3b7d" >
+		<logger level="INFO" doc:name="INFO" doc:id="a19bc96f-3bcf-4ea2-850c-50ef9a1b0fec" message='#["processAdminSubflow entry"]' />
+		<ee:transform doc:name="Transform Message" doc:id="407298e8-41e0-4c70-8aff-e0cd9da6f499">
+			<ee:message>
+				<ee:set-payload><![CDATA[import buildQueryOpptyFromSourceById from module::Oppty
+output application/json
+---
+buildQueryOpptyFromSourceById(payload.externalIds)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="retrieveOpptyFromSourceByIdSubflow" doc:id="1f4aec94-f849-4fd7-af87-6c5cbdeb5b2b" name="retrieveOpptyFromSourceByIdSubflow" target="sourceOpptyRecordsById" targetValue="#[output application/json --- payload.payload..records default []]" />
+		<choice doc:name="Choice" doc:id="7cb59f68-098c-4e63-81ea-db3cbe73b548">
+			<when expression="#[sizeOf(payload.externalIds default []) &gt; sizeOf(vars.sourceOpptyRecordsById default [])]">
+				<ee:transform doc:name="Transform Message" doc:id="82aee42c-fb4d-4286-80b6-1a6f7ce38829">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	Id: ((payload.externalIds default []) -- (vars.sourceOpptyRecordsById default []))
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="INFO" doc:id="aecd4380-e4a9-42f3-bc7a-e171b19dc4dd" message='#[write(sizeOf(payload),"application/json") ++ " records will be deleted from error hospital"]' />
+				<flow-ref doc:name="deleteRecordsFromErrorHospitalFlow" doc:id="979a7e10-bc4d-49f0-9f63-838c8275d18d" name="deleteRecordsFromErrorHospitalFlow" />
+			</when>
+		</choice>
+		<set-payload value="#[output application/java --- vars.sourceOpptyRecordsById]" doc:name="Set Payload" doc:id="24c94a1f-9178-4606-87bd-976804726442" />
+		<remove-variable doc:name="sourceOpptyRecordsById" doc:id="b9dc57f0-3843-4c46-89d5-d1f8be9eba0c" variableName="sourceOpptyRecordsById"/>
+		<choice doc:name="Choice" doc:id="36a7c548-46b4-4c59-b252-70df99c0f21f" >
+			<when expression="#[!isEmpty(payload)]" >
+				<set-variable value="#[true]" doc:name="isRetryJob" doc:id="b9c18a82-960b-4f2d-89bf-46bc6c05f786" variableName="isRetryJob" />
+				<logger level="INFO" doc:name="INFO" doc:id="9ebc11b0-a8f7-455e-8cda-60c602acb830" message='#["Starting batch process from admin subflow"]' />
+				<flow-ref doc:name="processBatchOpptyFlow" doc:id="d9c3f7e4-0629-42cd-b4b4-8790f2664f9e" name="processBatchOpptyFlow" />
+				<logger level="INFO" doc:name="INFO" doc:id="299c7577-be86-45a5-9921-268aeb639149" message='#["Initiated batch process from admin subflow"]' />
+			</when>
+			<otherwise >
+				<logger level="WARN" doc:name="WARN" doc:id="05ea5550-c179-4080-99b6-e89426cee1d0" message='#["No opportunity records available to process"]' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO" doc:id="e38d797f-d276-4576-9be7-c9a2422247db" message='#["processAdminSubflow exit"]' />
+	</sub-flow>
+</mule>

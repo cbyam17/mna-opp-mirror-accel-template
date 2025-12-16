@@ -1,0 +1,20 @@
+projectName: "oppty-mirroring-batch-template"
+orgName: "MNA-Tech"
+errHsptl:
+  retrieveLimit: "200"
+  maxRetries: "5"
+vm:
+  errHsptlRecordDelete: "errorHospitaRecordDeleteRequest"
+  errHsptlRecordCreate: "errorHospitaRecordCreateRequest"
+  sourceOpptyWriteback: "sourceOpptyWritebackRequest"
+  sourceOpptyProductWriteback: "sourceOpptyProductWritebackRequest"
+batch:
+  aggregatorSize: "100"
+  main:
+    cronExpression: "0 0 * * * ?"
+    timezone: "America/New_York"
+  retry:
+    cronExpression: "0 0/10 * * * ?"
+    timezone: "America/New_York"
+target:
+  bufferSeconds: "0"

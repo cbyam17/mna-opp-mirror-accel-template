@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_5ca18ed3_1099_407f_ac9e_cff8ac540617_Output_Variables_sourceOpptyProductRecords = Array<{ _?: java_lang_Object {"class": "java.lang.Object",
+  "typeAlias": "Object",
+  "typeId": "java.lang.Object"} }>
+type java_lang_Object = {|  |} {"class": "java.lang.Object",
+"typeAlias": "Object",
+"typeId": "java.lang.Object"}
+
+
+

@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_a3dd340a_bfa6_4c27_8045_c8cd648179c0_Input_Variables_sourceOpptyRecordsById = Any
+

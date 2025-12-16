@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<sub-flow name="retrieveOpptyFromSourceByDateSubflow" doc:id="3d3f4d2e-0f31-4b22-911d-391b7fe6e2f2">
+		<logger level="INFO" doc:name="INFO" doc:id="dae5f0d2-23ed-4930-b22b-ab61b87bef0d" message='#["retrieveOpptyFromSourceByDateSubflow entry"]' />
+		<salesforce:query-xml-stream doc:name="Query Oppty records" doc:id="7e1dab0f-b55d-44c6-a6e8-d27fa0f76e29" targetValue="#[output application/json --- payload..*records default []]" config-ref="sourceSalesforceConfig">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+		<logger level="INFO" doc:name="INFO" doc:id="f4c53007-93e1-44a7-95c0-05885e63f1c1" message='#["retrieveOpptyFromSourceByDateSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="retrieveOpptyFromSourceByIdSubflow" doc:id="e84678de-b208-477e-8ef4-76ed704c96ce" >
+		<logger level="INFO" doc:name="INFO" doc:id="322d81f7-84d9-4589-9156-ce0502f86ab5" message='#["retrieveOpptyFromSourceByIdSubflow entry"]' />
+		<salesforce:query-xml-stream doc:name="Query Oppty records" doc:id="9fc8c99a-3ed1-4790-ac4c-0cb25a41508b" config-ref="sourceSalesforceConfig" targetValue="#[output application/json --- payload..*records default []]">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+		<logger level="INFO" doc:name="INFO" doc:id="5d91d2b6-3ba8-4eed-ae74-fd39e0948a81" message='#["retrieveOpptyFromSourceByIdSubflow entry"]' />
+	</sub-flow>
+	<sub-flow name="retrieveOpptyProductFromSourceByOpptyIdSubflow" doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617" >
+		<logger level="INFO" doc:name="INFO" doc:id="40c6502f-0ae1-4f1b-80b3-5d42f592fa78" message='#["retrieveOpptyProductFromSourceByOpptyIdSubflow entry"]' />
+		<ee:transform doc:name="Transform Message" doc:id="1bf342f0-aace-40fa-b26e-373fd6658e7d">
+			<ee:message>
+				<ee:set-payload><![CDATA[import buildQueryOpptyProductFromSourceByOpptyId from module::OpptyProduct
+output application/java
+---
+buildQueryOpptyProductFromSourceByOpptyId(payload.Id)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:query-xml-stream doc:name="Query OpptyProduct records" doc:id="2d9b32b8-1086-4f21-9080-bd8146c36faf" targetValue="#[output application/json --- payload..*records default []]" config-ref="sourceSalesforceConfig">
+			<salesforce:salesforce-query ><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+		<logger level="INFO" doc:name="INFO" doc:id="386caf2b-799d-4562-8965-967ec6fc931d" message='#["retrieveOpptyProductFromSourceByOpptyIdSubflow entry"]' />
+	</sub-flow>
+	<flow name="writebackOpptyToSourceFlow" doc:id="666d80bd-19d9-4b55-968f-77a04a930c16" >
+		<vm:listener doc:name="Listener" doc:id="21178f0c-9c09-4344-a951-99fae7fe0868" queueName="${vm.sourceOpptyWriteback}" config-ref="vmConfig"/>
+		<logger level="INFO" doc:name="INFO" doc:id="45cdc864-e93c-49c0-b03c-c18a19b113b7" message='#["writebackOpptyToSourceFlow entry"]' />
+		<salesforce:update type="Opportunity" doc:name="Update Oppty records" doc:id="2ded158b-3d56-4be6-abca-d02eecf27394" config-ref="sourceSalesforceConfig"/>
+		<logger level="INFO" doc:name="INFO" doc:id="da247e91-c744-4b59-8382-8be8b5b7709e" message='#["writebackOpptyToSourceFlow exit"]' />
+		<error-handler ref="sourceWritebackErrorHandler" />
+	</flow>
+	<flow name="writebackOpptyProductToSourceFlow" doc:id="0bd25672-9d43-44ae-98fd-dcf5382f3384" >
+		<vm:listener doc:name="Listener" doc:id="2c3ee1e7-7f84-4a4e-a546-0e1255e124eb" queueName="${vm.sourceOpptyProductWriteback}" config-ref="vmConfig"/>
+		<logger level="INFO" doc:name="INFO" doc:id="918f1c9f-ce59-4e77-bd90-41d7cd04cd3d" message='#["writebackOpptyProductToSourceFlow entry"]' />
+		<salesforce:update type="OpportunityLineItem" doc:name="Update OpptyProduct records" doc:id="e9236b75-f9bb-48fa-82c6-11dfebd407b7" config-ref="sourceSalesforceConfig"/>
+		<logger level="INFO" doc:name="INFO" doc:id="81c802c0-2e27-4c6b-85ac-b9e36431e21c" message='#["writebackOpptyProductToSourceFlow exit"]' />
+		<error-handler ref="sourceWritebackErrorHandler" />
+	</flow>
+</mule>

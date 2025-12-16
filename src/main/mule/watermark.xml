@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="retrieveWatermarkSubflow" doc:id="56848ba5-3587-4221-8537-b7b6e06387ad" >
+		<logger level="INFO" doc:name="INFO" doc:id="153cd81d-f429-43a6-92de-27d1c4339b80" message='#["retrieveWatermarkSubflow entry"]' />
+		<os:retrieve doc:name="Retrieve" doc:id="5c185eb9-1b5a-41e6-9175-593dc11aa39b" key='lastRunDateTime' objectStore="watermarkStore">
+			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="INFO" doc:id="19a9d6ae-d50b-4c00-9c11-cfbf9ed9af34" message='#["retrieveWatermarkSubflow entry"]' />
+	</sub-flow>
+	<sub-flow name="updateWatermarkSubflow" doc:id="b573c738-12a6-42a6-a57d-18f26af4186f" >
+		<logger level="INFO" doc:name="INFO" doc:id="fc9cdad3-a1db-4d85-9409-53047aad35f5" message='#["updateWatermarkSubflow entry"]' />
+		<os:store doc:name="Store" doc:id="db2b634e-21ce-4c94-b442-4121f8586332" key="lastRunDateTime" objectStore="watermarkStore">
+			<os:value ><![CDATA[#[vars.watermarkLastRunDateTimeUpdated]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="INFO" doc:id="4a7195cd-c241-4c34-b807-d46faf036f0f" message='#["updateWatermarkSubflow entry"]' />
+	</sub-flow>
+</mule>
