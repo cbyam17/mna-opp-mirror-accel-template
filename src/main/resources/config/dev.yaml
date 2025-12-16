@@ -19,5 +19,5 @@ target:
     productD: "01ugL000002193JQAQ"
     
 smtp:
-  toAddress: "cbyam.ms@gmail.com"
+  toAddress: """
   
