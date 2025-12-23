@@ -1,45 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<sub-flow name="retrieveOsBatchStatusSubflow" doc:id="3a0ea4a9-a35a-492b-8479-cf91500541e8" >
-		<logger level="INFO" doc:name="INFO" doc:id="68803e44-de60-4138-aca3-73de1e578b94" message='#["retrieveOsBatchStatusSubflow entry"]' />
-		<os:retrieve doc:name="Retrieve" doc:id="22759b48-c29e-4d1e-b891-7841edf663cf" objectStore="batchStatusStore" key='batchStatus'>
-			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+	<sub-flow name="retrieveOsBatchStatusSubflow"
+		doc:id="3a0ea4a9-a35a-492b-8479-cf91500541e8">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="68803e44-de60-4138-aca3-73de1e578b94"
+			message='#["retrieveOsBatchStatusSubflow entry"]' />
+		<os:retrieve doc:name="Retrieve"
+			doc:id="22759b48-c29e-4d1e-b891-7841edf663cf"
+			objectStore="batchStatusStore" key='batchStatus'>
+			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
-		<logger level="INFO" doc:name="INFO" doc:id="18dfaa45-320c-4def-bde4-90c23b0850f8" message='#["retrieveOsBatchStatusSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="18dfaa45-320c-4def-bde4-90c23b0850f8"
+			message='#["retrieveOsBatchStatusSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="storeOsCurrentRunDateTimeSubflow" doc:id="2d609976-7dcb-4350-aa3b-05d5cc2299b4" >
-		<logger level="INFO" doc:name="INFO" doc:id="e29ffc03-cb61-4c34-81c7-78b9f3309745" message='#["storeOsCurrentRunDateTimeSubflow entry"]' />
-		<os:store doc:name="Store" doc:id="2f433864-b1a4-42a9-9801-6519b91a1369" key="currentRunDateTime" objectStore="currentRunDateTimeStore">
-			<os:value ><![CDATA[#[output application/java --- vars.watermarkCurrentRunDateTime]]]></os:value>
+	<sub-flow name="storeOsCurrentRunDateTimeSubflow"
+		doc:id="2d609976-7dcb-4350-aa3b-05d5cc2299b4">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="e29ffc03-cb61-4c34-81c7-78b9f3309745"
+			message='#["storeOsCurrentRunDateTimeSubflow entry"]' />
+		<os:store doc:name="Store"
+			doc:id="2f433864-b1a4-42a9-9801-6519b91a1369"
+			key="currentRunDateTime" objectStore="currentRunDateTimeStore">
+			<os:value><![CDATA[#[output application/json --- vars.watermarkCurrentRunDateTime]]]></os:value>
 		</os:store>
-		<logger level="INFO" doc:name="INFO1" doc:id="b78ffc73-3d0d-4e41-9aa9-00a7865471ee" message='#["storeOsCurrentRunDateTimeSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="b78ffc73-3d0d-4e41-9aa9-00a7865471ee"
+			message='#["storeOsCurrentRunDateTimeSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="storeOsBatchStatusInProgressSubflow" doc:id="304fd8ba-d077-47e0-8fee-46af4234da62" >
-		<logger level="INFO" doc:name="INFO" doc:id="974ae319-1120-4b8b-bbee-d7d25e4efaa7" message='#["storeOsBatchStatusInProgressSubflow entry"]' />
-		<os:store doc:name="Store" doc:id="dea708db-8286-4d2e-a820-b59d9f6fccfc" key="batchStatus" objectStore="batchStatusStore">
-			<os:value ><![CDATA[#[output application/java --- "IN_PROGRESS"]]]></os:value>
+	<sub-flow name="storeOsBatchStatusInProgressSubflow"
+		doc:id="304fd8ba-d077-47e0-8fee-46af4234da62">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="974ae319-1120-4b8b-bbee-d7d25e4efaa7"
+			message='#["storeOsBatchStatusInProgressSubflow entry"]' />
+		<os:store doc:name="Store"
+			doc:id="dea708db-8286-4d2e-a820-b59d9f6fccfc" key="batchStatus"
+			objectStore="batchStatusStore">
+			<os:value><![CDATA[#[output application/json --- "IN_PROGRESS"]]]></os:value>
 		</os:store>
-		<logger level="INFO" doc:name="INFO" doc:id="b027981e-41ad-4b2e-abbc-617f47755429" message='#["storeOsBatchStatusInProgressSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="b027981e-41ad-4b2e-abbc-617f47755429"
+			message='#["storeOsBatchStatusInProgressSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="clearOsBatchStatusSubflow" doc:id="ef6053d6-b33a-4de5-832c-f78cd00df447" >
-		<logger level="INFO" doc:name="INFO" doc:id="22766bd5-fa75-49e8-8961-9ee3713d05ad" message='#["clearOsBatchStatusSubflow entry"]' />
-		<os:clear doc:name="Clear" doc:id="ccaf4028-02f9-4200-8a88-476438f2b853" objectStore="batchStatusStore"/>
-		<logger level="INFO" doc:name="iNFO" doc:id="4a7f5a6e-ec8e-4699-88be-a3c05dc7a85c" message='#["clearOsBatchStatusSubflow exit"]' />
+	<sub-flow name="clearOsBatchStatusSubflow"
+		doc:id="ef6053d6-b33a-4de5-832c-f78cd00df447">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="22766bd5-fa75-49e8-8961-9ee3713d05ad"
+			message='#["clearOsBatchStatusSubflow entry"]' />
+		<os:clear doc:name="Clear"
+			doc:id="ccaf4028-02f9-4200-8a88-476438f2b853"
+			objectStore="batchStatusStore" />
+		<logger level="INFO" doc:name="iNFO"
+			doc:id="4a7f5a6e-ec8e-4699-88be-a3c05dc7a85c"
+			message='#["clearOsBatchStatusSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="clearOsBatchStatusRetrySubflow" doc:id="b7a7b029-7dfb-4196-8de1-0d9904153093" >
-		<logger level="INFO" doc:name="INFO" doc:id="c2fb4c4b-01db-4627-a5cf-b0b6377b4776" message='#["clearOsBatchStatusRetrySubflow entry"]' />
-		<os:clear doc:name="Clear" doc:id="ce8f6aa9-0106-4570-a6c8-44dcafc1c358" objectStore="batchStatusStore"/>
-		<logger level="INFO" doc:name="iNFO" doc:id="bb0aa953-6e4f-427b-a881-4e369176af5d" message='#["clearOsBatchStatusRetrySubflow exit"]' />
+	<sub-flow name="clearOsBatchStatusRetrySubflow"
+		doc:id="b7a7b029-7dfb-4196-8de1-0d9904153093">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="c2fb4c4b-01db-4627-a5cf-b0b6377b4776"
+			message='#["clearOsBatchStatusRetrySubflow entry"]' />
+		<os:clear doc:name="Clear"
+			doc:id="ce8f6aa9-0106-4570-a6c8-44dcafc1c358"
+			objectStore="batchStatusStore" />
+		<logger level="INFO" doc:name="iNFO"
+			doc:id="bb0aa953-6e4f-427b-a881-4e369176af5d"
+			message='#["clearOsBatchStatusRetrySubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="retrieveOsCurrentRunDateTimeSubflow" doc:id="f3926ac9-b195-4261-af14-e485d509a41b" >
-		<logger level="INFO" doc:name="INFO" doc:id="d4419889-f29b-46c5-9eff-c2579cc732ec" message='#["retrieveOsCurrentRunDateTimeSubflow entry"]' />
-		<os:retrieve doc:name="Retrieve" doc:id="a008b2d1-e925-471f-922c-d38f13dfbc1a" key="currentRunDateTime">
-			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+	<sub-flow name="retrieveOsCurrentRunDateTimeSubflow"
+		doc:id="f3926ac9-b195-4261-af14-e485d509a41b">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="d4419889-f29b-46c5-9eff-c2579cc732ec"
+			message='#["retrieveOsCurrentRunDateTimeSubflow entry"]' />
+		<os:retrieve doc:name="Retrieve"
+			doc:id="a008b2d1-e925-471f-922c-d38f13dfbc1a"
+			key="currentRunDateTime">
+			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
-		<logger level="INFO" doc:name="INFO1" doc:id="f1bb4b01-a720-4f12-8204-187f95ce7af6" message='#["retrieveOsCurrentRunDateTimeSubflow entry"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="f1bb4b01-a720-4f12-8204-187f95ce7af6"
+			message='#["retrieveOsCurrentRunDateTimeSubflow entry"]' />
 	</sub-flow>
 </mule>

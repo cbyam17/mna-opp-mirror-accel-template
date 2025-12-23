@@ -45,7 +45,7 @@ fun transformTargetOpptyProductCreate(data, targetOpptyProductsToCreate) =
         }
         var fieldsToNull = buildFieldsToNull(transformedData)
         ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
         else transformedData
 })
 
@@ -59,7 +59,7 @@ fun transformTargetOpptyProductUpdate(data, targetOpptyProductsToUpdate) =
         }
         var fieldsToNull = buildFieldsToNull(transformedData)
         ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
         else transformedData
 })
 
@@ -88,7 +88,7 @@ fun transformWritebackSourceOpptyProduct(data) =
             }
             var fieldsToNull = buildFieldsToNull(transformedData)
             ---
-            if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+            if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
             else transformedData
     })
 })

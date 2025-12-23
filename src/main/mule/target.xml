@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+<mule
+	xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd">
-	<sub-flow name="retrieveOpptyFromTargetByExternalIdSubflow" doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78" >
-		<logger level="INFO" doc:name="INFO" doc:id="55e9f550-6aba-4be6-b646-53607c105479" message='#["retrieveOpptyFromTargetByExternalIdSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="0ee97f96-be2a-4209-be95-aaa50cbaa1a3">
+	<sub-flow name="retrieveOpptyFromTargetByExternalIdSubflow"
+		doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="55e9f550-6aba-4be6-b646-53607c105479"
+			message='#["retrieveOpptyFromTargetByExternalIdSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="0ee97f96-be2a-4209-be95-aaa50cbaa1a3">
 			<ee:message>
 				<ee:set-payload><![CDATA[import buildQueryOpptyFromTargetByExternalId from module::Oppty
 output application/java
@@ -16,17 +25,26 @@ output application/java
 buildQueryOpptyFromTargetByExternalId(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:query-xml-stream doc:name="Query Oppty records" doc:id="673c7f0b-7b44-498b-af84-e0994299e303" config-ref="targetSalesforceConfig">
+		<salesforce:query-xml-stream
+			doc:name="Query Oppty records"
+			doc:id="673c7f0b-7b44-498b-af84-e0994299e303"
+			config-ref="targetSalesforceConfig">
 			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
 ---
 payload.queryParams]]]></salesforce:parameters>
 		</salesforce:query-xml-stream>
-		<logger level="INFO" doc:name="INFO" doc:id="01539ac4-3a80-4ab5-a97e-c15f991f2524" message='#["retrieveOpptyFromTargetByExternalIdSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="01539ac4-3a80-4ab5-a97e-c15f991f2524"
+			message='#["retrieveOpptyFromTargetByExternalIdSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="sendOpptyToTargetUpdateSubflow" doc:id="2e12c0f9-16e4-405e-a785-dbee3fe5ec9b" >
-		<logger level="INFO" doc:name="INFO" doc:id="6aa7b48b-1bf8-4c61-8e4a-6a2b27e3d82d" message='#["sendOpptyToTargetUpdateSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="af9f1f95-4d47-4aae-810b-0f36e3c1896a">
+	<sub-flow name="sendOpptyToTargetUpdateSubflow"
+		doc:id="2e12c0f9-16e4-405e-a785-dbee3fe5ec9b">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="6aa7b48b-1bf8-4c61-8e4a-6a2b27e3d82d"
+			message='#["sendOpptyToTargetUpdateSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="af9f1f95-4d47-4aae-810b-0f36e3c1896a">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformTargetOpptyUpdate from module::Oppty
 output application/java
@@ -34,12 +52,21 @@ output application/java
 transformTargetOpptyUpdate(payload)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:update type="Opportunity" doc:name="Update Oppty records" doc:id="e24e640b-f5e5-4b0b-8a48-93fe5653068e" config-ref="targetSalesforceConfig"/>
-		<logger level="INFO" doc:name="INFO" doc:id="8e4d184b-74e1-4fdf-891a-7dfb6304a828" message='#["sendOpptyToTargetUpdateSubflow exit"]' />
+		<salesforce:update type="Opportunity"
+			doc:name="Update Oppty records"
+			doc:id="e24e640b-f5e5-4b0b-8a48-93fe5653068e"
+			config-ref="targetSalesforceConfig" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="8e4d184b-74e1-4fdf-891a-7dfb6304a828"
+			message='#["sendOpptyToTargetUpdateSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="sendOpptyToTargetCreateSubflow" doc:id="ad433964-03af-473f-919e-11b3f0884965" >
-		<logger level="INFO" doc:name="INFO" doc:id="64abd3ea-c75a-4c2c-aa6b-a92559ce9456" message='#["sendOpptyToTargetCreateSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="790c2ff5-7943-4689-bab7-e59c40807960">
+	<sub-flow name="sendOpptyToTargetCreateSubflow"
+		doc:id="ad433964-03af-473f-919e-11b3f0884965">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="64abd3ea-c75a-4c2c-aa6b-a92559ce9456"
+			message='#["sendOpptyToTargetCreateSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="790c2ff5-7943-4689-bab7-e59c40807960">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformTargetOpptyCreate from module::Oppty
 output application/java
@@ -47,12 +74,22 @@ output application/java
 transformTargetOpptyCreate(payload)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:create type="Opportunity" doc:name="Create Oppty records" doc:id="7254a766-c493-46df-9b5c-88d9f58c4a40" config-ref="targetSalesforceConfig"/>
-		<logger level="INFO" doc:name="INFO" doc:id="639f96c4-723b-4233-be04-e6100ad94ee7" message='#["sendOpptyToTargetCreateSubflow exit"]' />
+		<salesforce:create type="Opportunity"
+			doc:name="Create Oppty records"
+			doc:id="7254a766-c493-46df-9b5c-88d9f58c4a40"
+			config-ref="targetSalesforceConfig" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="639f96c4-723b-4233-be04-e6100ad94ee7"
+			message='#["sendOpptyToTargetCreateSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="retrieveOpptyProductFromTargetByOpptyIdSubflow" doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489" >
-		<logger level="INFO" doc:name="INFO" doc:id="e77200b9-9ee9-40b7-bdcb-c551c551d5ed" message='#["retrieveOpptyProductFromTargetByOpptyIdSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="d4a9f468-c366-48f2-9533-5e5ccb79a91e">
+	<sub-flow
+		name="retrieveOpptyProductFromTargetByOpptyIdSubflow"
+		doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="e77200b9-9ee9-40b7-bdcb-c551c551d5ed"
+			message='#["retrieveOpptyProductFromTargetByOpptyIdSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="d4a9f468-c366-48f2-9533-5e5ccb79a91e">
 			<ee:message>
 				<ee:set-payload><![CDATA[import buildQueryOpptyProductFromTargetByOpptyId from module::OpptyProduct
 output application/java
@@ -60,17 +97,26 @@ output application/java
 buildQueryOpptyProductFromTargetByOpptyId(payload.targetOpptyResponse.id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:query-xml-stream doc:name="Query OpptyProduct records" doc:id="f2b4245d-45b9-4e8b-9e6d-adb5bd392f7f" config-ref="targetSalesforceConfig">
+		<salesforce:query-xml-stream
+			doc:name="Query OpptyProduct records"
+			doc:id="f2b4245d-45b9-4e8b-9e6d-adb5bd392f7f"
+			config-ref="targetSalesforceConfig">
 			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
 ---
 payload.queryParams]]]></salesforce:parameters>
 		</salesforce:query-xml-stream>
-		<logger level="INFO" doc:name="INFO" doc:id="25d519da-a2e5-4de4-9f21-38477ac4563d" message='#["retrieveOpptyProductFromTargetByOpptyIdSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="25d519da-a2e5-4de4-9f21-38477ac4563d"
+			message='#["retrieveOpptyProductFromTargetByOpptyIdSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="sendOpptyProductToTargetUpdateSubflow" doc:id="3f73739c-6e73-4ec6-b38f-7d0d36f4df99" >
-		<logger level="INFO" doc:name="INFO" doc:id="e667ad26-cc38-4643-b782-2624f06b7e56" message='#["sendOpptyProductToTargetUpdateSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="7235fea1-49d3-4bb9-afea-229969e48c4f">
+	<sub-flow name="sendOpptyProductToTargetUpdateSubflow"
+		doc:id="3f73739c-6e73-4ec6-b38f-7d0d36f4df99">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="e667ad26-cc38-4643-b782-2624f06b7e56"
+			message='#["sendOpptyProductToTargetUpdateSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="7235fea1-49d3-4bb9-afea-229969e48c4f">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformTargetOpptyProductUpdate from module::OpptyProduct
 output application/java
@@ -78,12 +124,21 @@ output application/java
 transformTargetOpptyProductUpdate(payload, vars.targetOpptyProductsToUpdate)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:update type="OpportunityLineItem" doc:name="Update OpptyProduct records" doc:id="4a53b3ba-3ea3-45cd-af52-11a838e3df61" config-ref="targetSalesforceConfig"/>
-		<logger level="INFO" doc:name="INFO" doc:id="c0975941-dfa1-48c7-8033-b29e0a569028" message='#["sendOpptyProductToTargetUpdateSubflow exit"]' />
+		<salesforce:update type="OpportunityLineItem"
+			doc:name="Update OpptyProduct records"
+			doc:id="4a53b3ba-3ea3-45cd-af52-11a838e3df61"
+			config-ref="targetSalesforceConfig" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="c0975941-dfa1-48c7-8033-b29e0a569028"
+			message='#["sendOpptyProductToTargetUpdateSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="sendOpptyProductToTargetCreateSubflow" doc:id="92226890-bd34-495b-8399-1d8d3f095f63" >
-		<logger level="INFO" doc:name="INFO" doc:id="abb99671-298f-4729-b875-a39d67d34780" message='#["sendOpptyProductToTargetCreateSubflow entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="2d070b89-4a54-426d-8639-62ccbf625d66">
+	<sub-flow name="sendOpptyProductToTargetCreateSubflow"
+		doc:id="92226890-bd34-495b-8399-1d8d3f095f63">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="abb99671-298f-4729-b875-a39d67d34780"
+			message='#["sendOpptyProductToTargetCreateSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="2d070b89-4a54-426d-8639-62ccbf625d66">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformTargetOpptyProductCreate from module::OpptyProduct
 output application/java
@@ -91,7 +146,12 @@ output application/java
 transformTargetOpptyProductCreate(payload, vars.targetOpptyProductsToCreate)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:create doc:name="Create OpptyProduct records" doc:id="9f891c96-1ecc-4bef-be5f-0ede59cee5a3" config-ref="targetSalesforceConfig" type="OpportunityLineItem"/>
-		<logger level="INFO" doc:name="INFO" doc:id="fabe3507-6439-4e2c-9f68-0ad26bd4fc42" message='#["sendOpptyProductToTargetCreateSubflow exit"]' />
+		<salesforce:create
+			doc:name="Create OpptyProduct records"
+			doc:id="9f891c96-1ecc-4bef-be5f-0ede59cee5a3"
+			config-ref="targetSalesforceConfig" type="OpportunityLineItem" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="fabe3507-6439-4e2c-9f68-0ad26bd4fc42"
+			message='#["sendOpptyProductToTargetCreateSubflow exit"]' />
 	</sub-flow>
 </mule>

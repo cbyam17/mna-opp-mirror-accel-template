@@ -12,7 +12,6 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		<logger level="DEBUG" doc:name="DEBUG" doc:id="a22a6731-a29c-453c-b57e-e0724eed181a" message='#["Connectivity status response: " ++ write(vars.pingResponse,"application/json")]' />
 		<choice doc:name="Choice" doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7" >
 			<when expression='#[vars.pingResponse.status == "UP"]'>
-				<remove-variable doc:name="pingResponse" doc:id="59e0e941-95d0-4421-a66e-180b219b3a1d" variableName="pingResponse" />
 				<async doc:name="Async" doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5" >
 					<flow-ref doc:name="processAdminSubflow" doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b" name="processAdminSubflow"/>
 				</async>

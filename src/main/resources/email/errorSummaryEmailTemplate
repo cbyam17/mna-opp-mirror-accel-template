@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Error Notification - {{appName}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h2 { color: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2dede; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Error Notification - {{appName}}</h2>
+        <p>
+            The purpose of this email is to notify you of errors that occurred during the integration.
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Record ID</th>
+                    <th>Error Message</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Repeat this row for each batch job result -->
+                {{#each batchResults}}
+                <tr>
+                    <td>{{recordId}}</td>
+                    <td>{{errorMessage}}</td>
+                    <td>{{timestamp}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

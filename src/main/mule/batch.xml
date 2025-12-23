@@ -212,10 +212,6 @@ payload ++ { targetOpptyProductResponses: vars.targetOpptyProductResponses defau
 								doc:id="7def394d-cd24-4b4a-8294-df04692ab8c2" />
 						</when>
 					</choice>
-					<remove-variable
-						doc:name="targetOpptyProductsToCreate"
-						doc:id="4112a923-2f78-4964-8f12-c62d5fb0b2bd"
-						variableName="targetOpptyProductsToCreate" />
 				</batch:step>
 				<batch:step
 					name="step08_sendOpptyProductRecordsToTargetUpdate"
@@ -249,13 +245,10 @@ else payload ++ { targetOpptyProductResponses: (payload.targetOpptyProductRespon
 								doc:id="551faf93-3ac3-4376-9d1a-c13ea52e394f" />
 						</when>
 					</choice>
-					<remove-variable
-						doc:name="targetOpptyProductsToUpdate"
-						doc:id="95880966-2466-478c-8b8b-860708048e29"
-						variableName="targetOpptyProductsToUpdate" />
 				</batch:step>
 				<batch:step name="step09_writebackOpptyRecordsToSource"
-					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b" acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)]">
+					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b"
+					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="773f58e9-fa2f-4a65-a148-8fab7ee875ec"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
@@ -308,7 +301,7 @@ buildSendErrorRecordsToErrorHospitalRequest(payload, correlationId)]]]></vm:cont
 				</batch:step>
 				<batch:step name="step13_handleSuccessForRetryRecords"
 					doc:id="286946a8-3c81-4ae6-bdc6-2d3f3daee349"
-					acceptExpression="#[(!isEmpty(vars.isRetryJob) and vars.isRetryJob) and (!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success) and (!isEmpty(payload.targetOpptyProductResponses) and (!payload.targetOpptyProductResponses.success contains false))]">
+					acceptExpression="#[(!isEmpty(vars.isRetryJob) and vars.isRetryJob) and (!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success) and (!isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false))]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="517ca65b-1e52-4c22-bb9b-a8872fe879f7"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
@@ -393,8 +386,7 @@ buildSendFailedRecordsToErrorHospitalRequest(payload, correlationId)]]]></vm:con
 		<choice doc:name="Choice"
 			doc:id="9b5bafa1-216c-4f44-a727-d5950fa6d56b">
 			<when expression="#[payload.failedRecords &gt; 0]">
-				<flow-ref
-					doc:name="sendSummaryEmailSubflow"
+				<flow-ref doc:name="sendSummaryEmailSubflow"
 					doc:id="639012a1-d200-4e83-9c6c-b87a5c91790f"
 					name="sendSummaryEmailSubflow" />
 			</when>

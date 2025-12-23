@@ -5,15 +5,16 @@ import * from module::CommonUtil
 fun buildQueryOpptyFromSourceByDate(fromLastRunDateTime, toLastRunDateTime) =
 	{
 		//adjust fields as needed
-		query: "SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE Target_Mirroring_Scope = true and Target_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and Target_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime",
+		query: "SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE Target_Mirror_Scope__c = true and ((Target_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and Target_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime) or Target_Mirror_Error__c != null)",
 		queryParams: {
-			"watermarkLastRunDateTime": appendZIfNeeded(fromLastRunDateTime),
-			"watermarkCurrentRunDateTime": appendZIfNeeded(toLastRunDateTime)
+			watermarkLastRunDateTime: fromLastRunDateTime,
+			watermarkCurrentRunDateTime: toLastRunDateTime
 		}
 	}
 
 fun buildQueryOpptyFromSourceById(ids) =
 	{
+		//adjust fields as needed
 		query: "SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE ID IN (" ++ generateIdInClause(ids) ++ ")",
 		queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
 			(("idArg") ++ index): item
@@ -41,7 +42,7 @@ fun transformTargetOpptyUpdate(data) =
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
-		if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+		if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
 		else transformedData
 	})
 
@@ -57,7 +58,7 @@ fun transformTargetOpptyCreate(data) =
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
-		if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+		if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
 		else transformedData
 	})
 
@@ -74,6 +75,6 @@ fun transformWritebackSourceOppty(data) =
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
-		if (!isEmpty(fieldsToNull)) transformedData mergeWith { "fieldsToNull": fieldsToNull } 
+		if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
 		else transformedData
 })

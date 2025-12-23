@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
 	xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="retrieveRecordsFromErrorHospitalByIdSubflow" doc:id="dea2d133-3dec-46c8-94fa-d7319cca46b5" >
-		<logger level="INFO" doc:name="INFO" doc:id="bdd4cb52-b48a-469b-a409-42b8f0e1b727" message='#["retrieveRecordsFromErrorHospitalByIdSubflow entry"]'/>
-		<ee:transform doc:name="Transform Message" doc:id="e8f9cd41-e3df-407d-ad97-52826b45beae">
+	<sub-flow name="retrieveRecordsFromErrorHospitalByIdSubflow"
+		doc:id="dea2d133-3dec-46c8-94fa-d7319cca46b5">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="bdd4cb52-b48a-469b-a409-42b8f0e1b727"
+			message='#["retrieveRecordsFromErrorHospitalByIdSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="e8f9cd41-e3df-407d-ad97-52826b45beae">
 			<ee:message>
 				<ee:set-payload><![CDATA[import buildRetrieveRecordsFromErrorHospitalByIdRequest from module::ErrorHospital
 output application/java
@@ -17,35 +26,67 @@ output application/java
 buildRetrieveRecordsFromErrorHospitalByIdRequest(payload)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<set-variable value="#[[]]" doc:name="results" doc:id="0a58216b-ddff-4f92-b8a3-92fe237cf6d4" variableName="results"/>
-		<foreach doc:name="For Each" doc:id="79ae3df8-4b4f-432f-b5ff-d3c4c2cd8ad0" collection="#[payload]">
-			<os:retrieve doc:name="Retrieve" doc:id="bc3c748e-eb30-449c-9ef7-d2db76a9f6a3" key="#[payload]" targetValue="#[output application/json --- payload]" objectStore="errorHospitalStore">
-				<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		<set-variable value="#[[]]" doc:name="results"
+			doc:id="0a58216b-ddff-4f92-b8a3-92fe237cf6d4" variableName="results" />
+		<foreach doc:name="For Each"
+			doc:id="79ae3df8-4b4f-432f-b5ff-d3c4c2cd8ad0" collection="#[payload]">
+			<os:retrieve doc:name="Retrieve"
+				doc:id="bc3c748e-eb30-449c-9ef7-d2db76a9f6a3" key="#[payload]"
+				targetValue="#[output application/json --- payload]"
+				objectStore="errorHospitalStore">
+				<os:default-value><![CDATA[#[""]]]></os:default-value>
 			</os:retrieve>
-			<choice doc:name="Choice" doc:id="2f02e11e-2a33-4272-9616-146d63d9c18f" >
+			<choice doc:name="Choice"
+				doc:id="2f02e11e-2a33-4272-9616-146d63d9c18f">
 				<when expression="#[!isEmpty(payload)]">
-					<set-variable value="#[vars.results default [] ++ [payload]]" doc:name="results" doc:id="f376b337-4ef4-4219-b54b-baca8dcd7565" variableName="results" />
+					<set-variable
+						value="#[vars.results default [] ++ [payload]]" doc:name="results"
+						doc:id="f376b337-4ef4-4219-b54b-baca8dcd7565"
+						variableName="results" />
 				</when>
 			</choice>
 		</foreach>
-		<set-payload value="#[vars.results default []]" doc:name="Set Payload" doc:id="8fdbc067-7ec3-40a0-9104-90b54286cfbb" />
-		<logger level="INFO" doc:name="INFO" doc:id="a927e05a-5f3b-4156-b9e6-67ec105548a4" message='#["retrieveRecordsFromErrorHospitalByIdSubflow exit"]' />
+		<set-payload value="#[vars.results default []]"
+			doc:name="Set Payload" doc:id="8fdbc067-7ec3-40a0-9104-90b54286cfbb" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="a927e05a-5f3b-4156-b9e6-67ec105548a4"
+			message='#["retrieveRecordsFromErrorHospitalByIdSubflow exit"]' />
 	</sub-flow>
-	<flow name="sendRecordsToErrorHospitalFlow" doc:id="f6b7e9e0-d28c-458d-bc32-2290e5aecf20" >
-		<vm:listener doc:name="Listener" doc:id="8e76e61d-a23d-4d3f-8498-071c3f1ab7e2" queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig"/>
-		<logger level="INFO" doc:name="INFO" doc:id="97a85676-f8de-4487-a322-bb64c70a4afc" message='#["sendRecordsToErrorHospitalFlow entry"]' />
-		<foreach doc:name="For Each" doc:id="95b30bf5-1e86-4bfd-9b75-013cfe8acfca" collection="#[payload]">
-			<os:store doc:name="Store" doc:id="951d0f67-20a4-430a-acec-7a6125bd2726" key="#[payload.recordId]" objectStore="errorHospitalStore"/>
+	<flow name="sendRecordsToErrorHospitalFlow"
+		doc:id="f6b7e9e0-d28c-458d-bc32-2290e5aecf20">
+		<vm:listener doc:name="Listener"
+			doc:id="8e76e61d-a23d-4d3f-8498-071c3f1ab7e2"
+			queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="97a85676-f8de-4487-a322-bb64c70a4afc"
+			message='#["sendRecordsToErrorHospitalFlow entry"]' />
+		<foreach doc:name="For Each"
+			doc:id="95b30bf5-1e86-4bfd-9b75-013cfe8acfca" collection="#[payload]">
+			<os:store doc:name="Store"
+				doc:id="951d0f67-20a4-430a-acec-7a6125bd2726"
+				key="#[payload.recordId]" objectStore="errorHospitalStore" />
 		</foreach>
-		<logger level="INFO" doc:name="INFO" doc:id="87d0f4f1-3f9f-4f03-a769-f20ace53b496" message='#["sendRecordsToErrorHospitalFlow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="87d0f4f1-3f9f-4f03-a769-f20ace53b496"
+			message='#["sendRecordsToErrorHospitalFlow exit"]' />
 		<error-handler ref="errorHospitalErrorHandler" />
 	</flow>
-	<flow name="deleteRecordsFromErrorHospitalFlow" doc:id="a3dd340a-bfa6-4c27-8045-c8cd648179c0" >
-		<vm:listener queueName="${vm.errHsptlRecordDelete}" doc:name="Listener" doc:id="1ff36264-896f-42ad-af6f-d4c772fef154" config-ref="vmConfig"/>
-		<logger level="INFO" doc:name="INFO" doc:id="94e22b66-0c6b-432c-89e5-1166601eff34" message='#["deleteRecordsFromErrorHospitalFlow entry"]' />
-		<foreach doc:name="For Each" doc:id="df823397-6ad3-4c9e-a87c-397a9d714e46" collection="#[payload]" >
-			<os:remove doc:name="Remove" doc:id="1dcde617-e778-468b-93a3-85a17d85501e" key="#[payload]" objectStore="errorHospitalStore"/>
+	<flow name="deleteRecordsFromErrorHospitalFlow"
+		doc:id="a3dd340a-bfa6-4c27-8045-c8cd648179c0">
+		<vm:listener queueName="${vm.errHsptlRecordDelete}"
+			doc:name="Listener" doc:id="1ff36264-896f-42ad-af6f-d4c772fef154"
+			config-ref="vmConfig" />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="94e22b66-0c6b-432c-89e5-1166601eff34"
+			message='#["deleteRecordsFromErrorHospitalFlow entry"]' />
+		<foreach doc:name="For Each"
+			doc:id="df823397-6ad3-4c9e-a87c-397a9d714e46" collection="#[payload]">
+			<os:remove doc:name="Remove"
+				doc:id="1dcde617-e778-468b-93a3-85a17d85501e" key="#[payload]"
+				objectStore="errorHospitalStore" />
 		</foreach>
-		<logger level="INFO" doc:name="INFO" doc:id="4820a361-9d55-49d3-988f-72f50ca6260c" message='#["deleteRecordsFromErrorHospitalFlow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="4820a361-9d55-49d3-988f-72f50ca6260c"
+			message='#["deleteRecordsFromErrorHospitalFlow exit"]' />
 	</flow>
 </mule>

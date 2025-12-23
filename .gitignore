@@ -87,3 +87,5 @@ __pycache__/
 *.pyc
 
 /bin/
+
+.tooling-project

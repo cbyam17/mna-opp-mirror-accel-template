@@ -17,15 +17,6 @@ fun buildPingResponse(endpointResponses) =
 		"endpoint": endpointResponses default []
 	}
 
-fun getCurrentDateTimeAsWatermark() =
-	do {
-		var bufferSeconds = (Mule::p("target.bufferSeconds") as Number default 0)
-		var retrieveBufferSeconds = if (bufferSeconds >0) ("PT$(bufferSeconds)S" as Period) else 0
-		var currentDateTimeWatermark = if (retrieveBufferSeconds > 0) (now() - retrieveBufferSeconds) else (now())
-		---
-		currentDateTimeWatermark as DateTime { format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" } >> "UTC"
-	}
-
 fun appendZIfNeeded(dateTimeStr) =
 	if (!isEmpty(dateTimeStr))
 		if (endsWith(dateTimeStr, "Z")) dateTimeStr
