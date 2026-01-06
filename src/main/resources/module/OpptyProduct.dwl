@@ -4,17 +4,17 @@ import * from module::CommonUtil
 
 fun buildQueryOpptyProductFromSourceByOpptyId(ids) =
     {
-        query: "SELECT Id, Target_Oppty_Product_Id__c, PricebookEntryId, OpportunityId, UnitPrice, Quantity FROM OpportunityLineItem WHERE OpportunityId IN (" ++ generateIdInClause(ids) ++ ")",
+        query: 'SELECT Id, Target_Oppty_Product_Id__c, PricebookEntryId, OpportunityId, UnitPrice, Quantity FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(ids) ++ ')',
         queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-            (("idArg") ++ index): item
+            (('idArg') ++ index): item
         }) reduce ((item, accumulator = {}) -> item ++ accumulator)
     }
 
 fun buildQueryOpptyProductFromTargetByOpptyId(ids) =
     {
-        query: "SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Acquisition_Oppty_Id__c FROM OpportunityLineItem WHERE OpportunityId IN (" ++ generateIdInClause(ids) ++ ")",
+        query: 'SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Acquisition_Oppty_Id__c FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(ids) ++ ')',
         queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-            (("idArg") ++ index): item
+            (('idArg') ++ index): item
         }) reduce ((item, accumulator = {}) -> item ++ accumulator)
     }
 
@@ -64,17 +64,17 @@ fun transformTargetOpptyProductUpdate(data, targetOpptyProductsToUpdate) =
 })
 
 fun getTargetPbEntryIdBySourcePbEntryId(sourcePbEntryId) =
-    if (sourcePbEntryId == Mule::p("source.pbEntryId.productA")) Mule::p("target.pbEntryId.productA")
-    else if (sourcePbEntryId == Mule::p("source.pbEntryId.productB")) Mule::p("target.pbEntryId.productB")
-    else if (sourcePbEntryId == Mule::p("source.pbEntryId.productC")) Mule::p("target.pbEntryId.productC")
-     else if (sourcePbEntryId == Mule::p("source.pbEntryId.productD")) Mule::p("target.pbEntryId.productD")
+    if (sourcePbEntryId == Mule::p('source.pbEntryId.productA')) Mule::p('target.pbEntryId.productA')
+    else if (sourcePbEntryId == Mule::p('source.pbEntryId.productB')) Mule::p('target.pbEntryId.productB')
+    else if (sourcePbEntryId == Mule::p('source.pbEntryId.productC')) Mule::p('target.pbEntryId.productC')
+     else if (sourcePbEntryId == Mule::p('source.pbEntryId.productD')) Mule::p('target.pbEntryId.productD')
     else null
 
 fun getSourcePbEntryIdByTargetPbEntryId(targetPbEntryId) =
-    if (targetPbEntryId == Mule::p("target.pbEntryId.productA")) Mule::p("source.pbEntryId.productA")
-    else if (targetPbEntryId == Mule::p("target.pbEntryId.productB")) Mule::p("source.pbEntryId.productB")
-    else if (targetPbEntryId == Mule::p("target.pbEntryId.productC")) Mule::p("source.pbEntryId.productC")
-    else if (targetPbEntryId == Mule::p("target.pbEntryId.productD")) Mule::p("source.pbEntryId.productD")
+    if (targetPbEntryId == Mule::p('target.pbEntryId.productA')) Mule::p('source.pbEntryId.productA')
+    else if (targetPbEntryId == Mule::p('target.pbEntryId.productB')) Mule::p('source.pbEntryId.productB')
+    else if (targetPbEntryId == Mule::p('target.pbEntryId.productC')) Mule::p('source.pbEntryId.productC')
+    else if (targetPbEntryId == Mule::p('target.pbEntryId.productD')) Mule::p('source.pbEntryId.productD')
     else null
 
 fun transformWritebackSourceOpptyProduct(data) =

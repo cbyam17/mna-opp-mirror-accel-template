@@ -5,7 +5,7 @@ import * from module::CommonUtil
 fun buildQueryOpptyFromSourceByDate(fromLastRunDateTime, toLastRunDateTime) =
 	{
 		//adjust fields as needed
-		query: "SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE Target_Mirror_Scope__c = true and ((Target_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and Target_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime) or Target_Mirror_Error__c != null)",
+		query: 'SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE Target_Mirror_Scope__c = true and ((Target_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and Target_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime) or Target_Mirror_Error__c != null)',
 		queryParams: {
 			watermarkLastRunDateTime: fromLastRunDateTime,
 			watermarkCurrentRunDateTime: toLastRunDateTime
@@ -15,17 +15,17 @@ fun buildQueryOpptyFromSourceByDate(fromLastRunDateTime, toLastRunDateTime) =
 fun buildQueryOpptyFromSourceById(ids) =
 	{
 		//adjust fields as needed
-		query: "SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE ID IN (" ++ generateIdInClause(ids) ++ ")",
+		query: 'SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE ID IN (' ++ generateIdInClause(ids) ++ ')',
 		queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-			(("idArg") ++ index): item
+			(('idArg') ++ index): item
 		}) reduce ((item, accumulator = {}) -> item ++ accumulator)
 	}
 
 fun buildQueryOpptyFromTargetByExternalId(ids) =
 	{
-		query: "SELECT Id, Acquisition_Oppty_Id__c FROM Opportunity WHERE Acquisition_Oppty_Id__c IN (" ++ generateIdInClause(ids) ++ ")",
+		query: 'SELECT Id, Acquisition_Oppty_Id__c FROM Opportunity WHERE Acquisition_Oppty_Id__c IN (' ++ generateIdInClause(ids) ++ ')',
 		queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-			(("idArg") ++ index): item
+			(('idArg') ++ index): item
 		}) reduce ((item, accumulator = {}) -> item ++ accumulator)
 	}
 
@@ -34,9 +34,9 @@ fun transformTargetOpptyUpdate(data) =
 		var transformedData = {
 			AccountId: item.Account.Target_Acct_Id__c,
 			Acquisition_Oppty_Id__c: item.Id,
-			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: "yyyy-MM-dd" } else null,
+			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: 'yyyy-MM-dd' } else null,
 			Id: (item.existingTargetOpptyRecords filter ($.Acquisition_Oppty_Id__c == item.Id))[0].Id,
-			Name: if (!isEmpty(item.Name)) "SOURCE - " ++ item.Name else null,
+			Name: if (!isEmpty(item.Name)) 'SOURCE - ' ++ item.Name else null,
 			StageName: item.StageName
 			//additional fields can be added here
 		}
@@ -51,8 +51,8 @@ fun transformTargetOpptyCreate(data) =
 		var transformedData = {
 			AccountId: item.Account.Target_Acct_Id__c,
 			Acquisition_Oppty_Id__c: item.Id,
-			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: "yyyy-MM-dd" } else null,
-			Name: if (!isEmpty(item.Name)) "SOURCE - " ++ item.Name else null,
+			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: 'yyyy-MM-dd' } else null,
+			Name: if (!isEmpty(item.Name)) 'SOURCE - ' ++ item.Name else null,
 			StageName: item.StageName
 			//additional fields can be added here
 		}

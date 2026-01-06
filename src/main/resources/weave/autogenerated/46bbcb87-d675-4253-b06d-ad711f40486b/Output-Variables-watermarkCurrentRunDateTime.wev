@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_46bbcb87_d675_4253_b06d_ad711f40486b_Output_Variables_watermarkCurrentRunDateTime = Any
+
