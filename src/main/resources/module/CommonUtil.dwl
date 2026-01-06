@@ -29,5 +29,8 @@ fun generateIdInClause(ids) =
 fun buildFieldsToNull(data) =
 	data pluck ((value, key, index) -> (if(isEmpty(value)) key else null)) default [] filter ((item, index) -> !isEmpty(item)) default []
 
-fun getTargetOpptyProductErrorMessages(targetOpptyProductResponses) =
-	targetOpptyProductResponses default [] filter (!$.success) map ((item, index) -> item.errors[0].message) joinBy "; "
+fun getOpptyProductErrorMessages(opptyProductResponses) =
+	opptyProductResponses default [] filter (!$.success) map ((item, index) -> item.errors[0].message) joinBy "; "
+
+fun getOpptyProductErrorStatusCodes(opptyProductResponses) =
+	opptyProductResponses default [] filter (!$.success) map ((item, index) -> item.errors[0].statusCode) joinBy "; "

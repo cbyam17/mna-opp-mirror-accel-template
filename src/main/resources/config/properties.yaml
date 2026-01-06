@@ -2,7 +2,7 @@ batch:
   aggregatorSize: "100"
 errHsptl:
   maxRetries: "5"
-  retrieveLimit: "200"
+  retrieveLimit: "100"
 orgName: "MNA-Tech"
 projectName: "mna-oppty-mirroring-accelerator"
 scheduler:
@@ -27,9 +27,7 @@ target:
     productC: "01ugL0000020n62QAA"
     productD: "01ugL000002193JQAQ"
 vm:
-  errHsptlRecordCreate: "errorHospitaRecordCreateRequest"
-  errHsptlRecordDelete: "errorHospitaRecordDeleteRequest"
-  sourceOpptyProductWriteback: "sourceOpptyProductWritebackRequest"
-  sourceOpptyWriteback: "sourceOpptyWritebackRequest"
+  errHsptlRecordCreate: "errHsptlRecordCreateRequest"
+  errHsptlRecordDelete: "errHsptlRecordDeleteRequest"
 watermark:
   timezone: "GMT"

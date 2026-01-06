@@ -22,8 +22,6 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<vm:queues>
 			<vm:queue queueName="${vm.errHsptlRecordDelete}" />
 			<vm:queue queueName="${vm.errHsptlRecordCreate}" />
-			<vm:queue queueName="${vm.sourceOpptyWriteback}" />
-			<vm:queue queueName="${vm.sourceOpptyProductWriteback}" />
 		</vm:queues>
 	</vm:config>
 	<configuration-properties
@@ -68,7 +66,4 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<http:listener-connection host="0.0.0.0"
 			port="8081" />
 	</http:listener-config>
-	<global-property doc:name="Global Property"
-		doc:id="7d55d8ee-a47d-4ec6-94b5-40c24a1d266a" name="mule.key"
-		value="accelerator12345" />
 </mule>

@@ -78,17 +78,15 @@ fun getSourcePbEntryIdByTargetPbEntryId(targetPbEntryId) =
     else null
 
 fun transformWritebackSourceOpptyProduct(data) =
-    data default [] map ((item, index) -> do {
-        item.sourceOpptyProductRecords default [] map ((item1, index1) -> do {
-            var transformedData = {
-                Id: item1.Id,
-                Target_Oppty_Product_Id__c: if (!isEmpty(item1.Target_Oppty_Product_Id__c)) item1.Target_Oppty_Product_Id__c
-                    else if (!isEmpty(item.targetOpptyProductResponses[index1].id)) item.targetOpptyProductResponses[index1].id
-                    else null
+    data.sourceOpptyProductRecords default [] map ((item, index) -> do {
+        var transformedData = {
+            Id: item.Id,
+            Target_Oppty_Product_Id__c: if (!isEmpty(item.Target_Oppty_Product_Id__c)) item.Target_Oppty_Product_Id__c
+                else if (!isEmpty(data.targetOpptyProductResponses[index].id)) data.targetOpptyProductResponses[index].id
+                else null
             }
-            var fieldsToNull = buildFieldsToNull(transformedData)
-            ---
-            if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-            else transformedData
+        var fieldsToNull = buildFieldsToNull(transformedData)
+        ---
+        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
+        else transformedData
     })
-})

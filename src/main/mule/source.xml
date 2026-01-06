@@ -97,38 +97,48 @@ payload.queryParams]]]></salesforce:parameters>
 			doc:id="386caf2b-799d-4562-8965-967ec6fc931d"
 			message='#["retrieveOpptyProductFromSourceByOpptyIdSubflow entry"]' />
 	</sub-flow>
-	<flow name="writebackOpptyToSourceFlow"
-		doc:id="666d80bd-19d9-4b55-968f-77a04a930c16">
-		<vm:listener doc:name="Listener"
-			doc:id="21178f0c-9c09-4344-a951-99fae7fe0868"
-			queueName="${vm.sourceOpptyWriteback}" config-ref="vmConfig" />
+	<sub-flow name="writebackOpptyToSourceSubflow"
+		doc:id="c6454e33-9c49-4919-8198-38ca6db14089">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="45cdc864-e93c-49c0-b03c-c18a19b113b7"
-			message='#["writebackOpptyToSourceFlow entry"]' />
+			message='#["writebackOpptyToSourceSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="1da53f08-8dba-4f36-beb3-c92eba2845a5">
+			<ee:message>
+				<ee:set-payload><![CDATA[import transformWritebackSourceOppty from module::Oppty
+output application/java
+---
+transformWritebackSourceOppty(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<salesforce:update type="Opportunity"
 			doc:name="Update Oppty records"
 			doc:id="2ded158b-3d56-4be6-abca-d02eecf27394"
 			config-ref="sourceSalesforceConfig" />
 		<logger level="INFO" doc:name="INFO"
 			doc:id="da247e91-c744-4b59-8382-8be8b5b7709e"
-			message='#["writebackOpptyToSourceFlow exit"]' />
-		<error-handler ref="sourceWritebackErrorHandler" />
-	</flow>
-	<flow name="writebackOpptyProductToSourceFlow"
-		doc:id="0bd25672-9d43-44ae-98fd-dcf5382f3384">
-		<vm:listener doc:name="Listener"
-			doc:id="2c3ee1e7-7f84-4a4e-a546-0e1255e124eb"
-			queueName="${vm.sourceOpptyProductWriteback}" config-ref="vmConfig" />
+			message='#["writebackOpptyToSourceSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="writebackOpptyProductToSourceSubflow"
+		doc:id="46bbcb87-d675-4253-b06d-ad711f40486b">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="918f1c9f-ce59-4e77-bd90-41d7cd04cd3d"
-			message='#["writebackOpptyProductToSourceFlow entry"]' />
+			message='#["writebackOpptyProductToSourceSubflow entry"]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="3a967c7b-6c2b-4f68-a4ab-c026324f6845">
+			<ee:message>
+				<ee:set-payload><![CDATA[import transformWritebackSourceOpptyProduct from module::OpptyProduct
+output application/java
+---
+flatten(transformWritebackSourceOpptyProduct(payload))]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<salesforce:update type="OpportunityLineItem"
 			doc:name="Update OpptyProduct records"
 			doc:id="e9236b75-f9bb-48fa-82c6-11dfebd407b7"
 			config-ref="sourceSalesforceConfig" />
 		<logger level="INFO" doc:name="INFO"
 			doc:id="81c802c0-2e27-4c6b-85ac-b9e36431e21c"
-			message='#["writebackOpptyProductToSourceFlow exit"]' />
-		<error-handler ref="sourceWritebackErrorHandler" />
-	</flow>
+			message='#["writebackOpptyProductToSourceSubflow exit"]' />
+	</sub-flow>
 </mule>

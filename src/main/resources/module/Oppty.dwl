@@ -70,7 +70,7 @@ fun transformWritebackSourceOppty(data) =
 				else if (!isEmpty(item.targetOpptyResponse.id)) item.targetOpptyResponse.id
 				else null,
 			Target_Mirror_Error__c: if (!item.targetOpptyResponse.success) item.targetOpptyResponse.errors[0].message
-				else if (item.targetOpptyProductResponses.success contains false) getTargetOpptyProductErrorMessages(item.targetOpptyProductResponses)
+				else if (item.targetOpptyProductResponses.success contains false) getOpptyProductErrorMessages(item.targetOpptyProductResponses)
 				else null
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)

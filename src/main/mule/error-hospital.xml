@@ -52,14 +52,11 @@ buildRetrieveRecordsFromErrorHospitalByIdRequest(payload)]]></ee:set-payload>
 			doc:id="a927e05a-5f3b-4156-b9e6-67ec105548a4"
 			message='#["retrieveRecordsFromErrorHospitalByIdSubflow exit"]' />
 	</sub-flow>
-	<flow name="sendRecordsToErrorHospitalFlow"
-		doc:id="f6b7e9e0-d28c-458d-bc32-2290e5aecf20">
-		<vm:listener doc:name="Listener"
-			doc:id="8e76e61d-a23d-4d3f-8498-071c3f1ab7e2"
-			queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig" />
+	<sub-flow name="sendRecordsToErrorHospitalSubflow"
+		doc:id="54c04c48-f629-4cf0-9da8-9d94d0106a7d">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="97a85676-f8de-4487-a322-bb64c70a4afc"
-			message='#["sendRecordsToErrorHospitalFlow entry"]' />
+			message='#["sendRecordsToErrorHospitalSubflow entry"]' />
 		<foreach doc:name="For Each"
 			doc:id="95b30bf5-1e86-4bfd-9b75-013cfe8acfca" collection="#[payload]">
 			<os:store doc:name="Store"
@@ -68,17 +65,13 @@ buildRetrieveRecordsFromErrorHospitalByIdRequest(payload)]]></ee:set-payload>
 		</foreach>
 		<logger level="INFO" doc:name="INFO"
 			doc:id="87d0f4f1-3f9f-4f03-a769-f20ace53b496"
-			message='#["sendRecordsToErrorHospitalFlow exit"]' />
-		<error-handler ref="errorHospitalErrorHandler" />
-	</flow>
-	<flow name="deleteRecordsFromErrorHospitalFlow"
-		doc:id="a3dd340a-bfa6-4c27-8045-c8cd648179c0">
-		<vm:listener queueName="${vm.errHsptlRecordDelete}"
-			doc:name="Listener" doc:id="1ff36264-896f-42ad-af6f-d4c772fef154"
-			config-ref="vmConfig" />
+			message='#["sendRecordsToErrorHospitalSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="deleteRecordsFromErrorHospitalSubflow"
+		doc:id="56740b30-4ef3-4949-b3a4-beb5cb621dd5">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="94e22b66-0c6b-432c-89e5-1166601eff34"
-			message='#["deleteRecordsFromErrorHospitalFlow entry"]' />
+			message='#["deleteRecordsFromErrorHospitalSubflow entry"]' />
 		<foreach doc:name="For Each"
 			doc:id="df823397-6ad3-4c9e-a87c-397a9d714e46" collection="#[payload]">
 			<os:remove doc:name="Remove"
@@ -87,6 +80,6 @@ buildRetrieveRecordsFromErrorHospitalByIdRequest(payload)]]></ee:set-payload>
 		</foreach>
 		<logger level="INFO" doc:name="INFO"
 			doc:id="4820a361-9d55-49d3-988f-72f50ca6260c"
-			message='#["deleteRecordsFromErrorHospitalFlow exit"]' />
-	</flow>
+			message='#["deleteRecordsFromErrorHospitalSubflow exit"]' />
+	</sub-flow>
 </mule>

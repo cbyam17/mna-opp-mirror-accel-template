@@ -10,17 +10,51 @@ fun buildSendErrorRecordsToErrorHospitalRequest(data, transactionId) =
     data default [] map ((item, index) -> {
         recordId: item.Id,
         transactionId: transactionId, 
-        error: {
-            errorType: if (!item.targetOpptyResponse.success) 'TARGET_OPPTY_MIRROR_FAILURE'
-                else if (item.targetOpptyProductResponses.success contains false) 'TARGET_OPPTY_PRODUCT_MIRROR_FAILURE'
-                else 'UNKNOWN_ERROR',
-            errorMessage: if (!item.targetOpptyResponse.success) item.targetOpptyResponse.errors[0].message
-                else if (item.targetOpptyProductResponses.success contains false) getTargetOpptyProductErrorMessages(item.targetOpptyProductResponses)
-                else 'No error message available',
-            //always true for demo purposes; update as needed
-            //isRetryable: true,
-            //maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
-        }
+        error: if (!item.targetOpptyResponse.success)
+            {
+                errorType: item.targetOpptyResponse.errors[0].statusCode,
+                errorMessage: item.targetOpptyResponse.errors[0].message,
+                description: 'Target oppty mirror failure',
+                //always true for demo purposes; update as needed
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+            }
+            else if (item.targetOpptyProductResponses.success contains false)
+            {
+                errorType: getOpptyProductErrorStatusCodes(item.targetOpptyProductResponses),
+                errorMessage: getOpptyProductErrorMessages(item.targetOpptyProductResponses),
+                description: 'Target oppty product mirror failure',
+                //always true for demo purposes; update as needed
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+            }
+            else if (!item.sourceOpptyResponse.success)
+            {
+                errorType: item.sourceOpptyResponse.errors[0].statusCode,
+                errorMessage: item.sourceOpptyResponse.errors[0].message,
+                description: 'Source oppty writeback failure',
+                //always true for demo purposes; update as needed
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+            }
+            else if (item.sourceOpptyProductResponses.success contains false)
+            {
+                errorType: getOpptyProductErrorStatusCodes(item.sourceOpptyProductResponses),
+                errorMessage: getOpptyProductErrorMessages(item.sourceOpptyProductResponses),
+                description: 'Source oppty product writeback failure',
+                //always true for demo purposes; update as needed
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+            }
+            else 
+            {
+                errorType: 'UNKNOWN_ERROR',
+                errorMessage: 'An unknown error occurred.',
+                description: 'Unknown failure during processing',
+                //always true for demo purposes; update as needed
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+            }
     })
 
 fun buildSendFailedRecordsToErrorHospitalRequest(data, transactionId) =    
@@ -31,12 +65,12 @@ fun buildSendFailedRecordsToErrorHospitalRequest(data, transactionId) =
             recordId: item.Id,
             transactionId: transactionId, 
             error: {
-                //error details tbd
                 errorType: errorData.errorType,
                 errorMessage: errorData.errorMessage,
+                description: 'Batch processing failure',
                 //always true for demo purposes; update as needed
-                //isRetryable: true,
-                //maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
+                isRetryable: true,
+                maxRetries: Mule::p('errHsptl.maxRetries') as Number default 5
             }
         }
     })

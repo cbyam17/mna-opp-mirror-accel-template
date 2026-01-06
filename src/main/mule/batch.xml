@@ -252,39 +252,42 @@ else payload ++ { targetOpptyProductResponses: (payload.targetOpptyProductRespon
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="773f58e9-fa2f-4a65-a148-8fab7ee875ec"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<vm:publish doc:name="Publish"
-							doc:id="0b40dd68-fb44-4091-b55a-f77e4ba576de"
-							queueName="${vm.sourceOpptyWriteback}" config-ref="vmConfig"
-							sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
-							<vm:content><![CDATA[#[import transformWritebackSourceOppty from module::Oppty
-output application/java
----
-transformWritebackSourceOppty(payload)]]]></vm:content>
-						</vm:publish>
+						<flow-ref doc:name="writebackOpptyToSourceSubflow"
+							doc:id="dae08b97-4aed-4e91-b0af-b547be519cf7"
+							name="writebackOpptyToSourceSubflow" target="sourceOpptyResponse"
+							targetValue="#[output application/json --- payload.items.payload]" />
+						<foreach doc:name="For Each"
+							doc:id="5322da8f-5adf-4ee4-b99c-3691c23a5a71">
+							<scripting:execute engine="groovy"
+								doc:name="Add sourceOpptyResponse to record payload"
+								doc:id="f147ccaa-2c55-4e66-a3d2-4b79c1c8c82c">
+								<scripting:code><![CDATA[vars['record'].payload.sourceOpptyResponse = sourceOpptyResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[do {
+	var filteredOpptyResponse = vars.sourceOpptyResponse[vars.counter-1] default {} 
+	---
+	{ sourceOpptyResponse: filteredOpptyResponse }
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
 					</batch:aggregator>
 				</batch:step>
 				<batch:step
 					name="step10_writebackOpptyProductRecordsToSource"
 					doc:id="0528f0fd-4d0b-44b5-a53b-df403ec303b2"
 					acceptExpression="#[!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success and !isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="3dc50401-5193-4814-8161-d4a2f64ec4c2"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<vm:publish doc:name="Publish"
-							doc:id="0c602245-8cca-47f8-bb56-f5ac3a1e9907"
-							queueName="${vm.sourceOpptyProductWriteback}"
-							config-ref="vmConfig" sendCorrelationId="ALWAYS"
-							correlationId="#[correlationId]">
-							<vm:content><![CDATA[#[import transformWritebackSourceOpptyProduct from module::OpptyProduct
-output application/java
----
-flatten(transformWritebackSourceOpptyProduct(payload))]]]></vm:content>
-						</vm:publish>
-					</batch:aggregator>
+					<flow-ref doc:name="writebackOpptyProductToSourceSubflow"
+						doc:id="93df7433-900f-41a3-bdd7-ffb4b065c237"
+						name="writebackOpptyProductToSourceSubflow"
+						target="sourceOpptyProductResponses"
+						targetValue="#[output application/json --- payload.items.payload]" />
+					<set-payload
+						value="#[%dw 2.0&#10;output application/java&#10;---&#10;payload ++ { sourceOpptyProductResponses: vars.sourceOpptyProductResponses default [] }]"
+						doc:name="Add sourceOpptyProductResponses to record payload"
+						doc:id="dede8425-1e0f-40df-a364-27cc1dbf83a1" />
 				</batch:step>
 				<batch:step name="step11_sendErrorRecordsToErrorHospital"
 					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103"
-					acceptExpression="#[(!isEmpty(payload.targetOpptyResponse) and !payload.targetOpptyResponse.success) or (!isEmpty(payload.targetOpptyProductResponses) and (payload.targetOpptyProductResponses.success contains false))]">
+					acceptExpression="#[(!isEmpty(payload.targetOpptyResponse) and !payload.targetOpptyResponse.success) or (!isEmpty(payload.targetOpptyProductResponses) and (payload.targetOpptyProductResponses.success contains false)) or (!isEmpty(payload.sourceOpptyResponse) and !payload.sourceOpptyResponse.success) or (!isEmpty(payload.sourceOpptyProductResponses) and (payload.sourceOpptyProductResponses.success contains false))]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="9991eb19-ca4e-4525-bc82-284d54679510"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
@@ -301,7 +304,7 @@ buildSendErrorRecordsToErrorHospitalRequest(payload, correlationId)]]]></vm:cont
 				</batch:step>
 				<batch:step name="step13_handleSuccessForRetryRecords"
 					doc:id="286946a8-3c81-4ae6-bdc6-2d3f3daee349"
-					acceptExpression="#[(!isEmpty(vars.isRetryJob) and vars.isRetryJob) and (!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success) and (!isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false))]">
+					acceptExpression="#[(!isEmpty(vars.isRetryJob) and vars.isRetryJob) and !isEmpty(payload.existingErrorHospitalRecords) and (!isEmpty(payload.targetOpptyResponse) and payload.targetOpptyResponse.success) and (!isEmpty(payload.targetOpptyProductResponses) and !(payload.targetOpptyProductResponses.success contains false)) and (!isEmpty(payload.sourceOpptyResponse) and payload.sourceOpptyResponse.success) and (!isEmpty(payload.sourceOpptyProductResponses) and !(payload.sourceOpptyProductResponses.success contains false))]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="517ca65b-1e52-4c22-bb9b-a8872fe879f7"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">

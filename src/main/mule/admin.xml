@@ -1,23 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+<mule
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
-	<sub-flow name="adminReprocessSubflow" doc:id="68073e7a-a716-42b9-a6a2-186f69245812" >
-		<logger level="INFO" doc:name="INFO" doc:id="92b4dd64-47c9-4b46-99ca-5a241ae857ba" message='#["adminReprocessSubflow entry"]'/>
-		<flow-ref doc:name="validateAdminRequestSubflow" doc:id="3fac6f97-f6cd-48df-a90f-9004e6e6f1ce" name="validateAdminRequestSubflow"/>
-		<flow-ref doc:name="pingSubflow" doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169" name="pingSubflow" target="pingResponse" targetValue="#[output applicatin/json --- payload]"/>
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="a22a6731-a29c-453c-b57e-e0724eed181a" message='#["Connectivity status response: " ++ write(vars.pingResponse,"application/json")]' />
-		<choice doc:name="Choice" doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7" >
+	<sub-flow name="adminReprocessSubflow"
+		doc:id="68073e7a-a716-42b9-a6a2-186f69245812">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="92b4dd64-47c9-4b46-99ca-5a241ae857ba"
+			message='#["adminReprocessSubflow entry"]' />
+		<flow-ref doc:name="validateAdminRequestSubflow"
+			doc:id="3fac6f97-f6cd-48df-a90f-9004e6e6f1ce"
+			name="validateAdminRequestSubflow" />
+		<flow-ref doc:name="pingSubflow"
+			doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169" name="pingSubflow"
+			target="pingResponse"
+			targetValue="#[output applicatin/json --- payload]" />
+		<logger level="DEBUG" doc:name="DEBUG"
+			doc:id="a22a6731-a29c-453c-b57e-e0724eed181a"
+			message='#["Connectivity status response: " ++ write(vars.pingResponse,"application/json")]' />
+		<choice doc:name="Choice"
+			doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7">
 			<when expression='#[vars.pingResponse.status == "UP"]'>
-				<async doc:name="Async" doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5" >
-					<flow-ref doc:name="processAdminSubflow" doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b" name="processAdminSubflow"/>
+				<async doc:name="Async"
+					doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5">
+					<flow-ref doc:name="processAdminSubflow"
+						doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b"
+						name="processAdminSubflow" />
 				</async>
-				<ee:transform doc:name="Transform Message" doc:id="16ca052e-40c7-4a0e-b6ed-0a7412715f96" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+				<ee:transform doc:name="Transform Message"
+					doc:id="16ca052e-40c7-4a0e-b6ed-0a7412715f96">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -28,11 +47,14 @@ output application/json
 					</ee:message>
 				</ee:transform>
 			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="INFO" doc:id="5851832c-6ba3-4493-aa9f-67fd183aabba" message='#["At least one connection is unsuccessful; cannot proceed"]' />
-				<ee:transform doc:name="Transform Message" doc:id="bbf176a5-569f-4c82-9a19-1b8a26172076" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="5851832c-6ba3-4493-aa9f-67fd183aabba"
+					message='#["At least one connection is unsuccessful; cannot proceed"]' />
+				<ee:transform doc:name="Transform Message"
+					doc:id="bbf176a5-569f-4c82-9a19-1b8a26172076">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -45,9 +67,16 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="INFO" doc:id="8af4619f-ce37-445f-bfa1-7ad5ebe6bc55" message='#["adminReprocessSubflow exit"]' />
+		<logger level="INFO" doc:name="INFO"
+			doc:id="8af4619f-ce37-445f-bfa1-7ad5ebe6bc55"
+			message='#["adminReprocessSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="validateAdminRequestSubflow" doc:id="08f9728b-f525-4c6a-8830-dee3b5f9942c" >
-		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="0270c6a1-6416-437a-8675-efac45f212e2" values="#[payload.externalIds]" message='#["Provide externalIds to process"]'/>
+	<sub-flow name="validateAdminRequestSubflow"
+		doc:id="08f9728b-f525-4c6a-8830-dee3b5f9942c">
+		<validation:is-not-empty-collection
+			doc:name="Is not empty collection"
+			doc:id="0270c6a1-6416-437a-8675-efac45f212e2"
+			values="#[payload.externalIds]"
+			message='#["Provide externalIds to process"]' />
 	</sub-flow>
 </mule>
