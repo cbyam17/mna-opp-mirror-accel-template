@@ -14,23 +14,20 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 	<sub-flow name="pingSubflow"
 		doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="48be869d-0c7d-4213-b95b-e74271139be4"
-			message='#["pingSubflow entry"]' />
-		<flow-ref doc:name="validateTargetConnectionSubflow"
+		<flow-ref doc:name="validateSalesforceConnectionSubflow_TGT"
 			doc:id="fd426013-379a-465b-855e-2fafdf45270e"
-			name="validateTargetConnectionSubflow" target="valTargetConnResp" />
-		<flow-ref doc:name="validateSourceConnectionSubflow"
+			name="validateSalesforceConnectionSubflow_TGT" target="SalesforceConnResp_TGT" />
+		<flow-ref doc:name="validateSalesforceConnectionSubflow_SRC"
 			doc:id="ab037f45-e63d-4572-a941-325618760981"
-			name="validateSourceConnectionSubflow" target="valSourceConnResp" />
-		<flow-ref doc:name="validateErrorHospitalConnectionSubflow"
+			name="validateSalesforceConnectionSubflow_SRC" target="SalesforceConnResp_SRC" />
+		<flow-ref doc:name="validateErrHstplConnectionSubflow"
 			doc:id="5ad85ba7-01fd-4b5b-ae99-4aff25d3a947"
-			name="validateErrorHospitalConnectionSubflow"
-			target="valErrHospConnResp" />
+			name="validateErrHstplConnectionSubflow"
+			target="ErrHsptlConnResp" />
 		<flow-ref doc:name="validateWatermarkConnectionSubflow"
 			doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380"
 			name="validateWatermarkConnectionSubflow"
-			target="valWatermarkConnResp" />
+			target="watermarkConnResp" />
 		<ee:transform doc:name="Transform Message"
 			doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
 			<ee:message>
@@ -38,62 +35,44 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 output application/json
 import buildPingResponse from module::CommonUtil
 ---
-buildPingResponse(vars.valTargetConnResp ++ vars.valSourceConnResp ++ vars.valErrHospConnResp ++ vars.valWatermarkConnResp)]]></ee:set-payload>
+buildPingResponse(vars.SalesforceConnResp_TGT ++ vars.SalesforceConnResp_SRC ++ vars.ErrHsptlConnResp ++ vars.watermarkConnResp)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="f3abb8d9-a066-4639-a262-655cf34d084d"
-			message='#["pingSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="validateTargetConnectionSubflow"
+	<sub-flow name="validateSalesforceConnectionSubflow_TGT"
 		doc:id="27ad2b57-2b54-43be-a6cd-5993459c9cf2">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="eb83df02-3a0a-4e3b-b956-acd5d2e7e609"
-			message='#["validateTargetConnectionSubflow entry"]' />
-		<set-variable value='#["Target"]' doc:name="systemName"
+		<set-variable value='#["_TGT"]' doc:name="systemName"
 			doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
 			<salesforce:get-server-timestamp
 				doc:name="Get server timestamp"
 				doc:id="931ef439-df70-4e9f-8711-e9b436302292"
-				config-ref="targetSalesforceConfig" />
+				config-ref="salesforceConfig_TGT" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88"
 				name="buildPingEndpointResponseSubflow" />
 			<error-handler ref="pingErrorHandler" />
 		</try>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="9c18c850-1e5d-40b9-ac15-c4930a3ce1ae"
-			message='#["validateTargetConnectionSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="validateSourceConnectionSubflow"
+	<sub-flow name="validateSalesforceConnectionSubflow_SRC"
 		doc:id="176b43de-c6ad-4fb4-a397-7740f6dab5cb">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="34b4ba54-7842-4bf4-b97b-13e2c04e8c1f"
-			message='#["validateSourceConnectionSubflow entry"]' />
-		<set-variable value='#["Source"]' doc:name="systemName"
+		<set-variable value='#["_SRC"]' doc:name="systemName"
 			doc:id="b4aab529-1343-4104-8bf1-f336e792a380"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
 			<salesforce:get-server-timestamp
 				doc:name="Get server timestamp"
 				doc:id="755fb409-8dd5-4873-9b06-20f8c4d44185"
-				config-ref="sourceSalesforceConfig" />
+				config-ref="salesforceConfig_SRC" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe"
 				name="buildPingEndpointResponseSubflow" />
 			<error-handler ref="pingErrorHandler" />
 		</try>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="47463875-5d7e-46cf-8ff2-d42ae3efa2dd"
-			message='#["validateSourceConnectionSubflow exit"]' />
 	</sub-flow>
-	<sub-flow name="validateErrorHospitalConnectionSubflow"
+	<sub-flow name="validateErrHstplConnectionSubflow"
 		doc:id="de0c1782-0140-44fd-8e54-9a8c6876fdc9">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="4b7068ce-68ae-4f5a-933a-ceebf85ec276"
-			message='#["validateErrorHospitalConnectionSubflow entry"]' />
 		<set-variable value='#["Error Hospital"]'
 			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
 			variableName="systemName" />
@@ -123,15 +102,9 @@ buildPingResponse(vars.valTargetConnResp ++ vars.valSourceConnResp ++ vars.valEr
 				name="buildPingEndpointResponseSubflow" />
 			<error-handler ref="pingErrorHandler" />
 		</try>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="b120c189-d991-4c90-b2bb-c05802d0f39a"
-			message='#["validateErrorHospitalConnectionSubflow exit"]' />
 	</sub-flow>
 	<sub-flow name="validateWatermarkConnectionSubflow"
 		doc:id="f8b32a43-b9da-4038-9e08-18b1214438a9">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="7a63d077-3135-4a66-9547-ff3956173d99"
-			message='#["validateWatermarkConnectionSubflow entry"]' />
 		<set-variable value='#["Watermark"]'
 			doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0"
 			variableName="systemName" />
@@ -161,9 +134,6 @@ buildPingResponse(vars.valTargetConnResp ++ vars.valSourceConnResp ++ vars.valEr
 				name="buildPingEndpointResponseSubflow" />
 			<error-handler ref="pingErrorHandler" />
 		</try>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="84d99420-42ef-4f30-9f9a-10dde6a58790"
-			message='#["validateWatermarkConnectionSubflow exit"]' />
 	</sub-flow>
 	<sub-flow name="buildPingEndpointResponseSubflow"
 		doc:id="adeb093c-1900-41be-9be0-554f8def1ed4">

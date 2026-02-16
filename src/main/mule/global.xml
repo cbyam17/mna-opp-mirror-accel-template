@@ -45,7 +45,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<os:object-store name="currentRunDateTimeStore"
 		doc:name="Object store" doc:id="61676613-7b9d-4101-b40d-e7cdfb03dfec" />
 	<salesforce:sfdc-config
-		name="sourceSalesforceConfig" doc:name="Salesforce Config"
+		name="salesforceConfig_SRC" doc:name="Salesforce Config"
 		doc:id="ef243f98-46cd-49e0-b857-a469de334471">
 		<salesforce:basic-connection
 			username="${secure::source.username}"
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 			securityToken="${secure::source.securityToken}" />
 	</salesforce:sfdc-config>
 	<salesforce:sfdc-config
-		name="targetSalesforceConfig" doc:name="Salesforce Config"
+		name="salesforceConfig_TGT" doc:name="Salesforce Config"
 		doc:id="91c035e9-034f-4781-b8d6-30fd94a7473f">
 		<salesforce:basic-connection
 			username="${secure::target.username}"
@@ -66,4 +66,11 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<http:listener-connection host="0.0.0.0"
 			port="8081" />
 	</http:listener-config>
+	<os:object-store name="upsertOpptysResponseStore" doc:name="Object store" doc:id="7afedefe-5c7a-4a96-a9fb-1dac693eb87a" persistent="false"/>
+	<os:object-store name="existingOpptysStore" doc:name="Object store" doc:id="2321adf0-c0c9-415b-878f-ff6d0b693cff" persistent="false"/>
+	<os:object-store name="opptyProductsStore" doc:name="Object store" doc:id="c9a04df3-e0f1-47cc-bd62-6e5337ba1627" persistent="false"/>
+	<os:object-store name="existingOpptyProductsStore" doc:name="Object store" doc:id="b07dbc80-f459-4967-be80-1b60b3461cda" persistent="false"/>
+	<os:object-store name="upsertOpptyProductsResponseStore" doc:name="Object store" doc:id="f91cd48d-3213-45cf-86fd-15f08c305837" persistent="false"/>
+	<os:object-store name="writebackOpptysResponseStore" doc:name="Object store" doc:id="387c9481-238a-4ca6-b3f9-27aaac2d3e40" persistent="false"/>
+	<os:object-store name="existingErrorHospitalRecordStore" doc:name="Object store" doc:id="1430d9e6-b5e7-47d0-9d05-fc149982d865" persistent="false"/>
 </mule>

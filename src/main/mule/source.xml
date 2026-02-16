@@ -26,16 +26,7 @@ output application/json
 buildQueryOpptyFromSourceByDate(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:query-xml-stream
-			doc:name="Query Oppty records"
-			doc:id="7e1dab0f-b55d-44c6-a6e8-d27fa0f76e29"
-			targetValue="#[output application/json --- payload..*records default []]"
-			config-ref="sourceSalesforceConfig">
-			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output application/java
----
-payload.queryParams]]]></salesforce:parameters>
-		</salesforce:query-xml-stream>
+		<flow-ref doc:name="querySubflow_SRC" doc:id="17ee5e7b-7d9f-42a9-bcdd-f20ef99383d4" name="querySubflow_SRC" />
 		<logger level="INFO" doc:name="INFO"
 			doc:id="f4c53007-93e1-44a7-95c0-05885e63f1c1"
 			message='#["retrieveOpptyFromSourceByDateSubflow exit"]' />
@@ -54,91 +45,66 @@ output application/json
 buildQueryOpptyFromSourceById(payload.externalIds)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:query-xml-stream
-			doc:name="Query Oppty records"
-			doc:id="9fc8c99a-3ed1-4790-ac4c-0cb25a41508b"
-			config-ref="sourceSalesforceConfig"
-			targetValue="#[output application/json --- payload..*records default []]">
-			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output application/java
----
-payload.queryParams]]]></salesforce:parameters>
-		</salesforce:query-xml-stream>
+		<flow-ref doc:name="querySubflow_SRC" doc:id="c7527479-63e0-4d97-a59f-f7e7d8ae7339" name="querySubflow_SRC" />
 		<logger level="INFO" doc:name="INFO"
 			doc:id="5d91d2b6-3ba8-4eed-ae74-fd39e0948a81"
 			message='#["retrieveOpptyFromSourceByIdSubflow entry"]' />
 	</sub-flow>
 	<sub-flow
-		name="retrieveOpptyProductFromSourceByOpptyIdSubflow"
+		name="getOpptyProductsByOpptyIdSubflow_SRC"
 		doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="40c6502f-0ae1-4f1b-80b3-5d42f592fa78"
-			message='#["retrieveOpptyProductFromSourceByOpptyIdSubflow entry"]' />
+			message='#["getOpptyProductsByOpptyIdSubflow_SRC entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="1bf342f0-aace-40fa-b26e-373fd6658e7d">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyProductFromSourceByOpptyId from module::OpptyProduct
+				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyId_SRC from module::OpptyProduct
 output application/java
 ---
-buildQueryOpptyProductFromSourceByOpptyId(payload.Id)]]></ee:set-payload>
+buildQueryOpptyProductsByOpptyId_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:query-xml-stream
-			doc:name="Query OpptyProduct records"
-			doc:id="2d9b32b8-1086-4f21-9080-bd8146c36faf"
-			targetValue="#[output application/json --- payload..*records default []]"
-			config-ref="sourceSalesforceConfig">
-			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output application/java
----
-payload.queryParams]]]></salesforce:parameters>
-		</salesforce:query-xml-stream>
+		<flow-ref doc:name="querySubflow_SRC" doc:id="3bcc494b-770c-43c8-ae05-54e59791791e" name="querySubflow_SRC"/>
 		<logger level="INFO" doc:name="INFO"
 			doc:id="386caf2b-799d-4562-8965-967ec6fc931d"
-			message='#["retrieveOpptyProductFromSourceByOpptyIdSubflow entry"]' />
+			message='#["getOpptyProductsByOpptyIdSubflow_SRC entry"]' />
 	</sub-flow>
-	<sub-flow name="writebackOpptyToSourceSubflow"
+	<sub-flow name="writebackOpptysSubflow_SRC"
 		doc:id="c6454e33-9c49-4919-8198-38ca6db14089">
 		<logger level="INFO" doc:name="INFO"
 			doc:id="45cdc864-e93c-49c0-b03c-c18a19b113b7"
-			message='#["writebackOpptyToSourceSubflow entry"]' />
+			message='#["writebackOpptysSubflow_SRC entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="1da53f08-8dba-4f36-beb3-c92eba2845a5">
 			<ee:message>
-				<ee:set-payload><![CDATA[import transformWritebackSourceOppty from module::Oppty
+				<ee:set-payload><![CDATA[import transformWritebackSourceOpptys_SRC from module::Oppty
 output application/java
 ---
-transformWritebackSourceOppty(payload)]]></ee:set-payload>
+transformWritebackSourceOpptys_SRC(payload)]]></ee:set-payload>
 			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["Opportunity"]]></ee:set-variable>
+			</ee:variables>
 		</ee:transform>
-		<salesforce:update type="Opportunity"
-			doc:name="Update Oppty records"
-			doc:id="2ded158b-3d56-4be6-abca-d02eecf27394"
-			config-ref="sourceSalesforceConfig" />
+		<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="301d12ef-ac9a-4552-b47f-6b653daa800f" name="updateObjectSubflow_SRC"/>
 		<logger level="INFO" doc:name="INFO"
 			doc:id="da247e91-c744-4b59-8382-8be8b5b7709e"
-			message='#["writebackOpptyToSourceSubflow exit"]' />
+			message='#["writebackOpptysSubflow_SRC exit"]' />
 	</sub-flow>
-	<sub-flow name="writebackOpptyProductToSourceSubflow"
-		doc:id="46bbcb87-d675-4253-b06d-ad711f40486b">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="918f1c9f-ce59-4e77-bd90-41d7cd04cd3d"
-			message='#["writebackOpptyProductToSourceSubflow entry"]' />
-		<ee:transform doc:name="Transform Message"
-			doc:id="3a967c7b-6c2b-4f68-a4ab-c026324f6845">
-			<ee:message>
-				<ee:set-payload><![CDATA[import transformWritebackSourceOpptyProduct from module::OpptyProduct
-output application/java
+	<sub-flow name="querySubflow_SRC" doc:id="1f3004e1-17e5-4be4-afeb-ca93fce8cfe5" >
+		<logger level="DEBUG" doc:name="DEBUG" doc:id="bef46418-f949-4a8b-b4d5-2864dbf670fd" message='#["_SRC query request: " ++ write(payload, "application/json")]' />
+		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="0f806dc4-1960-4d0e-81ec-61f3c7a00098" config-ref="salesforceConfig_SRC" >
+			<salesforce:salesforce-query ><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
 ---
-flatten(transformWritebackSourceOpptyProduct(payload))]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<salesforce:update type="OpportunityLineItem"
-			doc:name="Update OpptyProduct records"
-			doc:id="e9236b75-f9bb-48fa-82c6-11dfebd407b7"
-			config-ref="sourceSalesforceConfig" />
-		<logger level="INFO" doc:name="INFO"
-			doc:id="81c802c0-2e27-4c6b-85ac-b9e36431e21c"
-			message='#["writebackOpptyProductToSourceSubflow exit"]' />
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+		<logger level="DEBUG" doc:name="DEBUG" doc:id="9a825a13-6685-4786-933b-3125e7bb9bf0" message='#["_SRC query response: " ++ write(payload, "application/json")]' />
+	</sub-flow>
+	<sub-flow name="updateObjectSubflow_SRC" doc:id="23061ae9-89d8-4874-acb2-a24a69bb7bd7" >
+		<logger level="DEBUG" doc:name="DEBUG" doc:id="1a97cd69-16ac-4394-96a6-4ddedfb73138" message='#["_SRC update request - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
+		<salesforce:update type="#[vars.objectType]" doc:name="Update" doc:id="2ded158b-3d56-4be6-abca-d02eecf27394" config-ref="salesforceConfig_SRC" />
+		<logger level="DEBUG" doc:name="DEBUG" doc:id="840173ad-fd74-4b2e-8805-b1746fd0c086" message='#["_SRC update response - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
 	</sub-flow>
 </mule>

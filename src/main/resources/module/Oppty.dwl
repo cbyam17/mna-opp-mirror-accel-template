@@ -1,44 +1,53 @@
 %dw 2.0
 import mergeWith from dw::core::Objects
-import * from module::CommonUtil
+import generateIdInClause, buildFieldsToNull from module::CommonUtil
 
-fun buildQueryOpptyFromSourceByDate(fromLastRunDateTime, toLastRunDateTime) =
+fun buildQueryOpptysByDate_SRC(fromLastRunDateTime, toLastRunDateTime) =
 	{
-		//adjust fields as needed
-		query: 'SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE Target_Mirror_Scope__c = true and ((Target_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and Target_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime) or Target_Mirror_Error__c != null)',
+		// adjust SOQL query per requirements
+		query:	"SELECT Id, Oppty_Id_TGT__c, Account.Acct_Id_TGT__c, CloseDate, Name, StageName " ++
+				"FROM Opportunity " ++
+				"WHERE Mirror_Scope_TGT__c = true and ((TGT_Ready_To_Mirror_Date_Time__c >= :watermarkLastRunDateTime and TGT_Ready_To_Mirror_Date_Time__c < :watermarkCurrentRunDateTime) or Mirror_Error_TGT__c != null)",
 		queryParams: {
 			watermarkLastRunDateTime: fromLastRunDateTime,
 			watermarkCurrentRunDateTime: toLastRunDateTime
 		}
 	}
 
-fun buildQueryOpptyFromSourceById(ids) =
+fun buildQueryOpptysById_SRC(ids) =
 	{
-		//adjust fields as needed
-		query: 'SELECT Id, Target_Oppty_Id__c, Account.Target_Acct_Id__c, CloseDate, Name, StageName FROM Opportunity WHERE ID IN (' ++ generateIdInClause(ids) ++ ')',
-		queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-			(('idArg') ++ index): item
+		// adjust _TGT SOQL query per requirements
+		query:	"SELECT Id, Oppty_Id_TGT__c, Account.Acct_Id_TGT__c, CloseDate, Name, StageName " ++
+				"FROM Opportunity " ++
+				"WHERE Id IN ('" ++ generateIdInClause(ids) ++ "')",
+		queryParams: ids default [] distinctBy ((item) -> item) default []
+			map ((item,index) -> {
+				(("idArg") ++ index): item
 		}) reduce ((item, accumulator = {}) -> item ++ accumulator)
 	}
 
-fun buildQueryOpptyFromTargetByExternalId(ids) =
+fun buildQueryOpptysByExternalId_TGT(externalIds) =
 	{
-		query: 'SELECT Id, Acquisition_Oppty_Id__c FROM Opportunity WHERE Acquisition_Oppty_Id__c IN (' ++ generateIdInClause(ids) ++ ')',
-		queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-			(('idArg') ++ index): item
-		}) reduce ((item, accumulator = {}) -> item ++ accumulator)
+		// adjust _TGT SOQL query per reqs
+		query: 	"SELECT Id, Oppty_Id_SRC__c " ++
+				"FROM Opportunity " ++
+				"WHERE Oppty_Id_SRC__c IN ('" ++ generateIdInClause(externalIds) ++ "')",
+		queryParams: externalIds default [] distinctBy ((item) -> item) default []
+			map ((item,index) -> {
+				(("idArg") ++ index): item
+			})
+			reduce ((item, accumulator = {}) -> item ++ accumulator)
 	}
 
-fun transformTargetOpptyUpdate(data) =
-	data default [] map ((item, index) -> do {
+fun transformCreateOpptys_TGT(records) =
+	records default [] map ((item) -> do {
 		var transformedData = {
-			AccountId: item.Account.Target_Acct_Id__c,
-			Acquisition_Oppty_Id__c: item.Id,
+			// adjust _TGT oppty field mapping per reqs
+			AccountId: item.Account.Acct_Id_TGT__c,
+			Oppty_Id_SRC__c: item.Id,
 			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: 'yyyy-MM-dd' } else null,
-			Id: (item.existingTargetOpptyRecords filter ($.Acquisition_Oppty_Id__c == item.Id))[0].Id,
 			Name: if (!isEmpty(item.Name)) 'SOURCE - ' ++ item.Name else null,
 			StageName: item.StageName
-			//additional fields can be added here
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
@@ -46,35 +55,39 @@ fun transformTargetOpptyUpdate(data) =
 		else transformedData
 	})
 
-fun transformTargetOpptyCreate(data) =
-	data default [] map ((item, index) -> do {
+fun transformUpdateOpptys_TGT(records) =
+	records default [] map ((item) -> do {
 		var transformedData = {
-			AccountId: item.Account.Target_Acct_Id__c,
-			Acquisition_Oppty_Id__c: item.Id,
+			// adjust _TGT opptty field mapping per reqs
+			AccountId: item.Account.Acct_Id_TGT__c,
+			Oppty_Id_SRC__c: item.Id,
 			CloseDate: if (!isEmpty(item.CloseDate)) item.CloseDate as Date { format: 'yyyy-MM-dd' } else null,
+			Id: item.existingOpptyId,
 			Name: if (!isEmpty(item.Name)) 'SOURCE - ' ++ item.Name else null,
-			StageName: item.StageName
-			//additional fields can be added here
-		}
+			StageName: item.StageName		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
 		if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
 		else transformedData
 	})
 
-fun transformWritebackSourceOppty(data) =
-	data default [] map ((item, index) -> do {
+fun transformWritebackSourceOpptys_SRC(records) =
+	records default [] map ((item) -> do {
 		var transformedData = {
+			// adjust _SRC oppty field mapping per reqs
 			Id: item.Id,
-			Target_Oppty_Id__c: if (!isEmpty(item.Target_Oppty_Id__c)) item.Target_Oppty_Id__c
-				else if (!isEmpty(item.targetOpptyResponse.id)) item.targetOpptyResponse.id
+			Oppty_Id_TGT__c: if (!isEmpty(item.existingOpptyId)) item.existingOpptyId
+				else if (!isEmpty(item.upsertedOpptyId)) item.upsertedOpptyId
 				else null,
-			Target_Mirror_Error__c: if (!item.targetOpptyResponse.success) item.targetOpptyResponse.errors[0].message
-				else if (item.targetOpptyProductResponses.success contains false) getOpptyProductErrorMessages(item.targetOpptyProductResponses)
+			Mirror_Error_TGT__c: if (!isEmpty(item.upsertOpptyError)) buildErrorMessage("Opportunity", item.upsertOpptyError.message)
+				else if (!isEmpty(item.upsertOpptyProductErrors)) buildErrorMessage("OpportunityLineItem", (item.upsertOpptyProductErrors.message default [] joinBy "; "))
 				else null
 		}
 		var fieldsToNull = buildFieldsToNull(transformedData)
 		---
 		if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
 		else transformedData
-})
+	})
+
+fun buildErrorMessage(objectType, message) =
+	"_TGT mirror error - " ++ objectType default "" ++ ": " ++ message default "Unknown error"

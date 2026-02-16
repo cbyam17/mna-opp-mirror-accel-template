@@ -1,92 +1,84 @@
 %dw 2.0
 import mergeWith from dw::core::Objects
-import * from module::CommonUtil
+import generateIdInClause, buildFieldsToNull from module::CommonUtil
 
-fun buildQueryOpptyProductFromSourceByOpptyId(ids) =
+fun buildQueryOpptyProductsByOpptyId_SRC(opptyIds) =
     {
-        query: 'SELECT Id, Target_Oppty_Product_Id__c, PricebookEntryId, OpportunityId, UnitPrice, Quantity FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(ids) ++ ')',
-        queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-            (('idArg') ++ index): item
-        }) reduce ((item, accumulator = {}) -> item ++ accumulator)
+    	// adjust SOQL query per reqs
+        query: 'SELECT Id, PricebookEntryId, OpportunityId FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(opptyIds) ++ ')',
+        queryParams: opptyIds default [] distinctBy ((item) -> item) default []
+            map ((item,index) -> {
+                (('idArg') ++ index): item
+            })
+            reduce ((item, accumulator = {}) -> item ++ accumulator)
     }
 
-fun buildQueryOpptyProductFromTargetByOpptyId(ids) =
+fun buildQueryOpptyProductsByOpptyId_TGT(opptyIds) =
     {
-        query: 'SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Acquisition_Oppty_Id__c FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(ids) ++ ')',
-        queryParams: ids default [] distinctBy ((item, index) -> item) default [] map ((item,index) -> {
-            (('idArg') ++ index): item
-        }) reduce ((item, accumulator = {}) -> item ++ accumulator)
+        // adjust SOQL query per reqs
+        query: 'SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Oppty_Id_SRC__c FROM OpportunityLineItem WHERE OpportunityId IN (' ++ generateIdInClause(opptyIds) ++ ')',
+        queryParams: opptyIds default [] distinctBy ((item) -> item) default []
+            map ((item,index) -> {
+                (('idArg') ++ index): item
+            })
+            reduce ((item, accumulator = {}) -> item ++ accumulator)
     }
 
-fun getTargetOpptyProductsToCreate(data) =
+// fn that compares _SRC vs _TGT pb entry ids to determine which oppty product records to create and which to update
+fun transformOpptyProductsToUpsert_TGT(record, opptyProducts, existingOpptyProducts) =
     do {
-        var targetOpptyProductIds = data.existingTargetOpptyProductRecords.Id default []
-        var targetPbEntryIds = data.existingTargetOpptyProductRecords.PricebookEntryId default []
+        var existingPbEntryIds = existingOpptyProducts.PriceookEntryId default []
+        var pbEntryIds = opptyProducts.PriceookEntryId default []
+        var opptyProductsToCreate = opptyProducts default [] filter ((item) -> (!(existingPbEntryIds contains mapPbEntryId(item.PriceookEntryId,"_TGT"))))
+        var opptyProductsToUpdate = existingOpptyProducts default [] filter ((item) -> (pbEntryIds contains mapPbEntryId(item.PriceookEntryId,"_SRC")))
         ---
-        data.sourceOpptyProductRecords default [] filter ((item, index) -> (!(targetOpptyProductIds contains item.Target_Oppty_Product_Id__c) and !(targetPbEntryIds contains getTargetPbEntryIdBySourcePbEntryId(item.PricebookEntryId))))
-    }
-//tbd
-fun getTargetOpptyProductsToUpdate(data) =
-    do {
-        var sourceOpptyProductIds = data.sourceOpptyProductRecords.Target_Oppty_Product_Id__c default []
-        var sourcePbEntryIds = data.sourceOpptyProductRecords.PricebookEntryId default []
-        ---
-        data.existingTargetOpptyProductRecords default [] filter ((item, index) -> ((sourceOpptyProductIds contains item.Id) or (sourcePbEntryIds contains getSourcePbEntryIdByTargetPbEntryId(item.PricebookEntryId))))
+        record ++ {
+            opptyProductsToCreate: opptyProductsToCreate default [],
+            opptyProductsToUpdate: opptyProductsToUpdate default []
+        }
     }
 
-fun transformTargetOpptyProductCreate(data, targetOpptyProductsToCreate) =
-    targetOpptyProductsToCreate default [] map ((item, index) -> do {
+fun transformCreateOpptyProducts_TGT(records) =
+    flatten(records.opptyProductsToCreate) default [] map ((item) -> do {
         var transformedData = {
-            OpportunityId: data.targetOpptyResponse.id,
-            PricebookEntryId: getTargetPbEntryIdBySourcePbEntryId(item.PricebookEntryId),
-            Quantity: item.Quantity,
-            UnitPrice: item.UnitPrice,
-            //additional fields can be added here
+        	// adjust fields as needed
+            OpportunityId: (records filter ((r) -> (r.Id == item.OpportunityId))).upsertedOpptyId,
+            PricebookEntryId: mapPbEntryId(item.PricebookEntryId, "_TGT"),
+            Quantity: item.Quantity default 0 as Number,
+            UnitPrice: item.UnitPrice default 0 as Number
         }
-        var fieldsToNull = buildFieldsToNull(transformedData)
-        ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-        else transformedData
-})
-
-fun transformTargetOpptyProductUpdate(data, targetOpptyProductsToUpdate) =
-    targetOpptyProductsToUpdate default [] map ((item, index) -> do {
-        var transformedData = {
-            Id: item.Id,
-            Quantity: (data.sourceOpptyProductRecords filter (($.Target_Oppty_Product_Id__c == item.Id) or ($.PricebookEntryId == getSourcePbEntryIdByTargetPbEntryId(item.PricebookEntryId))))[0].Quantity,
-            UnitPrice: (data.sourceOpptyProductRecords filter (($.Target_Oppty_Product_Id__c == item.Id) or ($.PricebookEntryId == getSourcePbEntryIdByTargetPbEntryId(item.PricebookEntryId))))[0].UnitPrice
-            //additional fields can be added here
-        }
-        var fieldsToNull = buildFieldsToNull(transformedData)
-        ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-        else transformedData
-})
-
-fun getTargetPbEntryIdBySourcePbEntryId(sourcePbEntryId) =
-    if (sourcePbEntryId == Mule::p('source.pbEntryId.productA')) Mule::p('target.pbEntryId.productA')
-    else if (sourcePbEntryId == Mule::p('source.pbEntryId.productB')) Mule::p('target.pbEntryId.productB')
-    else if (sourcePbEntryId == Mule::p('source.pbEntryId.productC')) Mule::p('target.pbEntryId.productC')
-     else if (sourcePbEntryId == Mule::p('source.pbEntryId.productD')) Mule::p('target.pbEntryId.productD')
-    else null
-
-fun getSourcePbEntryIdByTargetPbEntryId(targetPbEntryId) =
-    if (targetPbEntryId == Mule::p('target.pbEntryId.productA')) Mule::p('source.pbEntryId.productA')
-    else if (targetPbEntryId == Mule::p('target.pbEntryId.productB')) Mule::p('source.pbEntryId.productB')
-    else if (targetPbEntryId == Mule::p('target.pbEntryId.productC')) Mule::p('source.pbEntryId.productC')
-    else if (targetPbEntryId == Mule::p('target.pbEntryId.productD')) Mule::p('source.pbEntryId.productD')
-    else null
-
-fun transformWritebackSourceOpptyProduct(data) =
-    data.sourceOpptyProductRecords default [] map ((item, index) -> do {
-        var transformedData = {
-            Id: item.Id,
-            Target_Oppty_Product_Id__c: if (!isEmpty(item.Target_Oppty_Product_Id__c)) item.Target_Oppty_Product_Id__c
-                else if (!isEmpty(data.targetOpptyProductResponses[index].id)) data.targetOpptyProductResponses[index].id
-                else null
-            }
         var fieldsToNull = buildFieldsToNull(transformedData)
         ---
         if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
         else transformedData
     })
+
+fun transformUpdateOpptyProducts_TGT(records) =
+    flatten(records.opptyProductsToUpdate) default [] map ((item) -> do {
+        var transformedData = {
+        	// adjust fields as needed
+            Id: item.Id,
+            Quantity: (records filter ((r) -> (r.Id == item.Oppty_Id_SRC__c))).Quantity default 0 as Number,
+            UnitPrice: (records filter ((r) -> (r.Id == item.Oppty_Id_SRC__c))).UnitPrice default 0 as Number
+        }
+        var fieldsToNull = buildFieldsToNull(transformedData)
+        ---
+        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
+        else transformedData
+     })
+
+// adjust PB entry Ids depending on the fixed PB entries mapping
+fun mapPbEntryId(pbEntryId, destination) =
+	if (destination == "_TGT")
+	    if (pbEntryId == Mule::p('src.pbEntryId.productA')) Mule::p('tgt.pbEntryId.productA')
+	    else if (pbEntryId == Mule::p('src.pbEntryId.productB')) Mule::p('tgt.pbEntryId.productB')
+	    else if (pbEntryId == Mule::p('src.pbEntryId.productC')) Mule::p('tgt.pbEntryId.productC')
+	    else if (pbEntryId == Mule::p('src.pbEntryId.productD')) Mule::p('tgt.pbEntryId.productD')
+	    else null
+	else if (destination == "_SRC")
+		if (pbEntryId == Mule::p('tgt.pbEntryId.productA')) Mule::p('src.pbEntryId.productA')
+	    else if (pbEntryId == Mule::p('tgt.pbEntryId.productB')) Mule::p('src.pbEntryId.productB')
+	    else if (pbEntryId == Mule::p('tgt.pbEntryId.productC')) Mule::p('src.pbEntryId.productC')
+	    else if (pbEntryId == Mule::p('tgt.pbEntryId.productD')) Mule::p('src.pbEntryId.productD')
+	    else null
+	else null    

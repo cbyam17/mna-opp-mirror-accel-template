@@ -23,13 +23,13 @@ buildPingEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 			</ee:transform>
 		</on-error-continue>
 	</error-handler>
-	<error-handler name="sourceWritebackErrorHandler"
-		doc:id="18f2873d-e6cd-42a3-80cc-6a5bcc11610e">
+	<error-handler name="errHsptlErrorHandler"
+		doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
 		<on-error-continue enableNotifications="true"
 			logException="true" doc:name="On Error Continue"
-			doc:id="fdbfb62c-8de7-4fa3-9c2f-2c6f42709ccd">
+			doc:id="148fbd08-4b8c-40bd-82a6-600656eb20c0">
 			<ee:transform doc:name="TBD"
-				doc:id="6086f424-075d-41ad-b46d-355fd765d685">
+				doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345">
 				<ee:message>
 					<ee:set-payload><![CDATA[%dw 2.0
 output application/java
@@ -40,15 +40,11 @@ output application/java
 			</ee:transform>
 		</on-error-continue>
 	</error-handler>
-	<error-handler name="errorHospitalErrorHandler"
-		doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
-		<on-error-continue enableNotifications="true"
-			logException="true" doc:name="On Error Continue"
-			doc:id="148fbd08-4b8c-40bd-82a6-600656eb20c0">
-			<ee:transform doc:name="TBD"
-				doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345">
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
+	<error-handler name="vmPublishErrorHandler" doc:id="1e7202fb-95bd-4e9b-8d88-a071f556394d" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4ba7fd41-a9ec-460f-9c31-d64988ffb869" >
+			<ee:transform doc:name="TBD" doc:id="986b2dbb-d425-4832-94d1-3cf9295922be" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 {
