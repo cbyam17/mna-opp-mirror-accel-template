@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_1f5a1883_9369_472b_86d7_c4d5438f9e5c_Output_Variables_valWatermarkApiConnResp = Any
-

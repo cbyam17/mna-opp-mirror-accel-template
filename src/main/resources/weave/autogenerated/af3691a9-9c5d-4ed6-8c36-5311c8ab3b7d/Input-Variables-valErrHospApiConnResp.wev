@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_af3691a9_9c5d_4ed6_8c36_5311c8ab3b7d_Input_Variables_valErrHospApiConnResp = Any
-
