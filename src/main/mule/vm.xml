@@ -8,56 +8,20 @@
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="vmPublishRemoveRecordsFromErrHsptl" doc:id="d19291aa-a3f6-495d-bf3a-1b35957621a2" >
-		<ee:transform doc:name="Transform Message" doc:id="7228af7d-2e58-4a04-8aa4-507d6ec08329">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildRemoveRecordsFromErrHsptlRequest from module::ErrorHospital
-output application/java
----
-buildRemoveRecordsFromErrHsptlRequest(payload)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<try doc:name="Try" doc:id="9b892cfd-aa01-4bc1-9055-cad295cca199" >
-			<vm:publish doc:name="Publish" doc:id="36d67a77-2bfa-4124-8f5c-e084e731cd4d" queueName="${vm.ErrHstplRemoveRecords}" config-ref="vmConfig" sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+		<vm:publish doc:name="Publish" doc:id="36d67a77-2bfa-4124-8f5c-e084e731cd4d" queueName="${vm.deleteErrHsptlRecords}" config-ref="vmConfig" sendCorrelationId="AUTO" correlationId="#[correlationId]">
+				<vm:content><![CDATA[#[output application/json --- payload]]]></vm:content>
 						</vm:publish>
-			<error-handler ref="vmPublishErrorHandler" />
-		</try>
 	</sub-flow>
-	<sub-flow name="vmPublishSendFailedRecordsToErrHsptl" doc:id="1f1bed41-ea02-476c-9837-ab1851dec770" >
-		<ee:transform doc:name="Transform Message" doc:id="b822be4e-df22-44f8-ae94-057d779ffb99">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildSendFailedRecordsToErrHsptlRequest from module::ErrorHospital
-output application/java
----
-buildSendFailedRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
-			</ee:message>
-			<ee:variables />
-		</ee:transform>
-		<try doc:name="Try" doc:id="dca626e7-3baf-47ea-b159-06c88404566a" >
-			<vm:publish doc:name="Publish" doc:id="ec3d4a94-a799-4764-8826-b747116cebbd" queueName="${vm.ErrHsptlRecordCreate}" config-ref="vmConfig" sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+	<sub-flow name="vmPublishInsertRecordsToErrHsptl" doc:id="1f1bed41-ea02-476c-9837-ab1851dec770" >
+		<vm:publish doc:name="Publish" doc:id="ec3d4a94-a799-4764-8826-b747116cebbd" queueName="${vm.insertErrHsptlRecords}" config-ref="vmConfig" sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+				<vm:content><![CDATA[#[output application/json --- payload]]]></vm:content>
 						</vm:publish>
-			<error-handler ref="vmPublishErrorHandler" />
-		</try>
-	</sub-flow>
-	<sub-flow name="vmPublishSendSystemErrorRecordsToErrHsptl" doc:id="8c39567f-78f9-4dcb-970b-f71946989274">
-		<ee:transform doc:name="Transform Message" doc:id="75ce9e1f-bc62-4a8e-a3f6-120843c42977">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildSendSystemErrorRecordsToErrHsptlRequest from module::ErrorHospital
-output application/java
----
-buildSendSystemErrorRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
-			</ee:message>
-			<ee:variables />
-		</ee:transform>
-		<try doc:name="Try" doc:id="b9c333e7-5463-4987-8512-4ec04e2218b6" >
-			<vm:publish queueName="${vm.ErrHsptlRecordCreate}" doc:name="Publish" doc:id="dd660051-d9f7-40e0-932b-55ef51ba947c" config-ref="vmConfig" sendCorrelationId="ALWAYS" correlationId="#[correlationId]" />
-			<error-handler ref="vmPublishErrorHandler" />
-		</try>
 	</sub-flow>
 	<flow name="vmListenerSendRecordsToErrHsptl"
 		doc:id="4803ef34-5de8-43da-b95c-d73eb2dc3886">
 		<vm:listener doc:name="Listener"
 			doc:id="53b8418d-f11b-4c24-9318-62bed6838610"
-			queueName="${vm.errHsptlRecordCreate}" config-ref="vmConfig" />
+			queueName="${vm.insertErrHsptlRecords}" config-ref="vmConfig" />
 		<flow-ref doc:name="sendRecordsToErrHsptlSubflow"
 			doc:id="5ea01d9e-6ce3-4daa-8c74-0331764c121f"
 			name="sendRecordsToErrHsptlSubflow" />
@@ -65,7 +29,7 @@ buildSendSystemErrorRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-
 	</flow>
 	<flow name="vmListenerhRemoveRecordsFromErrHsptl"
 		doc:id="35a4df5f-958c-4dd1-ad44-035535ed97ca">
-		<vm:listener queueName="${vm.errHsptlRecordDelete}"
+		<vm:listener queueName="${vm.deleteErrHsptlRecords}"
 			doc:name="Listener" doc:id="a52374f5-41dd-4113-8f16-7d574503671e"
 			config-ref="vmConfig" />
 		<flow-ref doc:name="removeRecordsFromErrHsptlSubflow"

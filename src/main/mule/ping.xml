@@ -73,7 +73,7 @@ buildPingResponse(vars.SalesforceConnResp_TGT ++ vars.SalesforceConnResp_SRC ++ 
 	</sub-flow>
 	<sub-flow name="validateErrHstplConnectionSubflow"
 		doc:id="de0c1782-0140-44fd-8e54-9a8c6876fdc9">
-		<set-variable value='#["Error Hospital"]'
+		<set-variable value='#["Error Hospital Service"]'
 			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
@@ -105,7 +105,7 @@ buildPingResponse(vars.SalesforceConnResp_TGT ++ vars.SalesforceConnResp_SRC ++ 
 	</sub-flow>
 	<sub-flow name="validateWatermarkConnectionSubflow"
 		doc:id="f8b32a43-b9da-4038-9e08-18b1214438a9">
-		<set-variable value='#["Watermark"]'
+		<set-variable value='#["Watermark Service"]'
 			doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a">

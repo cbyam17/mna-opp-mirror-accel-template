@@ -1,10 +1,13 @@
+httpListener:
+  port: "8083"
+  readTimeout: "30000"
 batch:
   aggregatorSize: "100"
 errHsptl:
   maxRetries: "5"
   retrieveLimit: "100"
 orgName: "MNA-Tech"
-projectName: "mna-oppty-mirroring-accelerator"
+projectName: "mna-oppty-mirror-accel"
 scheduler:
   main:
     cronExpression: "0 0 * * * ?"
@@ -14,20 +17,18 @@ scheduler:
     timezone: "GMT"
 smtp:
   toAddress: "error_notifications@test.com"
-source:
+src:
   pbEntryId:
-    productA: "01uKa00000AeCAcIAN"
-    productB: "01uKa00000AeCAeIAN"
-    productC: "01uKa00000AeCAdIAN"
-    productD: "01uKa00000AeDIxIAN"
-target:
+    C: "01uKa00000AeCAcIAN"
+    OT: "01uKa00000AeCAeIAN"
+    OG: "01uKa00000AeCAdIAN"
+tgt:
   pbEntryId:
-    productA: "01ugL0000020n61QAA"
-    productB: "01ugL0000020n1BQAQ"
-    productC: "01ugL0000020n62QAA"
-    productD: "01ugL000002193JQAQ"
+    C: "01ugL000002WgsbQAC"
+    OT: "01ugL000002WgkXQAS"
+    OG: "01ugL000002WgkYQAS"
 vm:
-  errHsptlRecordCreate: "errHsptlRecordCreateRequest"
-  errHsptlRecordDelete: "errHsptlRecordDeleteRequest"
+  insertErrHsptlRecords: "insertErrHsptlRecordsQueue"
+  deleteErrHsptlRecords: "deleteErrHsptlRecordsQueue"
 watermark:
   timezone: "GMT"

@@ -17,9 +17,6 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 					timeZone="${scheduler.main.timezone}" />
 			</scheduling-strategy>
 		</scheduler>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="15351bb9-1c5f-4240-96c0-122c09936e66"
-			message='#["schedulerMainFlow entry"]' />
 		<flow-ref doc:name="retrieveOsBatchStatusSubflow"
 			doc:id="6a709ed5-1140-4faf-bb41-5f556ed13a67"
 			name="retrieveOsBatchStatusSubflow" />
@@ -27,8 +24,7 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 			doc:id="56f92143-0d90-4042-8d90-7859b78ab716">
 			<when expression="#[isEmpty(payload)]">
 				<flow-ref doc:name="pingSubflow"
-					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow"
-					targetValue="#[output applicatin/json --- payload]" />
+					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow"/>
 				<logger level="DEBUG" doc:name="DEBUG"
 					doc:id="527738a3-ba85-4553-be2d-095630ccfd74"
 					message='#["Connectivity status response: " ++ write(payload,"application/json")]' />
@@ -55,9 +51,6 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 					message='#["Previous batch run is in progress; skipping this run"]' />
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="88174f8d-5914-4894-8f02-0a99b5d6c169"
-			message='#["schedulerMainFlow exit"]' />
 	</flow>
 	<!-- [STUDIO:"schedulerRetryFlow"]<flow name="schedulerRetryFlow" doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" 
 		initialState="started" > <scheduler doc:name="Retry Scheduler" doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0" 

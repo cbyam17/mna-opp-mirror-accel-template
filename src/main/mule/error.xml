@@ -25,11 +25,8 @@ buildPingEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 	</error-handler>
 	<error-handler name="errHsptlErrorHandler"
 		doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
-		<on-error-continue enableNotifications="true"
-			logException="true" doc:name="On Error Continue"
-			doc:id="148fbd08-4b8c-40bd-82a6-600656eb20c0">
-			<ee:transform doc:name="TBD"
-				doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345">
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd8fa5ae-ee63-4863-b254-831786782cf4" >
+			<ee:transform doc:name="TBD" doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345">
 				<ee:message>
 					<ee:set-payload><![CDATA[%dw 2.0
 output application/java
@@ -38,19 +35,6 @@ output application/java
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-		</on-error-continue>
-	</error-handler>
-	<error-handler name="vmPublishErrorHandler" doc:id="1e7202fb-95bd-4e9b-8d88-a071f556394d" >
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4ba7fd41-a9ec-460f-9c31-d64988ffb869" >
-			<ee:transform doc:name="TBD" doc:id="986b2dbb-d425-4832-94d1-3cf9295922be" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-}]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-		</on-error-continue>
+		</on-error-propagate>
 	</error-handler>
 </mule>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
@@ -8,224 +9,139 @@
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
 	<flow name="processBatchOpptyFlow"
 		doc:id="f9d4c643-c4c6-4cef-b546-72c118311eb1">
+		<flow-ref doc:name="preprocessSubflow" doc:id="5202de1c-b04e-44da-99bb-a8cd00f89c5e" name="preprocessSubflow"/>
 		<batch:job jobName="processOpptyBatch"
 			doc:id="e850532a-d8c3-4fbe-a642-090fa9afd132">
 			<batch:process-records>
-				<batch:step 
-					name="Get_Existing_Error_Hospital_Records" doc:id="77afca06-aaeb-416b-8d7d-90d4acaf0cc0"> 
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="08740884-7a0a-4c33-8fa9-e1725db5561f" 
-					size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="getRecordsFromErrHsptlByIdSubflow" doc:id="e3994b05-b1c1-4f77-b540-284e3f150ab0" name="getRecordsFromErrHsptlByIdSubflow" target="existingErrHosptlRecords" targetValue="#[output application/java --- payload]" />
-						<flow-ref doc:name="storeOsExistingErrHsptlRecordsSubflow" doc:id="bafe6be7-0f54-4824-8c41-9a9a30f34c0d" name="storeOsExistingErrHsptlRecordsSubflow" /> 
-</batch:aggregator> </batch:step>
-				<batch:step name="Transform_Payload_Existing_Error_Hospital_Records" doc:id="c5a4efd1-57ca-4cea-bc4f-9bb9c845e252" >
-					<flow-ref doc:name="retrieveOsExistingErrHsptlRecordSubflow" doc:id="a61443b7-f53f-4407-bac6-b571f20507f4" name="retrieveOsExistingErrHsptlRecordSubflow" target="existingErrHosptlRecord"/>
-					<ee:transform doc:name="Transform Message" doc:id="b2af89a9-e5dc-4cc3-a175-a6552c865903" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload ++ {
-	isExistingErrHsptlRecord: !isEmpty(vars.existingErrHosptlRecord)
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="ac55eb2d-22f6-405a-976b-3ccc8d06efce" variableName="existingErrHosptlRecord"/>
-				</batch:step>
-				<batch:step name="Get_Existing_Opptys_TGT"
-					doc:id="425bec23-a1f2-4781-83c6-31e5781840c2">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="be16e05d-3df2-4452-9af5-5410e52dae70"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="getOpptysByExternalIdSubflow_TGT"
-							doc:id="762f41b9-a861-4a94-9a59-44940e2cf309"
-							name="getOpptysByExternalIdSubflow_TGT"
-							target="existingOpptys"
-							targetValue="#[output application/java --- payload.payload..records default []]" />
-						<flow-ref doc:name="storeOsExistingOpptys" doc:id="63a5f3e9-7f96-49f1-8159-bfb23a50f1a1" name="storeOsExistingOpptys" />
+				<batch:step name="Batch_Step_Create_Oppty" doc:id="604bc159-50e7-47eb-9f88-42b6d123c5a3" acceptExpression="#[isEmpty(payload.existingOppty)]">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="33a49cc8-241c-42ea-9f79-926e1ce151d8" size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref doc:name="createOpptySubflow_TGT" doc:id="3db10586-8b [STUDIO] --&gt;fc-4dce-9d37-d860343b1b3d" name="createOpptySubflow_TGT" target="createOpptyResponses" targetValue="#[payload.items.payload default []]"/>
+						<foreach doc:name="For Each" doc:id="53052119-4e93-400c-87af-28dcd4852aa2" >
+							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="c072a779-9d21-41d0-824f-1625c126a53a" >
+								<scripting:code ><![CDATA[vars['record'].payload.upsertOpptyResponse = upsertOpptyResponse]]></scripting:code>
+								<scripting:parameters ><![CDATA[#[{
+	upsertOpptyResponse: vars.createOpptyResponses[vars.counter-1]
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Transform_Payload_Existing_Opptys_TGT" doc:id="a1f31a19-677a-4086-b3b0-40318068d1aa" >
-					<flow-ref doc:name="retrieveOsExistingOpptySubflow" doc:id="7ce25b0a-e970-4795-a10b-f6cce6c721ce" name="retrieveOsExistingOpptySubflow" target="existingOpptyId"/>
-					<ee:transform doc:name="Transform Message" doc:id="5e84d754-4362-4f78-8aec-cb16e9c96242">
-						<ee:message>
-							<ee:set-payload><![CDATA[%dw 2.0
-output application/java
----
-payload ++ {
-	existingOpptyId: vars.existingOpptyId default null
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="84de9543-6a8a-4bc6-b2b7-725bd606f855" variableName="existingOpptyId" />
-				</batch:step>
-				<batch:step name="Create_Opptys_TGT"
-					doc:id="e52d4796-bac1-4f5d-9f55-e1ab20574581" acceptExpression="#[isEmpty(payload.existingOpptyId)]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="03855cde-dadb-4d66-866e-4fe8c6e4c57f"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="createOpptysSubflow_TGT" doc:id="3db10586-8b [STUDIO] --&gt;fc-4dce-9d37-d860343b1b3d" name="createOpptysSubflow_TGT" target="createOpptysResponse" targetValue="#[output application/java --- payload.items.payload]" />
-						<flow-ref doc:name="storeOsCreateOpptysResponseSubflow" doc:id="901fc77c-1f44-476e-8513-83be42656a03" name="storeOsCreateOpptysResponseSubflow" />
+				<batch:step name="Batch_Step_Update_Oppty" doc:id="e52d4796-bac1-4f5d-9f55-e1ab20574581" acceptExpression="#[!isEmpty(payload.existingOppty)]">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="8b82c02f-ec84-4435-814f-24d57d26cb3b" size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref doc:name="updateOpptySubflow_TGT" doc:id="0893fc3e-a171-496c-91b2-f4ab2233124a" name="updateOpptySubflow_TGT" target="updateOpptyResponses" targetValue="#[payload.items.payload default []]" />
+						<foreach doc:name="For Each" doc:id="ada676bd-8cf9-40d0-a6e8-b9abfb2b3239">
+							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="f0f42b56-d2f2-4122-99e5-7ebb9b57bf33">
+								<scripting:code><![CDATA[vars['record'].payload.upsertOpptyResponse = upsertOpptyResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[{
+	upsertOpptyResponse: vars.updateOpptyResponses[vars.counter-1]
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Update_Opptys_TGT"
-					doc:id="47c9680c-6a80-4d8c-b283-26dc5fde084d"
-					acceptExpression="#[!isEmpty(payload.existingOpptyId)]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="43380571-6bb8-4490-9c0a-05ae95ba1beb"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="updateOpptysSubflow_TGT"
-							doc:id="0893fc3e-a171-496c-91b2-f4ab2233124a"
-							name="updateOpptysSubflow_TGT"
-							target="updateOpptysResponse"
-							targetValue="#[output application/java --- payload.items.payload]" />
-						<flow-ref doc:name="storeOsUpdateOpptysResponseSubflow" doc:id="b24a7ea7-ee00-44b0-8d2d-82b5fa8b8831" name="storeOsUpdateOpptysResponseSubflow" />
-					</batch:aggregator>
-				</batch:step>
-				<batch:step name="Transform_Payload_Upsert_Opptys_Response_TGT" doc:id="37fefbf7-cbdf-4b91-86bf-983b2b8a8c80" >
-					<flow-ref doc:name="retrieveOsUpsertOpptyResponseSubflow" doc:id="6593ccb2-0497-4017-83ca-cfb09ef2a74f" name="retrieveOsUpsertOpptyResponseSubflow" target="upsertOpptyResponse"/>
-					<ee:transform doc:name="Transform Message" doc:id="5567edb7-2f0a-43ba-bf0d-e016ad7b0d77" >
+				<batch:step name="Batch_Step_Create_Oppty_Products" doc:id="99784586-c6cc-4141-85e5-40f70dacb6c0" acceptExpression="#[(payload.upsertOpptyResponse.success == true) and !isEmpty(payload.opptyProductsToCreate)]">
+					<flow-ref doc:name="createOpptyProductsSubflow_TGT" doc:id="f401d128-bb3e-4b39-b897-b45e6618e1c6" name="createOpptyProductsSubflow_TGT" target="createOpptyProductResponses" targetValue="#[payload.items.payload default []]" />
+					<ee:transform doc:name="Transform Message" doc:id="9e56baa8-3f47-49d2-ab34-696cc6211a1f" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 payload ++ {
-	isUpsertOpptySuccess: vars.upsertOpptyResponse.success default false,
-	upsertedOpptyId: vars.upsertOpptyResponse.id default null,
-	upsertOpptyError: vars.upsertOpptyResponse.errors[0] default null
+	upsertOpptyProductResponses: vars.createOpptyProductResponses default [] map ((item, index) -> item ++ {
+		srcId: payload.opptyProductsToCreate[index].Id
+	})
 }]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="f206c88f-8ecd-45cb-ac3e-9fc1abc56028" variableName="upsertOpptyResponse" />
 				</batch:step>
-				<batch:step
-					name="Get_Oppty_Products_SRC"
-					doc:id="15bcb000-61a2-4fb5-8f52-cd046f557303" acceptExpression="#[payload.isUpsertOpptySuccess == true]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="4e05ed7a-c01a-4262-afbf-75df18181ce6"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref
-							doc:name="getOpptyProductsByOpptyIdSubflow_SRC"
-							doc:id="b2a17d07-d062-4ae4-a97c-2b79607c997f"
-							name="getOpptyProductsByOpptyIdSubflow_SRC"
-							target="opptyProducts"
-							targetValue="#[output application/java --- payload.payload..records default []]" />
-						<flow-ref doc:name="storeOsOpptyProductsSubflow" doc:id="ede158bd-755a-4ae4-aed0-b4f23990c81d" name="storeOsOpptyProductsSubflow" />
-					</batch:aggregator>
-				</batch:step>
-				<batch:step
-					name="Get_Existing_Oppty_Products_TGT"
-					doc:id="96e8cbe0-cde5-4fb3-ace2-37fa87dbb06d"
-					acceptExpression="#[(payload.isUpsertOpptySuccess == true) and !isEmpty(payload.existingOpptyId)]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="9a21117a-94b2-40fc-b3e9-49c11b08a99a"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref
-							doc:name="getOpptyProductsByOpptyIdSubflow_TGT"
-							doc:id="99288acf-37c6-487a-abf2-e41b3b3ab2f4"
-							name="getOpptyProductsByOpptyIdSubflow_TGT"
-							targetValue="#[output application/java --- payload.payload..records default []]"
-							target="existingOpptyProducts" />
-						<flow-ref doc:name="storeOsExistingOpptyProductsSubflow" doc:id="f09f0444-fb5c-4ef7-94d5-1371c164625e" name="storeOsExistingOpptyProductsSubflow" />
-					</batch:aggregator>
-				</batch:step>
-				<batch:step name="Transform_Payload_Oppty_Products_To_Create_Update_TGT" doc:id="244bcf3c-c8cf-435e-aefc-2e3f4c13f84f" acceptExpression="#[(payload.isUpsertOpptySuccess == true)]">
-					<flow-ref doc:name="retrieveOsOpptyProductsSubflow" doc:id="7c45e1de-30d6-45e4-87b9-7fb4327b9bf8" name="retrieveOsOpptyProductsSubflow" target="opptyProducts"/>
-					<flow-ref doc:name="retrieveOsExistingOpptyProductsSubflow" doc:id="a628a996-6154-4182-8f3a-8ad7314a9954" name="retrieveOsExistingOpptyProductsSubflow" target="existingOpptyProducts"/>
-					<ee:transform doc:name="Transform Message" doc:id="27c43c6b-6d0b-4676-b428-9170f9951e8a" >
+				<batch:step name="Batch_Step_Update_Oppty_Products" doc:id="5da2a7d5-c9de-4299-b929-2899b0e0762a" acceptExpression="#[(payload.upsertOpptyResponse.success == true) and !isEmpty(payload.opptyProductsToUpdate)]">
+					<flow-ref doc:name="updateOpptyProductsSubflow_TGT" doc:id="50ac5569-ae9d-4661-986e-151b77346008" name="updateOpptyProductsSubflow_TGT" target="updateOpptyProductResponses" targetValue="#[payload.items.payload]" />
+					<ee:transform doc:name="Transform Message" doc:id="75095d73-21dd-41d8-9d4d-0ed2ff42bf61" >
 						<ee:message >
-							<ee:set-payload ><![CDATA[import transformOpptyProductsToUpsert_TGT from module::OpptyProduct
+							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-transformOpptyProductsToUpsert_TGT(payload, vars.opptyProducts, vars.existingOpptyProducts)]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="b496e34e-da4c-42b4-b33a-7d1515b59cd7" variableName="opptyProducts" />
-					<remove-variable doc:name="Remove Variable" doc:id="acf07761-ee3d-491d-8f45-e23a00b5d392" variableName="existingOpptyProducts" />
-				</batch:step>
-				<batch:step
-					name="Create_Oppty_Products_TGT"
-					doc:id="99784586-c6cc-4141-85e5-40f70dacb6c0"
-					acceptExpression="#[(payload.isUpsertOpptySuccess == true) and !isEmpty(payload.opptyProductsToCreate)]">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="f414b3b6-8254-491a-8d19-d7759fbe0f28" size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="createOpptyProductsSubflow_TGT" doc:id="f401d128-bb3e-4b39-b897-b45e6618e1c6" name="createOpptyProductsSubflow_TGT" target="createOpptyProductsResponse" targetValue="#[output application/java --- payload.items.payload default []]" />
-						<flow-ref doc:name="storeOsCreateOpptyProductsResponseSubflow" doc:id="d382b353-44d1-4931-b0f3-b53536a363c9" name="storeOsCreateOpptyProductsResponseSubflow" />
-					</batch:aggregator>
-				</batch:step>
-				<batch:step
-					name="Update_Oppty_Products_TGT"
-					doc:id="1563e95c-87b7-4bf0-a4e7-9c9d2975988b"
-					acceptExpression="#[(payload.isUpsertOpptySuccess == true) and !isEmpty(payload.opptyProductsToUpdate)]">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="16ca1fe2-e7f0-4e71-a6b6-bdcc26474f72" size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="updateOpptyProductsSubflow_TGT" doc:id="9a58ede0-6959-4327-b7a6-8be06f7fa6c2" name="updateOpptyProductsSubflow_TGT" target="updateOpptyProductsResponse" targetValue="#[output application/java --- payload.items.payload]" />
-						<flow-ref doc:name="storeOsUpdateOpptyProductsResponseSubflow" doc:id="c69c7c15-439a-4533-8460-046a68e9eaf4" name="storeOsUpdateOpptyProductsResponseSubflow" />
-					</batch:aggregator>
-				</batch:step>
-				<batch:step name="Transform_Payload_Upsert_Oppty_Products_Response_TGT" doc:id="d71154a6-9060-4115-aca1-eb661ffad55d" acceptExpression="#[(payload.isUpsertOpptySuccess == true)]">
-					<flow-ref doc:name="retrieveOsUpsertOpptyProductsSubflow" doc:id="3c2d1469-37e4-4afd-ac20-cb113304bbdc" name="retrieveOsUpsertOpptyProductsSubflow" target="upsertOpptyProductsResponse"/>
-					<ee:transform doc:name="Transform Mesage" doc:id="c3b86c8c-3f5e-4044-a0ba-1d8fbada4d93" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
 payload ++ {
-	isOpptyProductUpsertSuccess: !(vars.upsertOpptyProductsResponse.success contains false),
-	upsertedOpptyProductIds: vars.upsertOpptyProductsResponse.id default [],
-	upsertOpptyProductErrors: vars.upsertOpptyProductsResponse.errors[0] default []
+	upsertOpptyProductResponses: payload.upsertOpptyProductResponses default [] ++ vars.updateOpptyProductResponses default []
 }]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="429a3cd1-98b7-4e84-85bd-24833401edf0" variableName="upsertOpptyProductsResponse" />
 				</batch:step>
-				<batch:step name="Writeback_Opptys_SRC"
-					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="773f58e9-fa2f-4a65-a148-8fab7ee875ec"
-						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="writebackOpptysSubflow_SRC"
-							doc:id="dae08b97-4aed-4e91-b0af-b547be519cf7"
-							name="writebackOpptysSubflow_SRC" target="writebackOpptysResponse"
-							targetValue="#[output application/java --- payload.items.payload]" />
-						<flow-ref doc:name="Flow storeOsWritebackOpptysResponseSubflow" doc:id="18a5c448-706d-4a50-ab64-fd63107e9c98" name="storeOsWritebackOpptysResponseSubflow" />
-					</batch:aggregator>
+				<batch:step name="Batch_Step_Delete_Oppty_Products" doc:id="a82353f8-b9ca-4715-9e8a-b360552fa9b7" acceptExpression="#[(payload.upsertOpptyResponse.success == true) and !isEmpty(payload.opptyProductsToDelete)]">
+					<flow-ref doc:name="deleteOpptyProductsSubflow_TGT" doc:id="784686c4-21f2-4f23-b1af-c332d9714879" name="deleteOpptyProductsSubflow_TGT" target="deleteOpptyProductResponses"/>
+					<logger level="INFO" doc:name="Logger" doc:id="d9cdfacd-2158-4683-ac43-9b72848201f4" />
 				</batch:step>
-				<batch:step name="Transform_Payload_Writeback_Opptys_Response_SRC" doc:id="53d96db3-f459-415d-bc50-d8add744d214" >
-					<flow-ref doc:name="retrieveOsWritebackOpptyResponse" doc:id="19c25782-5d70-43d5-8100-c124c7774ac5" name="retrieveOsWritebackOpptyResponse" target="writebackOpptyResponse"/>
-					<ee:transform doc:name="Transform Message" doc:id="dcc9edad-eba6-49e2-ab16-1cca1f4a26fe" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+				<batch:step name="Batch_Step_Writeback_Oppty"
+					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b" acceptPolicy="ALL">
+					<choice doc:name="Choice" doc:id="84fa5a45-f8bf-40d5-9dd4-f775d6501fbb" >
+						<when expression="#[!isEmpty(Batch::getLastException())]">
+							<ee:transform doc:name="Transform Message" doc:id="60cade73-6e7e-4963-8e99-5af0ae7e26f6" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
 ---
 payload ++ {
-	isWritebackOpptySuccess: vars.writebackOpptyResponse.success,
-	writebackOpptyId: vars.writebackOpptyResponse.id default null,
-	writebackOpptyError: vars.writebackOpptyResponse.errors[0] default null
+	sysErrMsg: "A system error occurred during the Opportunity mirroring process; please check integration logs with this transaction Id for more details"
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+					</choice>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="e2ef1527-0deb-4625-9b7e-0be336a0c124" size="${batch.aggregatorSize}" preserveMimeTypes="true">
+						<flow-ref doc:name="writebackOpptySubflow_SRC" doc:id="dae08b97-4aed-4e91-b0af-b547be519cf7" name="writebackOpptySubflow_SRC" target="writebackOpptyResponses" targetValue="#[payload.items.payload default []]"/>
+						<foreach doc:name="For Each" doc:id="e956b2ec-2e0f-430a-bcd5-67f832fe9bc4" >
+							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="6c750070-051c-4835-b170-bece09f5a693" >
+								<scripting:code ><![CDATA[vars['record'].payload.writebackOpptyResponse = writebackOpptyResponse]]></scripting:code>
+								<scripting:parameters ><![CDATA[#[{
+	writebackOpptyResponse: vars.writebackOpptyResponses[vars.counter-1]
+}]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step_Writeback_Oppty_Products" doc:id="0d47cd71-bccd-4415-b52b-3efcaef7fcb4" >
+					<flow-ref doc:name="writebackOpptyProductsSubflow_SRC" doc:id="e0e73069-5ee1-4207-b388-892760d88537" name="writebackOpptyProductsSubflow_SRC" target="writebackOpptyProductResponses" targetValue="#[payload.items.payload default []]"/>
+					<ee:transform doc:name="Transform Message" doc:id="2fce2bdc-d2be-4662-9c94-c5a0ce00d22d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	writebackOpptyProductResponses: vars.writebackOpptyProductResponses default []
 }]]></ee:set-payload>
 						</ee:message>
+						<ee:variables />
 					</ee:transform>
-					<remove-variable doc:name="Remove Variable" doc:id="0b61dcb4-6f0c-4c43-9152-05d62e974c70" variableName="writebackOpptyResponse" />
 				</batch:step>
-				<batch:step name="Send_Failed_Records_To_Error_Hospital"
-					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103" acceptExpression="#[(payload.isUpsertOpptySuccess == false) or (payload.isOpptyProductUpsertSuccess == false) or (payload.isWritebackOpptySuccess == false)]">
+				<batch:step name="Batch_Step_Send_Failed_Record_To_Error_Hospital"
+					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103" acceptExpression="#[(payload.upsertOpptyResponse.success == false) or (payload.opptyProductsResponse.success contains false) or (payload.writebackOpptyResponse.success == false)]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="9991eb19-ca4e-4525-bc82-284d54679510"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="vmPublishSendFailedRecordsToErrHsptl" doc:id="f166b9a6-bdc7-4586-b091-66ff04b2acfa" name="vmPublishSendFailedRecordsToErrHsptl" />
+						<flow-ref doc:name="vmPublishInsertRecordsToErrHsptl" doc:id="f166b9a6-bdc7-4586-b091-66ff04b2acfa" name="vmPublishInsertRecordsToErrHsptl" />
 					</batch:aggregator>
+					<ee:transform doc:name="Transform Message" doc:id="b26b3bce-80a9-4fed-9c65-b3dce23aa587" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[import buildSendFailedRecordsToErrHsptlRequest from module::ErrorHospital
+output application/json
+---
+buildFailedRecord(payload)]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
 				</batch:step>
-				<batch:step name="Remove_Successful_Records_From_Error_Hospital"
+				<batch:step name="Batch_Step_Remove_Successful_Record_From_Error_Hospital"
 					doc:id="286946a8-3c81-4ae6-bdc6-2d3f3daee349"
-					acceptExpression="#[(payload.isUpsertOpptySuccess == true) and (payload.isOpptyProductUpsertSuccess == true) and (payload.isWritebackOpptySuccess == true) and (payload.isExistingErrHosptlRecord == true)]">
+					acceptExpression="#[!isEmpty(payload.existingErrHosptlRecord) and (payload.upsertOpptyResponse.success == true) and (!(payload.opptyProductsResponse.success contains false)) and (payload.writebackOpptyResponse.success == true)]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="517ca65b-1e52-4c22-bb9b-a8872fe879f7"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
@@ -239,8 +155,16 @@ payload ++ {
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="6438c5ce-3c90-480e-befc-6e8fc1b7e879"
 						size="${batch.aggregatorSize}" preserveMimeTypes="true">
-						<flow-ref doc:name="vmPublishSendSystemErrorRecordsToErrHsptl" doc:id="fe590973-429a-4381-b02a-544f50a77fcf" name="vmPublishSendFailedRecordsToErrHsptl" />
+						<flow-ref doc:name="vmPublishInsertRecordsToErrHsptl" doc:id="fe590973-429a-4381-b02a-544f50a77fcf" name="vmPublishInsertRecordsToErrHsptl" />
 					</batch:aggregator>
+					<ee:transform doc:name="Transform Message" doc:id="9076a6b9-3204-4855-b5b7-0dc587199fb2" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[import buildSystemErrorRecord from module::ErrorHospital
+output application/json
+---
+buildSystemErrorRecord(payload, Batch::getLastException())]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete>
@@ -250,24 +174,41 @@ payload ++ {
 			</batch:on-complete>
 		</batch:job>
 	</flow>
+	<sub-flow name="preprocessSubflow" doc:id="ed19009b-4476-4103-b7b8-70d9eea5ebf2">
+		<flow-ref doc:name="getRecordsFromErrHsptlByIdSubflow" doc:id="a02a0611-dd90-4304-b0b7-7c2f50e3dcfe" name="getRecordsFromErrHsptlByIdSubflow" target="existingErrHosptlRecords" targetValue="#[output application/java --- payload]" />
+		<flow-ref doc:name="getAcctsByIdSubflow_TGT" doc:id="8a564314-baba-4f0c-a195-7b29537f475f" name="getAcctsByIdSubflow_TGT" target="existingAccts" targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptysByExternalIdSubflow_TGT" doc:id="f45c7f87-d6b0-4029-b9f2-17db2d90fd19" name="getOpptysByExternalIdSubflow_TGT" target="existingOpptys" targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptyProductsByOpptyIdSubflow_TGT" doc:id="f4f35310-1ae1-47c5-ba11-1354443f032f" name="getOpptyProductsByOpptyIdSubflow_TGT" target="existingOpptyProducts" targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptyProductsByOpptyIdSubflow_SRC" doc:id="70a25909-c0a2-463b-9905-d16119aa544d" name="getOpptyProductsByOpptyIdSubflow_SRC" target="opptyProducts" targetValue="#[output application/java --- payload.payload..records default []]" />
+		<ee:transform doc:name="Transform Message" doc:id="d9e08992-d681-41b3-8535-bc07011e6a56">
+			<ee:message>
+				<ee:set-payload><![CDATA[import enrichOpptysWithQueryResults from module::Oppty
+output application/java
+---
+enrichOpptysWithQueryResults(payload, vars.existingAccts, vars.existingOpptys, vars.existingErrHsptlRecords, vars.existingOpptyProducts, vars.opptyProducts)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="removeProprocessVarsSubflow" doc:id="0a5968c9-8721-4a1b-a348-cad4d76dee98" name="removeProprocessVarsSubflow"/>
+	</sub-flow>
+	<sub-flow name="removeProprocessVarsSubflow" doc:id="ed4bc3c6-4983-4964-bc9a-b7c521c15394">
+		<remove-variable doc:name="existingErrHosptlRecords" doc:id="09dfc886-10f2-4060-8ada-089adf114783" variableName="existingErrHosptlRecords" />
+		<remove-variable doc:name="existingAccts" doc:id="1c1bdb97-6884-483b-a2ee-4122c1bff146" variableName="existingAccts" />
+		<remove-variable doc:name="existingOpptys" doc:id="95ae8c73-1f29-490f-b1d0-4105462626f2" variableName="existingOpptys" />
+		<remove-variable doc:name="existingOpptyProducts" doc:id="fac3d4f7-1541-459a-9098-6f1169e617ca" variableName="existingOpptyProducts" />
+		<remove-variable doc:name="opptyProducts" doc:id="364a61a4-cd18-45fb-92c7-afbf6169fe97" variableName="opptyProducts" />
+	</sub-flow>
 	<sub-flow name="processCompletionSubflow"
 		doc:id="f482850f-b8a9-46a8-b1eb-d2d432cb8c01">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="49658195-bb55-4c0c-8508-4d6cd14022ed"
-			message='#["processCompletionSubflow entry"]' />
 		<logger level="INFO" doc:name="INFO"
 			doc:id="15f98af9-fff1-4f2e-8daf-6321fe63b5ad"
 			message='#["Batch job summary: " ++ write(payload,"application/json")]' />
 		<choice doc:name="Choice"
 			doc:id="7f8a309e-366c-415e-a366-59114226cfa2">
 			<when
-				expression="#[!isEmpty(vars.isRetryJob) and vars.isRetryJob]">
+				expression="#[vars.isRetryJob == true]">
 				<flow-ref doc:name="clearOsBatchStatusRetrySubflow"
 					doc:id="34d5ccab-25aa-415b-b229-b1f648c1e0d1"
 					name="clearOsBatchStatusRetrySubflow" />
-				<logger level="INFO" doc:name="INFO"
-					doc:id="00bbead0-415c-42b6-b7d7-0afb43336aa1"
-					message='#["No need to send failure email and update watermark for retry job or admin flow"]' />
 			</when>
 			<otherwise>
 				<flow-ref doc:name="clearOsBatchStatusSubflow"
@@ -282,9 +223,6 @@ payload ++ {
 					name="processCompletionUpdateWatermarkSubflow" />
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="4db2af0f-3ac2-46c7-a283-a03c091e9eda"
-			message='#["processCompletionSubflow exit"]' />
 	</sub-flow>
 	<sub-flow name="processCompletionSendEmailSubflow"
 		doc:id="2b7bb81c-4f11-4881-8569-8c69a384bce4">

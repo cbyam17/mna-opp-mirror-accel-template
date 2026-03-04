@@ -14,9 +14,6 @@ http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
 	<sub-flow name="retrieveOpptyFromSourceByDateSubflow"
 		doc:id="3d3f4d2e-0f31-4b22-911d-391b7fe6e2f2">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="dae5f0d2-23ed-4930-b22b-ab61b87bef0d"
-			message='#["retrieveOpptyFromSourceByDateSubflow entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="a92cc586-6f2c-4b15-b3db-93345aad18ac">
 			<ee:message>
@@ -27,35 +24,23 @@ buildQueryOpptyFromSourceByDate(vars.watermarkLastRunDateTime, vars.watermarkCur
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="17ee5e7b-7d9f-42a9-bcdd-f20ef99383d4" name="querySubflow_SRC" />
-		<logger level="INFO" doc:name="INFO"
-			doc:id="f4c53007-93e1-44a7-95c0-05885e63f1c1"
-			message='#["retrieveOpptyFromSourceByDateSubflow exit"]' />
 	</sub-flow>
 	<sub-flow name="retrieveOpptyFromSourceByIdSubflow"
 		doc:id="e84678de-b208-477e-8ef4-76ed704c96ce">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="322d81f7-84d9-4589-9156-ce0502f86ab5"
-			message='#["retrieveOpptyFromSourceByIdSubflow entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="fe8a5bcb-4971-4723-9cb2-97c5ded36583">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyFromSourceById from module::Oppty
+				<ee:set-payload><![CDATA[import buildQueryOpptysById_SRC from module::Oppty
 output application/json
 ---
-buildQueryOpptyFromSourceById(payload.externalIds)]]></ee:set-payload>
+buildQueryOpptysById_SRC(payload.externalIds)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="c7527479-63e0-4d97-a59f-f7e7d8ae7339" name="querySubflow_SRC" />
-		<logger level="INFO" doc:name="INFO"
-			doc:id="5d91d2b6-3ba8-4eed-ae74-fd39e0948a81"
-			message='#["retrieveOpptyFromSourceByIdSubflow entry"]' />
 	</sub-flow>
 	<sub-flow
 		name="getOpptyProductsByOpptyIdSubflow_SRC"
 		doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="40c6502f-0ae1-4f1b-80b3-5d42f592fa78"
-			message='#["getOpptyProductsByOpptyIdSubflow_SRC entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="1bf342f0-aace-40fa-b26e-373fd6658e7d">
 			<ee:message>
@@ -66,31 +51,35 @@ buildQueryOpptyProductsByOpptyId_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="3bcc494b-770c-43c8-ae05-54e59791791e" name="querySubflow_SRC"/>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="386caf2b-799d-4562-8965-967ec6fc931d"
-			message='#["getOpptyProductsByOpptyIdSubflow_SRC entry"]' />
 	</sub-flow>
-	<sub-flow name="writebackOpptysSubflow_SRC"
+	<sub-flow name="writebackOpptySubflow_SRC"
 		doc:id="c6454e33-9c49-4919-8198-38ca6db14089">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="45cdc864-e93c-49c0-b03c-c18a19b113b7"
-			message='#["writebackOpptysSubflow_SRC entry"]' />
-		<ee:transform doc:name="Transform Message"
-			doc:id="1da53f08-8dba-4f36-beb3-c92eba2845a5">
+		<ee:transform doc:name="Transform Message" doc:id="7d39c84e-2d56-4b85-8130-1e51e7852dad">
 			<ee:message>
-				<ee:set-payload><![CDATA[import transformWritebackSourceOpptys_SRC from module::Oppty
+				<ee:set-payload><![CDATA[import transformWritebackOppty_SRC from module::Oppty
 output application/java
 ---
-transformWritebackSourceOpptys_SRC(payload)]]></ee:set-payload>
+transformWritebackOppty_SRC(payload)]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
 				<ee:set-variable variableName="objectType" ><![CDATA["Opportunity"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="301d12ef-ac9a-4552-b47f-6b653daa800f" name="updateObjectSubflow_SRC"/>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="da247e91-c744-4b59-8382-8be8b5b7709e"
-			message='#["writebackOpptysSubflow_SRC exit"]' />
+	</sub-flow>
+	<sub-flow name="writebackOpptyProductsSubflow_SRC" doc:id="ee48c70c-134b-4011-a7b0-59a35307a036" >
+		<ee:transform doc:name="Transform Message" doc:id="a37d5810-baed-4e86-bb08-ee7f890d05db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[import transformWritebackOpptyProducts_SRC from module::OpptyProduct
+output application/java
+---
+transformWritebackOpptyProducts_SRC(payload)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="dc9b0022-d38c-48ac-bafb-7f1c44eeeb78" name="updateObjectSubflow_SRC" />
 	</sub-flow>
 	<sub-flow name="querySubflow_SRC" doc:id="1f3004e1-17e5-4be4-afeb-ca93fce8cfe5" >
 		<logger level="DEBUG" doc:name="DEBUG" doc:id="bef46418-f949-4a8b-b4d5-2864dbf670fd" message='#["_SRC query request: " ++ write(payload, "application/json")]' />

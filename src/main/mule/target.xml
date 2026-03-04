@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
 	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
-http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd">
+http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="getAcctsByIdSubflow_TGT" doc:id="a3ff0644-c8a8-49c4-959f-219c39f94948" >
+		<ee:transform doc:name="Transform Message" doc:id="f053bad1-6b12-4514-a3ad-5dad4f79c6f1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[import buildQueryAcctsById_TGT from module::Acct
+output application/java
+---
+buildQueryAcctsById_TGT(payload.Account.Acct_Id_TGT__c)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="4a8a01b6-abb6-4091-9619-bb788bf00b0d" config-ref="salesforceConfig_TGT">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+	</sub-flow>
 	<sub-flow name="getOpptysByExternalIdSubflow_TGT"
 		doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="55e9f550-6aba-4be6-b646-53607c105479"
-			message='#["getOpptysByExternalIdSubflow_TGT entry"]' />
 		<ee:transform doc:name="Transform Message"
 			doc:id="0ee97f96-be2a-4209-be95-aaa50cbaa1a3">
 			<ee:message>
@@ -25,72 +39,58 @@ output application/java
 buildQueryOpptysByExternalId_TGT(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_TGT" doc:id="eec58629-cf07-4ebe-8193-ac27fed74400" name="querySubflow_TGT"/>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="01539ac4-3a80-4ab5-a97e-c15f991f2524"
-			message='#["getOpptysByExternalIdSubflow_TGT exit"]' />
+		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="88cef695-3305-447a-98f0-82948932d881" config-ref="salesforceConfig_TGT">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
 	</sub-flow>
-	<sub-flow name="createOpptysSubflow_TGT" doc:id="ad433964-03af-473f-919e-11b3f0884965">
-		<logger level="INFO" doc:name="INFO" doc:id="64abd3ea-c75a-4c2c-aa6b-a92559ce9456" message='#["createOpptysSubflow_TGT entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="790c2ff5-7943-4689-bab7-e59c40807960">
+	<sub-flow name="getOpptyProductsByOpptyIdSubflow_TGT" doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
+		<ee:transform doc:name="Transform Message" doc:id="d4a9f468-c366-48f2-9533-5e5ccb79a91e">
 			<ee:message>
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="objectType" ><![CDATA[%dw 2.0
+				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyExternalId_TGT from module::OpptyProduct
 output application/java
 ---
-{
-}]]></ee:set-variable>
+buildQueryOpptyProductsByOpptyExternalId_TGT(payload.Id)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="caed99f0-663f-4131-bc82-d78bbda6e006" config-ref="salesforceConfig_TGT">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+payload.queryParams]]]></salesforce:parameters>
+		</salesforce:query-xml-stream>
+	</sub-flow>
+	<sub-flow name="createOpptySubflow_TGT" doc:id="ad433964-03af-473f-919e-11b3f0884965">
+		<ee:transform doc:name="Transform Message" doc:id="9cc4562e-03b4-400b-8479-3bcc4ad350fa">
+			<ee:message>
+				<ee:set-payload><![CDATA[import transformCreateOppty_TGT from module::Oppty
+output application/java
+---
+transformCreateOppty_TGT(payload)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="createObjectSubflow_TGT" doc:id="e88dde94-cf04-48b4-9016-8e752956bd62" name="createObjectSubflow_TGT"/>
-		<logger level="INFO" doc:name="INFO" doc:id="639f96c4-723b-4233-be04-e6100ad94ee7" message='#["createOpptysSubflow_TGT exit"]' />
+		<salesforce:create type='#["Opportunity"]' doc:name="Create" doc:id="aa30b413-9593-4323-a784-8235c9ef7103" config-ref="salesforceConfig_TGT" />
 	</sub-flow>
-	<sub-flow name="updateOpptysSubflow_TGT"
+	<sub-flow name="updateOpptySubflow_TGT"
 		doc:id="2e12c0f9-16e4-405e-a785-dbee3fe5ec9b">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="6aa7b48b-1bf8-4c61-8e4a-6a2b27e3d82d"
-			message='#["updateOpptysSubflow_TGT entry"]' />
-		<ee:transform doc:name="Transform Message"
-			doc:id="af9f1f95-4d47-4aae-810b-0f36e3c1896a">
+		<ee:transform doc:name="Transform Message" doc:id="257451d9-b697-4cd6-92a4-b4bf781faa4c">
 			<ee:message>
-				<ee:set-payload><![CDATA[import transformUpdateOpptys_TGT from module::Oppty
+				<ee:set-payload><![CDATA[import transformUpdateOppty_TGT from module::Oppty
 output application/java
 ---
-transformUpdateOpptys_TGT(payload)]]></ee:set-payload>
+transformUpdateOppty_TGT(payload)]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="objectType" ><![CDATA["Opportunity"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="updateObjectSubflow_TGT" doc:id="f56095ef-4c03-4edf-8297-2cbd5d9f9701" name="updateObjectSubflow_TGT"/>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="8e4d184b-74e1-4fdf-891a-7dfb6304a828"
-			message='#["updateOpptysSubflow_TGT exit"]' />
-	</sub-flow>
-	<sub-flow
-		name="getOpptyProductsByOpptyIdSubflow_TGT"
-		doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="e77200b9-9ee9-40b7-bdcb-c551c551d5ed"
-			message='#["getOpptyProductsByOpptyIdSubflow_TGT entry"]' />
-		<ee:transform doc:name="Transform Message"
-			doc:id="d4a9f468-c366-48f2-9533-5e5ccb79a91e">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyId_TGT from module::OpptyProduct
-output application/java
----
-buildQueryOpptyProductsByOpptyId_TGT(payload.existingOpptyId)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<flow-ref doc:name="querySubflow_TGT" doc:id="c723a045-fca4-488c-a255-37ce7e30c1c5" name="querySubflow_TGT" />
-		<logger level="INFO" doc:name="INFO"
-			doc:id="25d519da-a2e5-4de4-9f21-38477ac4563d"
-			message='#["getOpptyProductsByOpptyIdSubflow_TGT exit"]' />
+		<salesforce:update type='#["Opportunity"]' doc:name="Update" doc:id="233cd1ec-126f-4a81-8ab3-0c46395c36a2" config-ref="salesforceConfig_TGT" />
 	</sub-flow>
 	<sub-flow name="createOpptyProductsSubflow_TGT" doc:id="92226890-bd34-495b-8399-1d8d3f095f63">
-		<logger level="INFO" doc:name="INFO" doc:id="abb99671-298f-4729-b875-a39d67d34780" message='#["createOpptyProductsSubflow_TGT entry"]' />
-		<ee:transform doc:name="Transform Message" doc:id="2d070b89-4a54-426d-8639-62ccbf625d66">
+		<ee:transform doc:name="Transform Message" doc:id="0cff9af6-9c4f-4331-8b04-efd1e335db6d">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformCreateOpptyProducts_TGT from module::OpptyProduct
 output application/java
@@ -98,19 +98,13 @@ output application/java
 transformCreateOpptyProducts_TGT(payload)]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="createObjectSubflow_TGT" doc:id="8f848052-c359-4c16-aea1-390f89e10339" name="createObjectSubflow_TGT" />
-		<logger level="INFO" doc:name="INFO" doc:id="fabe3507-6439-4e2c-9f68-0ad26bd4fc42" message='#["createOpptyProductsSubflow_TGT exit"]' />
+		<salesforce:create type='#["OpportunityLineItem"]' doc:name="Create" doc:id="9fcd9151-c93d-4bf0-b6ac-7798b0ce328e" config-ref="salesforceConfig_TGT" />
 	</sub-flow>
 	<sub-flow name="updateOpptyProductsSubflow_TGT"
 		doc:id="3f73739c-6e73-4ec6-b38f-7d0d36f4df99">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="e667ad26-cc38-4643-b782-2624f06b7e56"
-			message='#["updateOpptyProductsSubflow_TGT entry"]' />
-		<ee:transform doc:name="Transform Message"
-			doc:id="7235fea1-49d3-4bb9-afea-229969e48c4f">
+		<ee:transform doc:name="Transform Message" doc:id="e3f120b7-77bf-4ccf-a31d-933fab7e0695">
 			<ee:message>
 				<ee:set-payload><![CDATA[import transformUpdateOpptyProducts_TGT from module::OpptyProduct
 output application/java
@@ -118,32 +112,22 @@ output application/java
 transformUpdateOpptyProducts_TGT(payload)]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<salesforce:update type='#["OpportunityLineItem"]' doc:name="Update" doc:id="58527f6e-7fa4-433c-9ac4-50ea7ef69af4" config-ref="salesforceConfig_TGT" />
+	</sub-flow>
+	<sub-flow name="deleteOpptyProductsSubflow_TGT" doc:id="cf4d4de6-f8ab-4c5c-9970-ed0e8b32ed35" >
+		<ee:transform doc:name="Transform Message" doc:id="dad9d39e-bb02-4e6d-95d1-acba1437b470" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[import transformDeleteOpptyProducts_TGT from module::OpptyProduct
+output application/java
+---
+transformDeleteOpptyProducts_TGT(payload)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
 				<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="updateObjectSubflow_TGT" doc:id="81039253-1e8f-4e7c-a632-465c55351724" name="updateObjectSubflow_TGT" />
-		<logger level="INFO" doc:name="INFO"
-			doc:id="c0975941-dfa1-48c7-8033-b29e0a569028"
-			message='#["updateOpptyProductsSubflow_TGT exit"]' />
-	</sub-flow>
-	<sub-flow name="querySubflow_TGT" doc:id="73ebded0-9a41-43f7-a84f-403609dba66c" >
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="70005edd-6901-4434-b2da-9e9a11207e26" message='#["_TGT query request: " ++ write(payload, "application/json")]'/>
-		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="50fcd2ba-6f7a-4d3e-a36b-acf1daf91942" config-ref="salesforceConfig_TGT" >
-			<salesforce:salesforce-query ><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[output application/java
----
-payload.queryParams]]]></salesforce:parameters>
-		</salesforce:query-xml-stream>
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="7549b9a9-3b87-4dca-8e09-e00c741d69d0" message='#["_TGT query response: " ++ write(payload, "application/json")]'/>
-	</sub-flow>
-	<sub-flow name="createObjectSubflow_TGT" doc:id="36ccea23-2ca4-4fd8-be53-05b2a0fe016f" >
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="0b13c98a-3022-4b7a-b610-f57e517d7775" message='#["_TGT create request - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]'/>
-		<salesforce:create type="#[vars.objectType]" doc:name="Create" doc:id="62269550-fb62-4412-b9bc-09548f6b5310" config-ref="salesforceConfig_TGT" />
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="c96d58c1-a1d9-4f45-b778-7031163a6515" message='#["_TGT create response - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]'/>
-	</sub-flow>
-	<sub-flow name="updateObjectSubflow_TGT" doc:id="cd110568-f8c9-452a-aa62-da68ceb7fe82" >
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="e22b3f5f-e244-4c2e-bde9-3de4994ba44d" message='#["_TGT update request - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
-		<salesforce:update type="#[vars.objectType]" doc:name="Update" doc:id="842a7ae2-64dd-4064-ab6f-c9b418852175" config-ref="salesforceConfig_TGT" />
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="62ccbba7-c4cc-413f-be04-176f5586ca2e" message='#["_TGT update response - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
+		<salesforce:delete doc:name="Delete" doc:id="177245fb-1e9b-41ec-9b54-79a6c4f73a8d" config-ref="salesforceConfig_TGT" />
 	</sub-flow>
 </mule>

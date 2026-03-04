@@ -27,6 +27,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		<choice doc:name="Choice"
 			doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7">
 			<when expression='#[vars.pingResponse.status == "UP"]'>
+				<remove-variable doc:name="pingResponse" doc:id="e9df0aab-4379-41dd-83a5-b934ec46d4f4" variableName="pingResponse"/>
 				<async doc:name="Async"
 					doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5">
 					<flow-ref doc:name="processAdminSubflow"

@@ -48,6 +48,15 @@ buildGetRecordsFromErrHsptlByIdRequest(payload)]]></ee:set-payload>
 	</sub-flow>
 	<sub-flow name="sendRecordsToErrHsptlSubflow"
 		doc:id="54c04c48-f629-4cf0-9da8-9d94d0106a7d">
+		<ee:transform doc:name="Transform Message" doc:id="678105b8-ce60-470e-b440-bfcc80bc93b7">
+			<ee:message>
+				<ee:set-payload><![CDATA[import buildSendFailedRecordsToErrHsptlRequest from module::ErrorHospital
+output application/json
+---
+buildSendFailedRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
 		<foreach doc:name="For Each"
 			doc:id="95b30bf5-1e86-4bfd-9b75-013cfe8acfca" collection="#[payload]">
 			<os:store doc:name="Store"
@@ -57,6 +66,14 @@ buildGetRecordsFromErrHsptlByIdRequest(payload)]]></ee:set-payload>
 	</sub-flow>
 	<sub-flow name="removeRecordsFromErrHsptlSubflow"
 		doc:id="56740b30-4ef3-4949-b3a4-beb5cb621dd5">
+		<ee:transform doc:name="Transform Message" doc:id="005e03e3-6759-4a86-a8b1-f750777fc2c1">
+			<ee:message>
+				<ee:set-payload><![CDATA[import buildRemoveRecordsFromErrHsptlRequest from module::ErrorHospital
+output application/json
+---
+buildRemoveRecordsFromErrHsptlRequest(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<foreach doc:name="For Each"
 			doc:id="df823397-6ad3-4c9e-a87c-397a9d714e46" collection="#[payload]">
 			<os:remove doc:name="Remove"

@@ -1,6 +1,5 @@
 %dw 2.0
 
-
 fun buildPingEndpointResponse(name, response) =
 [{
 	name: name,
@@ -29,7 +28,7 @@ fun appendZIfNeeded(dateTimeStr) =
 	
 fun generateIdInClause(ids) =
 	ids default [] distinctBy ((item) -> item) default []
-		map ((item, index) -> ("': idArg'") ++ index ++ "") joinBy ", "
+		map ((item, index) -> ("':idArg") ++ index ++ "'") joinBy ", "
 
 fun buildFieldsToNull(data) =
 	data pluck ((value, key, index) -> (if ( isEmpty(value) ) key else null)) default []
