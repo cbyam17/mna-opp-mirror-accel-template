@@ -61,9 +61,6 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 		<http:listener-connection host="0.0.0.0"
 			port="${httpListener.port}" readTimeout="${httpListener.readTimeout}"/>
 	</http:listener-config>
-	<global-property doc:name="Global Property"
-		doc:id="b0842d84-5646-4cce-9d7b-9909bc0d8aa1" name="mule.key"
-		value="accelerator12345" />
 	<email:smtp-config name="emailConfig" doc:name="Email SMTP" doc:id="96a0e188-e9a7-4f3b-a9b3-5829ca2f5952" >
 		<email:smtp-connection host="smtp.gmail.com" port="587" user="cbyam.ms@gmail.com" password="sdko izqh laje jefk">
 			<email:properties >
