@@ -2,95 +2,140 @@
 import mergeWith from dw::core::Objects
 import generateIdInClause, buildFieldsToNull from module::CommonUtil
 
+// -----------------------------------------------------------------------------
+// SOQL builders
+// -----------------------------------------------------------------------------
+
+/**
+ * Build a SOQL query (SRC) to fetch OpportunityLineItems by OpportunityId list.
+ * @param opptyIds Array<String>
+ */
 fun buildQueryOpptyProductsByOpptyId_SRC(opptyIds) =
-    {
-    	// adjust SOQL query per reqs
-        query: "SELECT Id, Oppty_Product_Id_TGT__c, PricebookEntryId, OpportunityId, UnitPrice, Quantity FROM OpportunityLineItem WHERE OpportunityId IN (" ++ generateIdInClause(opptyIds) ++ ")",
-        queryParams: opptyIds default [] distinctBy ((item) -> item) default []
-            map ((item,index) -> {
-                (("idArg") ++ index): item
-            })
-            reduce ((item, accumulator = {}) -> item ++ accumulator)
-    }
+  {
+    // Adjust SOQL per requirements
+    query:
+      "SELECT Id, PricebookEntryId, OpportunityId, UnitPrice, Quantity " ++
+      "FROM OpportunityLineItem WHERE OpportunityId IN (" ++ generateIdInClause(opptyIds) ++ ")",
 
+    queryParams:
+      (opptyIds default [])
+        distinctBy ($)
+        map ((item, index) -> { (("idArg") ++ index): item })
+        reduce ((item, acc = {}) -> acc ++ item)
+  }
+
+/**
+ * Build a SOQL query (TGT) to fetch OLI by Opportunity external id (Oppty_Id_SRC__c).
+ * @param opptyIds Array<String>  // These are the source Opportunity Ids
+ */
 fun buildQueryOpptyProductsByOpptyExternalId_TGT(opptyIds) =
-    {
-        // adjust SOQL query per reqs
-        query: "SELECT Id, Oppty_Product_Id_SRC__c, PricebookEntryId, OpportunityId, Opportunity.Oppty_Id_SRC__c FROM OpportunityLineItem WHERE Opportunity.Oppty_Id_SRC__c IN (" ++ generateIdInClause(opptyIds) ++ ")",
-        queryParams: opptyIds default [] distinctBy ((item) -> item) default []
-            map ((item,index) -> {
-                (("idArg") ++ index): item
-            })
-            reduce ((item, accumulator = {}) -> item ++ accumulator)
-    }
+  {
+    // Adjust SOQL per requirements
+    query:
+      "SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Oppty_Id_SRC__c " ++
+      "FROM OpportunityLineItem " ++
+      "WHERE Opportunity.Oppty_Id_SRC__c IN (" ++ generateIdInClause(opptyIds) ++ ")",
 
-fun transformCreateOpptyProducts_TGT(record) = 
-    // record.opptyProductsToCreate contains oppty products queried from SRC that do not exist in TGT
-    // record.upsertOpptyResponses contains responses from oppty product upserts in TGT
-    record.opptyProductsToCreate default [] map ((item) -> do {
-        // adjust fields as needed
-        var transformedData = {
-            OpportunityId: record.upsertOpptyResponse.id,
-            PricebookEntryId: mapPbEntryId(item.PricebookEntryId, "_TGT"),
-            Quantity: item.Quantity default 0 as Number,
-            UnitPrice: item.UnitPrice default 0 as Number,
-            Oppty_Product_Id_SRC__c: item.Id
+    queryParams:
+      (opptyIds default [])
+        distinctBy ($)
+        map ((item, index) -> { (("idArg") ++ index): item })
+        reduce ((item, acc = {}) -> acc ++ item)
+  }
+
+// -----------------------------------------------------------------------------
+// TGT create/update/delete payloads
+// -----------------------------------------------------------------------------
+
+/**
+ * Create payloads for TGT OLIs based on SRC create set.
+ * expects:
+ *  - record.opptyProductsToCreate        : Array<SRC OLI>
+ *  - record.upsertOpptyResponse          : { id, success, errors }
+ */
+fun transformCreateOpptyProducts_TGT(records) =
+  (records default []) flatMap ((r) ->
+    (r.opptyProductsToCreate default []) map ((op) -> do {
+      // Adjust field mapping as needed
+      var transformedData =
+        {
+          OpportunityId:               r.upsertOpptyResponse.id,
+          PricebookEntryId:            mapPbEntryId(op.PricebookEntryId, "_TGT"),
+          Quantity:                    ((op.Quantity  default 0) as Number),
+          UnitPrice:                   ((op.UnitPrice default 0) as Number),
+          Oppty_Product_Id_SRC__c:     op.Id
         }
-        var fieldsToNull = buildFieldsToNull(transformedData)
-        ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-        else transformedData
+      var fieldsToNull = buildFieldsToNull(transformedData)
+      ---
+      if (!isEmpty(fieldsToNull))
+        transformedData mergeWith { fieldsToNull: fieldsToNull }
+      else
+        transformedData
     })
+  )
 
-fun transformUpdateOpptyProducts_TGT(record) =
-    // record.opptyProductsToUpdate contains oppty products queried from TGT that match oppty products queried from SRC
-    // record.opptyProducts contains oppty products queried from SRC
-    record.opptyProductsToUpdate default [] map ((item) -> do {
-        var transformedData = {
-        	// adjust fields as needed
-            Id: item.Id,
-            Quantity: (record.opptyProducts filter ((op) -> (mapPbEntryId(op.PricebookEntryId,"_TGT") == item.PricebookEntryId)))[0].Quantity default 0 as Number,
-            UnitPrice: (record.opptyProducts filter ((op) -> (mapPbEntryId(op.PricebookEntryId,"_TGT") == item.PricebookEntryId)))[0].UnitPrice default 0 as Number,
-            Oppty_Product_Id_SRC__c: (record.opptyProducts filter ((op) -> (mapPbEntryId(op.PricebookEntryId,"_TGT") == item.PricebookEntryId)))[0].Id
+/**
+ * Update payloads for TGT OLIs based on matched SRC lines.
+ * expects:
+ *  - record.opptyProductsToUpdate        : Array<TGT OLI>
+ *  - record.opptyProducts                : Array<SRC OLI>
+ *
+ * Matching rule:
+ *  - Find the SRC OLI whose mapped TGT PBE equals the TGT OLI PBE.
+ */
+fun transformUpdateOpptyProducts_TGT(records) =
+  (records default []) flatMap ((r) ->
+    (r.opptyProductsToUpdate default []) map ((op) -> do {
+      var matchSrc =
+        ((r.opptyProducts default [])
+          filter ((item) -> mapPbEntryId(item.PricebookEntryId, "_TGT") == op.PricebookEntryId))[0]
+
+      var transformedData =
+        {
+          Id:                          op.Id,
+          Quantity:                    ((matchSrc.Quantity  default 0) as Number),
+          UnitPrice:                   ((matchSrc.UnitPrice default 0) as Number)
         }
-        var fieldsToNull = buildFieldsToNull(transformedData)
-        ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-        else transformedData
-     })
 
-fun transformDeleteOpptyProducts_TGT(record) =
-    record.opptyProductsToDelete.Id default []
-
-fun transformWritebackOpptyProducts_SRC(record) =
-    // record.opptyProducts contains oppty products queried from SRC
-    // record.existingOpptyProducts contains oppty products queried from TGT
-    // record.upsertOpptyResponses contains responses from oppty product upsert in TGT
-    record.opptyProducts default [] map ((item) -> do {
-        var isExistingOpptyProduct = record.existingOpptyProducts.Oppty_Product_Id_SRC__c contains item.Id
-        // adjust fields as needed
-        var transformedData = {
-            Id: item.Id,
-            // Id of matching existing TGT oppty product or Id of matching upserted TGT oppty product
-            Oppty_Product_Id_TGT__c: if (isExistingOpptyProduct) (record.existingOpptyProducts filter ((op) -> (op.Oppty_Product_Id_SRC__c == item.Id)))[0].Id
-                else (record.upsertOpptyProductResponses filter ((op) -> (op.srcId == item.Id)))[0].id
-        }
-        var fieldsToNull = buildFieldsToNull(transformedData)
-        ---
-        if (!isEmpty(fieldsToNull)) transformedData mergeWith { fieldsToNull: fieldsToNull } 
-        else transformedData
+      var fieldsToNull = buildFieldsToNull(transformedData)
+      ---
+      if (!isEmpty(fieldsToNull))
+        transformedData mergeWith { fieldsToNull: fieldsToNull }
+      else
+        transformedData
     })
+  )
 
-// adjust PB entry Ids depending on the fixed PB entries mapping
+/**
+ * Delete list for TGT OLIs.
+ * expects:
+ *  - record.opptyProductsToDelete        : Array<TGT OLI>
+ * @return Array<String> of Ids to delete
+ */
+fun transformDeleteOpptyProducts_TGT(records) =
+  (records default []) flatMap ((r) ->
+    (r.opptyProductsToDelete default []) map ((op) -> op.Id)
+  )
+
+// -----------------------------------------------------------------------------
+// PBE mapping helper
+// -----------------------------------------------------------------------------
+
+/**
+ * Map PB Entry Ids between SRC and TGT by fixed property mapping.
+ * destination: "_TGT" | "_SRC"
+ */
 fun mapPbEntryId(pbEntryId, destination) =
-	if (destination == "_TGT")
-	    if (pbEntryId == Mule::p('src.pbEntryId.C')) Mule::p('tgt.pbEntryId.C')
-	    else if (pbEntryId == Mule::p('src.pbEntryId.OT')) Mule::p('tgt.pbEntryId.OT')
-	    else if (pbEntryId == Mule::p('src.pbEntryId.OG')) Mule::p('tgt.pbEntryId.OG')
-	    else null
-	else if (destination == "_SRC")
-		if (pbEntryId == Mule::p('tgt.pbEntryId.C')) Mule::p('src.pbEntryId.C')
-	    else if (pbEntryId == Mule::p('tgt.pbEntryId.OT')) Mule::p('src.pbEntryId.OT')
-	    else if (pbEntryId == Mule::p('tgt.pbEntryId.OG')) Mule::p('src.pbEntryId.OG')
-	    else null
-	else null    
+  if (destination == "_TGT")
+    if      (pbEntryId == Mule::p("src.pbEntryId.C"))  Mule::p("tgt.pbEntryId.C")
+    else if (pbEntryId == Mule::p("src.pbEntryId.OT")) Mule::p("tgt.pbEntryId.OT")
+    else if (pbEntryId == Mule::p("src.pbEntryId.OG")) Mule::p("tgt.pbEntryId.OG")
+    else if (pbEntryId == Mule::p("src.pbEntryId.DT")) Mule::p("tgt.pbEntryId.DT")
+    else null
+  else if (destination == "_SRC")
+    if      (pbEntryId == Mule::p("tgt.pbEntryId.C"))  Mule::p("src.pbEntryId.C")
+    else if (pbEntryId == Mule::p("tgt.pbEntryId.OT")) Mule::p("src.pbEntryId.OT")
+    else if (pbEntryId == Mule::p("tgt.pbEntryId.OG")) Mule::p("src.pbEntryId.OG")
+    else if (pbEntryId == Mule::p("tgt.pbEntryId.DT")) Mule::p("src.pbEntryId.DT")
+    else null
+  else null

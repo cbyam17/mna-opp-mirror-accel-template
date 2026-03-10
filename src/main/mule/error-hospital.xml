@@ -12,73 +12,138 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="getRecordsFromErrHsptlSubflow" doc:id="88597b62-a290-4edf-995d-df68a683084c" >
+		<set-variable value='#["getRecords"]' doc:name="requestType" doc:id="85669ce4-cb09-4432-854e-8833145f9b17" variableName="requestType" />
+		<flow-ref doc:name="errHsptlApiSubflow" doc:id="d96b8e24-5399-4d94-a9c8-1bb8e367b0d5" name="errHsptlApiSubflow" />
+	</sub-flow>
 	<sub-flow name="getRecordsFromErrHsptlByIdSubflow"
 		doc:id="dea2d133-3dec-46c8-94fa-d7319cca46b5">
 		<ee:transform doc:name="Transform Message"
 			doc:id="e8f9cd41-e3df-407d-ad97-52826b45beae">
 			<ee:message>
 				<ee:set-payload><![CDATA[import buildGetRecordsFromErrHsptlByIdRequest from module::ErrorHospital
-output application/java
+output application/json
 ---
-buildGetRecordsFromErrHsptlByIdRequest(payload)]]></ee:set-payload>
+buildGetRecordsFromErrHsptlByIdRequest(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<set-variable value="#[[]]" doc:name="results"
-			doc:id="0a58216b-ddff-4f92-b8a3-92fe237cf6d4" variableName="results" />
-		<foreach doc:name="For Each"
-			doc:id="79ae3df8-4b4f-432f-b5ff-d3c4c2cd8ad0" collection="#[payload]">
-			<os:retrieve doc:name="Retrieve"
-				doc:id="bc3c748e-eb30-449c-9ef7-d2db76a9f6a3" key="#[payload]"
-				targetValue="#[output application/json --- payload]"
-				objectStore="errorHospitalStore">
-				<os:default-value><![CDATA[#[""]]]></os:default-value>
-			</os:retrieve>
-			<choice doc:name="Choice"
-				doc:id="2f02e11e-2a33-4272-9616-146d63d9c18f">
-				<when expression="#[!isEmpty(payload)]">
-					<set-variable
-						value="#[vars.results default [] ++ [payload]]" doc:name="results"
-						doc:id="f376b337-4ef4-4219-b54b-baca8dcd7565"
-						variableName="results" />
-				</when>
-			</choice>
-		</foreach>
-		<set-payload value="#[vars.results default []]"
-			doc:name="Set Payload" doc:id="8fdbc067-7ec3-40a0-9104-90b54286cfbb" />
+		<set-variable value='#["getRecordsById"]' doc:name="requestType" doc:id="cd386e55-231c-4aa8-b541-de30b6a7a309" variableName="requestType"/>
+		<flow-ref doc:name="errHsptlApiSubflow" doc:id="66ccaf14-ef2d-49bb-a00c-9a9c3cc1a1a0" name="errHsptlApiSubflow"/>
 	</sub-flow>
 	<sub-flow name="sendRecordsToErrHsptlSubflow"
 		doc:id="54c04c48-f629-4cf0-9da8-9d94d0106a7d">
-		<ee:transform doc:name="Transform Message" doc:id="678105b8-ce60-470e-b440-bfcc80bc93b7">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildSendFailedRecordsToErrHsptlRequest from module::ErrorHospital
-output application/json
----
-buildSendFailedRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
-			</ee:message>
-			<ee:variables />
-		</ee:transform>
-		<foreach doc:name="For Each"
-			doc:id="95b30bf5-1e86-4bfd-9b75-013cfe8acfca" collection="#[payload]">
-			<os:store doc:name="Store"
-				doc:id="951d0f67-20a4-430a-acec-7a6125bd2726"
-				key="#[payload.recordId]" objectStore="errorHospitalStore" />
-		</foreach>
+		<set-variable value='#["insertRecords"]' doc:name="requestType" doc:id="4edf2e94-5c3d-4052-83c0-a6e568c9992e" variableName="requestType" />
+		<flow-ref doc:name="errHsptlApiSubflow" doc:id="91f2d00d-ce53-4b25-abf8-72e9d697d9ad" name="errHsptlApiSubflow" />
 	</sub-flow>
 	<sub-flow name="removeRecordsFromErrHsptlSubflow"
 		doc:id="56740b30-4ef3-4949-b3a4-beb5cb621dd5">
-		<ee:transform doc:name="Transform Message" doc:id="005e03e3-6759-4a86-a8b1-f750777fc2c1">
-			<ee:message>
-				<ee:set-payload><![CDATA[import buildRemoveRecordsFromErrHsptlRequest from module::ErrorHospital
+		<set-variable value='#["deleteRecords"]' doc:name="requestType" doc:id="fbc08735-4132-4efc-b1c0-624f16e59e08" variableName="requestType" />
+		<flow-ref doc:name="errHsptlApiSubflow" doc:id="11113c1c-d294-4779-8b14-698bcbb5098f" name="errHsptlApiSubflow" />
+	</sub-flow>
+	<sub-flow name="errHsptlApiSubflow" doc:id="9e99ce4a-43af-404b-8bb9-4d0a56c5d107" >
+		<choice doc:name="Choice" doc:id="853a3bea-6e7d-445c-9ebc-82c914b76683" >
+			<when expression='#[vars.requestType == "getRecords"]'>
+				<os:retrieve-all doc:name="Retrieve all" doc:id="d8f11847-c985-43be-b109-5987d0e77f18" objectStore="errorHospitalStore"/>
+				<ee:transform doc:name="Transform Message" doc:id="03e3e7ee-f82d-4599-b576-fa4148d60cca" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-buildRemoveRecordsFromErrHsptlRequest(payload)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<foreach doc:name="For Each"
-			doc:id="df823397-6ad3-4c9e-a87c-397a9d714e46" collection="#[payload]">
-			<os:remove doc:name="Remove"
-				doc:id="1dcde617-e778-468b-93a3-85a17d85501e" key="#[payload]"
-				objectStore="errorHospitalStore" />
-		</foreach>
+if (!isEmpty(payload))
+	payload
+	  // turn the Map into an array of { key, value }
+	  pluck ((v, k) -> { key: k, value: v })
+	  // keep items unless remainingRetryCount exists AND equals 0
+	  filter ((item) -> 
+	    not ((item.value.remainingRetryCount default 0) as Number == 0)
+	  )
+else
+	[]
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.requestType == "getRecordsById"]'>
+				<set-variable value="#[output application/json --- []]" doc:name="results" doc:id="06a78f62-4cb3-4fda-a6de-083631963f03" variableName="results" />
+				<foreach doc:name="For Each" doc:id="41f5ca22-e428-4c6e-b06e-a066fc714398" collection="#[payload]" >
+					<os:retrieve doc:name="Retrieve" doc:id="3ec1f6c8-ce84-4581-88f8-9ae6b1a780d7" key="#[payload]" objectStore="errorHospitalStore">
+						<os:default-value ><![CDATA[#[""]]]></os:default-value>
+					</os:retrieve>
+					<ee:transform doc:name="Transform Message" doc:id="0632beae-24af-41e4-a8dd-07cd7254d17c" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="results" ><![CDATA[%dw 2.0
+output application/json
+---
+// if key found, add record to results, else leave results as is
+if (!isEmpty(payload))
+	vars.results default [] ++ [payload]
+else
+	vars.results]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</foreach>
+				<ee:transform doc:name="Transform Message" doc:id="8e95f1f6-24c2-412b-8d28-f4988c788a7c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.results default []]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.requestType == "insertRecords"]'>
+				<ee:transform doc:name="Transform Message" doc:id="9a170f1a-4048-4c09-b57d-b235cf20e935">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.failedRecords map ((item) -> {
+	appName: payload.appName,
+	domain: payload.domain,
+	transactionId: payload.transactionId,
+	recordId: item.recordId,
+	errorType: item.error.errorType,
+	errorMessage: item.error.errorMessage,
+	description: item.error.description,
+	remainingRetryCount: item.error.maxRetries
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<foreach doc:name="For Each" doc:id="519e8c9a-8bed-402f-b6f4-69cc1486d631" collection="#[payload]" >
+					<os:contains doc:name="Contains" doc:id="1d51662f-bffe-4370-809d-0e2b4ff01e48" key="#[payload.recordId]" objectStore="errorHospitalStore" target="isExistingRecord" />
+					<choice doc:name="Choice" doc:id="080594a2-60de-4017-b9e2-0c0b5a86ef9a" >
+						<when expression="#[vars.isExistingRecord]" >
+							<os:retrieve doc:name="Retrieve" doc:id="20dd4389-df8c-4048-874a-c6a74b2b8f01" key="#[payload.recordId]" objectStore="errorHospitalStore" target="existingRecord" >
+								<os:default-value ><![CDATA[#[""]]]></os:default-value>
+							</os:retrieve>
+							<ee:transform doc:name="Transform Message" doc:id="9f676cd7-fd95-410b-acdd-1b77f011cab5" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var currentRetryCount = vars.existingRecord.remainingRetryCount default 1
+var newRetryCount = currentRetryCount - 1
+---
+payload update {
+  case .remainingRetryCount -> newRetryCount
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+					</choice>
+					<os:store doc:name="Store" doc:id="8d2d0e72-9658-44b6-bac2-96f4be9cf36a" key="#[payload.recordId]" objectStore="errorHospitalStore" />
+				</foreach>
+			</when>
+			<when expression='#[vars.requestType == "deleteRecords"]'>
+				<foreach doc:name="For Each" doc:id="94e001c3-b76c-453c-ae57-a31285fb8e12" collection="#[payload]">
+					<os:remove doc:name="Remove" doc:id="e3bfddc9-fb6a-4204-a5ca-bce5326afb1b" key="#[payload]" objectStore="errorHospitalStore" />
+				</foreach>
+			</when>
+			<otherwise>
+				<logger level="WARN" doc:name="WARN" doc:id="78b51271-2207-4c63-865d-175ff1d82e91" message='#["no path specified for error hospital API"]'/>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+<mule
+	xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
 	<sub-flow name="processMainSubflow"
 		doc:id="337dd04f-8ec8-4ed2-a0d1-9cfec9914600">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="b1603fcc-5706-4267-afe8-ae972c52e83f"
-			message='#["processMainSubflow entry"]' />
 		<flow-ref doc:name="retrieveWatermarkSubflow"
 			doc:id="df0d3692-7583-4fa0-a253-f40f4d8aae97"
 			name="retrieveWatermarkSubflow" target="watermarkLastRunDateTime"
@@ -108,45 +108,164 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		/> </otherwise> </choice> <logger level="INFO" doc:name="INFO" doc:id="53f55b14-ecde-4f9e-a3a7-f8460d507fe0" 
 		message='#["processRetrySubflow exit"&#93;' /> </sub-flow> [STUDIO] -->
 	<sub-flow name="processAdminSubflow"
-		doc:id="af3691a9-9c5d-4ed6-8c36-5311c8ab3b7d">
+		doc:id="6d15714e-94ff-4176-ad17-ac44b3a5a229">
 		<logger level="INFO" doc:name="INFO"
-			doc:id="a19bc96f-3bcf-4ea2-850c-50ef9a1b0fec"
+			doc:id="5ddfe8c2-f5ba-4b18-8b02-f6bc66629b57"
 			message='#["processAdminSubflow entry"]' />
 		<flow-ref doc:name="retrieveOpptyFromSourceByIdSubflow"
-			doc:id="1f4aec94-f849-4fd7-af87-6c5cbdeb5b2b"
+			doc:id="d4349c76-7c49-4ab1-9bb2-31654ff560da"
 			name="retrieveOpptyFromSourceByIdSubflow"
 			target="sourceOpptyRecordsById"
 			targetValue="#[output application/java --- payload.payload..records default []]" />
 		<set-payload
 			value="#[output application/java --- vars.sourceOpptyRecordsById default []]"
-			doc:name="Set Payload" doc:id="24c94a1f-9178-4606-87bd-976804726442" />
+			doc:name="Set Payload" doc:id="1306e93d-f45a-4755-babd-e71845430927" />
 		<remove-variable doc:name="sourceOpptyRecordsById"
-			doc:id="b9dc57f0-3843-4c46-89d5-d1f8be9eba0c"
+			doc:id="f206490b-89eb-414f-bf34-0728e9d49078"
 			variableName="sourceOpptyRecordsById" />
 		<choice doc:name="Choice"
-			doc:id="36a7c548-46b4-4c59-b252-70df99c0f21f">
+			doc:id="91e8e98c-4b85-47fd-bbf9-59775b699c70">
 			<when expression="#[!isEmpty(payload)]">
 				<set-variable value="#[true]" doc:name="isRetryJob"
-					doc:id="b9c18a82-960b-4f2d-89bf-46bc6c05f786"
+					doc:id="40da9104-9b4a-4f17-8f2a-3da9da13be85"
 					variableName="isRetryJob" />
 				<logger level="INFO" doc:name="INFO"
-					doc:id="9ebc11b0-a8f7-455e-8cda-60c602acb830"
+					doc:id="5351329f-b9a7-4a06-82f7-8f6790e42853"
 					message='#["Starting batch process from admin subflow"]' />
 				<flow-ref doc:name="processBatchOpptyFlow"
-					doc:id="d9c3f7e4-0629-42cd-b4b4-8790f2664f9e"
+					doc:id="9c5de0e4-2447-4173-ad55-3f82aeb10e0c"
 					name="processBatchOpptyFlow" />
 				<logger level="INFO" doc:name="INFO"
-					doc:id="299c7577-be86-45a5-9921-268aeb639149"
+					doc:id="5a2e392b-5f18-407c-9a56-02b696f6ec56"
 					message='#["Initiated batch process from admin subflow"]' />
 			</when>
 			<otherwise>
 				<logger level="WARN" doc:name="WARN"
-					doc:id="05ea5550-c179-4080-99b6-e89426cee1d0"
+					doc:id="79dabfcd-d74b-4b5a-bc5f-d9202d48090b"
 					message='#["No opportunity records available to process"]' />
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="INFO"
-			doc:id="e38d797f-d276-4576-9be7-c9a2422247db"
+			doc:id="cb4dd93e-539c-4119-b85e-210d05c1101e"
 			message='#["processAdminSubflow exit"]' />
+	</sub-flow>
+	<sub-flow name="preprocessSubflow"
+		doc:id="a23f93bd-c3fd-4c18-944a-5086c15dd105">
+		<flow-ref doc:name="getRecordsFromErrHsptlByIdSubflow"
+			doc:id="80f511d7-7307-4c0c-b187-83437395dbac"
+			name="getRecordsFromErrHsptlByIdSubflow"
+			target="existingErrHsptlRecords"
+			targetValue="#[output application/java --- payload]" />
+		<flow-ref doc:name="getAcctsByIdSubflow_TGT"
+			doc:id="a111d1bc-bb09-48fe-ae4b-126c834d5d67"
+			name="getAcctsByIdSubflow_TGT" target="existingAccts"
+			targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptysByExternalIdSubflow_TGT"
+			doc:id="303440dc-6319-42cc-a056-13f035e654e3"
+			name="getOpptysByExternalIdSubflow_TGT" target="existingOpptys"
+			targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptyProductsByOpptyIdSubflow_TGT"
+			doc:id="5f5f4c5d-58e2-4e3b-8feb-c3ba240ed760"
+			name="getOpptyProductsByOpptyIdSubflow_TGT"
+			target="existingOpptyProducts"
+			targetValue="#[output application/java --- payload.payload..records default []]" />
+		<flow-ref doc:name="getOpptyProductsByOpptyIdSubflow_SRC"
+			doc:id="845110ec-a4bf-408e-a781-e0f8a17867e2"
+			name="getOpptyProductsByOpptyIdSubflow_SRC" target="opptyProducts"
+			targetValue="#[output application/java --- payload.payload..records default []]" />
+		<ee:transform doc:name="Transform Message"
+			doc:id="1c3e4a3e-5d33-4ede-8f9c-60b87db1ce1c">
+			<ee:message>
+				<ee:set-payload><![CDATA[import enrichOpptysWithQueryResults from module::Oppty
+output application/java
+---
+enrichOpptysWithQueryResults(payload, vars.existingAccts, vars.existingOpptys, vars.existingErrHsptlRecords, vars.existingOpptyProducts, vars.opptyProducts)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="removeProprocessVarsSubflow"
+			doc:id="6c5afcde-f941-425b-af8a-8a516ee04d8d"
+			name="removeProprocessVarsSubflow" />
+	</sub-flow>
+	<sub-flow name="removeProprocessVarsSubflow"
+		doc:id="b3269a29-2f81-472d-8927-1cbe38873192">
+		<remove-variable doc:name="existingErrHsptlRecords"
+			doc:id="1a2d2601-cc7d-4f14-be99-b438af501aa0"
+			variableName="existingErrHsptlRecords" />
+		<remove-variable doc:name="existingAccts"
+			doc:id="900dc173-af1e-4cf0-80bf-2dd2b240e4c0"
+			variableName="existingAccts" />
+		<remove-variable doc:name="existingOpptys"
+			doc:id="e7297ba6-3efc-4c75-8bc8-1019083ad4b0"
+			variableName="existingOpptys" />
+		<remove-variable doc:name="existingOpptyProducts"
+			doc:id="ac3be444-8026-46ff-b563-c5810f5858bf"
+			variableName="existingOpptyProducts" />
+		<remove-variable doc:name="opptyProducts"
+			doc:id="187ba7bc-e914-4fad-b5d6-3e6a7575fd03"
+			variableName="opptyProducts" />
+	</sub-flow>
+	<sub-flow name="processCompletionSubflow"
+		doc:id="5d9a27c8-83fe-4da5-85ff-5c2102402bf6">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="7e2fb88e-e6ff-40a9-8b2b-2c1e38ede9c4"
+			message='#["Batch job summary: " ++ write(payload,"application/json")]' />
+		<choice doc:name="Choice"
+			doc:id="ed1963e7-5e13-41f2-91ff-3b5a7b42cc6e">
+			<when expression="#[vars.isRetryJob == true]">
+				<flow-ref doc:name="clearOsBatchStatusRetrySubflow"
+					doc:id="4769dabe-1e14-4763-837f-35f294189379"
+					name="clearOsBatchStatusRetrySubflow" />
+			</when>
+			<otherwise>
+				<flow-ref doc:name="clearOsBatchStatusSubflow"
+					doc:id="20417d20-dde0-41b5-a932-8bf74cc9f457"
+					name="clearOsBatchStatusSubflow" />
+				<flow-ref doc:name="processCompletionSendEmailSubflow"
+					doc:id="17cbee53-07e3-4ad6-9091-93c530544aec"
+					name="processCompletionSendEmailSubflow" />
+				<flow-ref
+					doc:name="processCompletionUpdateWatermarkSubflow"
+					doc:id="a44d01f6-6aea-4ddd-b810-f1d58e85e58b"
+					name="processCompletionUpdateWatermarkSubflow" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="processCompletionSendEmailSubflow"
+		doc:id="2a1a4d11-bfdb-4909-9358-d18f25aac133">
+		<choice doc:name="Choice"
+			doc:id="af3c91c5-379a-4db4-9baf-23d866a7144a">
+			<when expression="#[payload.failedRecords &gt; 0]">
+				<flow-ref doc:name="sendBatchSummaryEmailSubflow"
+					doc:id="5c044d8f-59bf-40b0-ac5a-8b7940fe8a7c"
+					name="sendBatchSummaryEmailSubflow" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="16e3dec6-3170-4a10-bfe7-d343511af545"
+					message='#["No need to send failure email as failedRecords count is zero"]' />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="processCompletionUpdateWatermarkSubflow"
+		doc:id="5ce61f04-45a3-46e8-93a4-8b71d545c64d">
+		<flow-ref doc:name="retrieveOsCurrentRunDateTimeSubflow"
+			doc:id="a12f1965-6514-413b-bb5a-a67bead3c536"
+			name="retrieveOsCurrentRunDateTimeSubflow"
+			target="watermarkLastRunDateTimeUpdated"
+			targetValue="#[output application/json --- payload]" />
+		<choice doc:name="Choice"
+			doc:id="8d19880c-fd24-4c85-b0ab-9a1854938a48">
+			<when
+				expression="#[!isEmpty(vars.watermarkLastRunDateTimeUpdated)]">
+				<flow-ref doc:name="updateWatermarkSubflow"
+					doc:id="136833d1-9a5a-401b-bd7b-00c722891ee0"
+					name="updateWatermarkSubflow" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="ea7e5f7c-a858-4a14-95f3-8c93a1ede343"
+					message='#["The watermark value is not available to update back in the watermark service"]' />
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>

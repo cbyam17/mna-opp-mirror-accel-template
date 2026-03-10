@@ -16,18 +16,18 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
 		<flow-ref doc:name="validateSalesforceConnectionSubflow_TGT"
 			doc:id="fd426013-379a-465b-855e-2fafdf45270e"
-			name="validateSalesforceConnectionSubflow_TGT" target="SalesforceConnResp_TGT" />
+			name="validateSalesforceConnectionSubflow_TGT"
+			target="SalesforceConnResp_TGT" />
 		<flow-ref doc:name="validateSalesforceConnectionSubflow_SRC"
 			doc:id="ab037f45-e63d-4572-a941-325618760981"
-			name="validateSalesforceConnectionSubflow_SRC" target="SalesforceConnResp_SRC" />
+			name="validateSalesforceConnectionSubflow_SRC"
+			target="SalesforceConnResp_SRC" />
 		<flow-ref doc:name="validateErrHstplConnectionSubflow"
 			doc:id="5ad85ba7-01fd-4b5b-ae99-4aff25d3a947"
-			name="validateErrHstplConnectionSubflow"
-			target="ErrHsptlConnResp" />
+			name="validateErrHstplConnectionSubflow" target="ErrHsptlConnResp" />
 		<flow-ref doc:name="validateWatermarkConnectionSubflow"
 			doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380"
-			name="validateWatermarkConnectionSubflow"
-			target="watermarkConnResp" />
+			name="validateWatermarkConnectionSubflow" target="watermarkConnResp" />
 		<ee:transform doc:name="Transform Message"
 			doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
 			<ee:message>

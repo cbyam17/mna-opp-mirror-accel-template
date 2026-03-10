@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 
 <mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
 	xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
@@ -23,7 +22,7 @@ output application/json
 buildQueryOpptyFromSourceByDate(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="17ee5e7b-7d9f-42a9-bcdd-f20ef99383d4" name="querySubflow_SRC" />
+		<flow-ref doc:name="querySubflow_SRC" doc:id="885cabfd-3b4d-45dc-b16c-c18e5c22865b" name="querySubflow_SRC" />
 	</sub-flow>
 	<sub-flow name="retrieveOpptyFromSourceByIdSubflow"
 		doc:id="e84678de-b208-477e-8ef4-76ed704c96ce">
@@ -36,10 +35,9 @@ output application/json
 buildQueryOpptysById_SRC(payload.externalIds)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="c7527479-63e0-4d97-a59f-f7e7d8ae7339" name="querySubflow_SRC" />
+		<flow-ref doc:name="querySubflow_SRC" doc:id="7ddf0597-562f-4b70-8f8f-8a378fbd3d12" name="querySubflow_SRC" />
 	</sub-flow>
-	<sub-flow
-		name="getOpptyProductsByOpptyIdSubflow_SRC"
+	<sub-flow name="getOpptyProductsByOpptyIdSubflow_SRC"
 		doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
 		<ee:transform doc:name="Transform Message"
 			doc:id="1bf342f0-aace-40fa-b26e-373fd6658e7d">
@@ -50,50 +48,29 @@ output application/java
 buildQueryOpptyProductsByOpptyId_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="3bcc494b-770c-43c8-ae05-54e59791791e" name="querySubflow_SRC"/>
+		<flow-ref doc:name="querySubflow_SRC" doc:id="fd40478d-2ef9-4c42-ba32-06d2992406a2" name="querySubflow_SRC"/>
 	</sub-flow>
-	<sub-flow name="writebackOpptySubflow_SRC"
-		doc:id="c6454e33-9c49-4919-8198-38ca6db14089">
-		<ee:transform doc:name="Transform Message" doc:id="7d39c84e-2d56-4b85-8130-1e51e7852dad">
-			<ee:message>
-				<ee:set-payload><![CDATA[import transformWritebackOppty_SRC from module::Oppty
-output application/java
----
-transformWritebackOppty_SRC(payload)]]></ee:set-payload>
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="objectType" ><![CDATA["Opportunity"]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="301d12ef-ac9a-4552-b47f-6b653daa800f" name="updateObjectSubflow_SRC"/>
+	<sub-flow name="updateObjectSubflow_SRC" doc:id="ef177266-7489-4b74-9b5d-c5d0be6c5c84" >
+		<logger level="INFO" doc:name="Logger" doc:id="a4a43bb7-0915-4c8f-a3f5-c401cde8413a" message="#[output application/json --- vars.recordsToUpdate]"/>
+		<try doc:name="Try" doc:id="e20aed95-8bf0-4b38-aec2-949bfde63eb1" >
+			<salesforce:update type="#[vars.objectType]" doc:name="Update" doc:id="06bfaea6-6efd-41d2-b6cf-c610b82ed039" config-ref="salesforceConfig_SRC">
+			<salesforce:records><![CDATA[#[output application/java --- vars.recordsToUpdate]]]></salesforce:records>
+		</salesforce:update>
+			<error-handler ref="salesforceErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="0210f190-4472-4c42-80ce-b6a467e14877" message="#[output application/json --- payload]" />
 	</sub-flow>
-	<sub-flow name="writebackOpptyProductsSubflow_SRC" doc:id="ee48c70c-134b-4011-a7b0-59a35307a036" >
-		<ee:transform doc:name="Transform Message" doc:id="a37d5810-baed-4e86-bb08-ee7f890d05db" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[import transformWritebackOpptyProducts_SRC from module::OpptyProduct
-output application/java
----
-transformWritebackOpptyProducts_SRC(payload)]]></ee:set-payload>
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="dc9b0022-d38c-48ac-bafb-7f1c44eeeb78" name="updateObjectSubflow_SRC" />
-	</sub-flow>
-	<sub-flow name="querySubflow_SRC" doc:id="1f3004e1-17e5-4be4-afeb-ca93fce8cfe5" >
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="bef46418-f949-4a8b-b4d5-2864dbf670fd" message='#["_SRC query request: " ++ write(payload, "application/json")]' />
-		<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="0f806dc4-1960-4d0e-81ec-61f3c7a00098" config-ref="salesforceConfig_SRC" >
-			<salesforce:salesforce-query ><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[output application/java
+	<sub-flow name="querySubflow_SRC" doc:id="bbd6872d-e39e-4212-bb1f-f938b4ba65f7" >
+		<logger level="INFO" doc:name="Logger" doc:id="a59392b6-2058-45fd-9d10-b0d03f8ff876" message="#[output application/json --- payload]" />
+		<try doc:name="Try" doc:id="c288ae2c-95f0-436d-9662-dbfeb70ab9e9" >
+			<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="a6cd3b57-0fc7-4a80-9aad-dc523ae4eb5d" config-ref="salesforceConfig_SRC">
+			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
 ---
 payload.queryParams]]]></salesforce:parameters>
 		</salesforce:query-xml-stream>
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="9a825a13-6685-4786-933b-3125e7bb9bf0" message='#["_SRC query response: " ++ write(payload, "application/json")]' />
-	</sub-flow>
-	<sub-flow name="updateObjectSubflow_SRC" doc:id="23061ae9-89d8-4874-acb2-a24a69bb7bd7" >
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="1a97cd69-16ac-4394-96a6-4ddedfb73138" message='#["_SRC update request - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
-		<salesforce:update type="#[vars.objectType]" doc:name="Update" doc:id="2ded158b-3d56-4be6-abca-d02eecf27394" config-ref="salesforceConfig_SRC" />
-		<logger level="DEBUG" doc:name="DEBUG" doc:id="840173ad-fd74-4b2e-8805-b1746fd0c086" message='#["_SRC update response - " ++ vars.objectType default "" ++ ": " ++ write(payload, "application/json")]' />
+			<error-handler ref="salesforceErrorHandler" />
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="60df8c29-e773-4fb9-afa9-ac6f84e931d4" message="#[output application/json --- payload]" />
 	</sub-flow>
 </mule>

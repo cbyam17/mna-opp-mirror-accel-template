@@ -6,6 +6,24 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="salesforceErrorHandler" doc:id="1b2ba296-0191-4975-9995-7a127f13344a" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c50be72a-27a0-4ead-bf92-a0f36fe37647">
+									<ee:transform doc:name="Transform Message" doc:id="28389a72-6b9e-42b8-b096-f6d739e6ea07">
+										<ee:message>
+										</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="originalError" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	errorType: error.errorType.namespace ++ ":" ++ error.errorType.identifier,
+	errorMessage: error.description
+}]]></ee:set-variable>
+				</ee:variables>
+									</ee:transform>
+									<raise-error doc:name="Raise error" doc:id="0f7896fe-abaa-4241-a66b-167a3fe59b39" type="APP:SYSTEM_ERROR" description='#[output application/java --- write(vars.originalError,"application/json")]' />
+								</on-error-propagate>
+	</error-handler>
 	<error-handler name="pingErrorHandler"
 		doc:id="baa5e588-002a-49ee-8a98-3edd103ecfa8">
 		<on-error-continue enableNotifications="true"
@@ -23,18 +41,14 @@ buildPingEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 			</ee:transform>
 		</on-error-continue>
 	</error-handler>
-	<error-handler name="errHsptlErrorHandler"
-		doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd8fa5ae-ee63-4863-b254-831786782cf4" >
-			<ee:transform doc:name="TBD" doc:id="0b3e6dbc-7a12-4335-8efc-12abcfb4a345">
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/java
----
-{
-}]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
+	<error-handler name="schedulerErrorHandler" doc:id="9a9101f9-555c-4bd0-be38-d3d815193de8" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" >
+			<flow-ref doc:name="sendSchedulerFailureEmailSubflow" doc:id="6957d07f-2389-46c1-a3de-244a39e43418" name="sendSchedulerErrorEmailSubflow" />
+		</on-error-propagate>
+	</error-handler>
+	<error-handler name="errorHospitalWriteErrorHandler" doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd8fa5ae-ee63-4863-b254-831786782cf4">
+			<flow-ref doc:name="sendErrHsptlFailureEmailSubflow" doc:id="b40065a7-f85b-4ea1-ac4b-fb7bc243b8be" name="sendErrHsptlFailureEmailSubflow" />
 		</on-error-propagate>
 	</error-handler>
 </mule>

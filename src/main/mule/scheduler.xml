@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 			doc:id="56f92143-0d90-4042-8d90-7859b78ab716">
 			<when expression="#[isEmpty(payload)]">
 				<flow-ref doc:name="pingSubflow"
-					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow"/>
+					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow" />
 				<logger level="DEBUG" doc:name="DEBUG"
 					doc:id="527738a3-ba85-4553-be2d-095630ccfd74"
 					message='#["Connectivity status response: " ++ write(payload,"application/json")]' />

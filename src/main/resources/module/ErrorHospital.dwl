@@ -1,74 +1,159 @@
 %dw 2.0
+// Error Hospital Utilities
 
-var retryableTypes = (Mule::p("errHsptl.retryTypes") default "") splitBy "," filter ((item) -> !isEmpty(item))
+// ------------------------
+// Defaults
+// ------------------------
+fun defaultAppName() = (Mule::p("projectName") as String) default "unknown-app"
+fun defaultDomain() = (Mule::p("orgName") as String) default "unknown-org"
+fun defaultErrorType() = (Mule::p("error.defaultType") as String) default "UNKNOWN_ERROR"
+fun defaultErrorMessage() = (Mule::p("error.defaultMessage") as String) default "An unknown error occurred"
+fun defaultErrorDescription() =
+    (Mule::p("error.defaultDescription") as String)
+        default "An unknown error occurred; please check integration logs with this transaction Id for more details"
+fun defaultMaxRetries() = (Mule::p("errHsptl.maxRetries") as Number) default 5
 
-fun buildGetRecordsFromErrHsptlByIdRequest(data) =
-    data.Id default [] distinctBy ((item) -> item) default []
+// ------------------------
+// Helpers
+// ------------------------
+fun toArray(v) =
+    if (v is Array) v
+    else if (v == null) []
+    else [v]
 
-fun buildSendFailedRecordsToErrHsptlRequest(records, transactionId) =
-    records default [] map ((item) -> {
-        recordId: item.Id,
+fun firstError(resp) =
+    (((resp.errors default []) as Array)[0]) default {}
+
+fun collectErrorField(container, fieldName) =
+    (
+        (
+            (((container default [])..errors) default []) map (e) -> (e[fieldName] default null)
+        )
+        filter ((v) -> v != null)
+        map ((v) -> (v as String))
+    ) joinBy "; "
+
+// ------------------------
+// Public Builders
+// ------------------------
+fun buildGetRecordsFromErrHsptlByIdRequest(recordIds) =
+    (recordIds default []) distinctBy ((item) -> item) default []
+
+fun buildDeleteRecordsFromErrHsptlRequest(recordIds) =
+    (recordIds default []) distinctBy ((item) -> item) default []
+
+fun buildSendRecordsToErrHsptlRequest(records, transactionId) =
+    {
+        appName: defaultAppName(),
+        domain: defaultDomain(),
         transactionId: transactionId,
-        error: if (!isEmpty(item.upsertOpptyError))
-            // oppty mirror failure
-            {
-                errorType: item.upsertOpptyError.statusCode default "UNKNOWN_ERROR",
-                errorMessage: item.upsertOpptyError.message default "An unknown error occurred",
-                description: "An error occurred writing oppty to _TGT",
-                // update as needed depending on retryable error types
-                isRetryable: (retryableTypes contains item.upsertOpptyError.statusCode) default false,
-                maxRetries: Mule::p("errHsptl.maxRetries") as Number default 5
-            }
-            // oppty products mirror failure
-            else if (!isEmpty(item.upsertOpptyProductsError))
-            {
-                errorType: (item.upsertOpptyProductsError.statusCode default [] joinBy "; ") default "UNKNOWN_ERROR",
-                errorMessage: (item.upsertOpptyProductsError.message default [] joinBy "; ") default "An unknown error occurred",
-                description: "An error occurred writing oppty products to _TGT",
-                // update as needed depending on retryable error types
-                isRetryable: (retryableTypes contains item.upsertOpptyError.statusCode) default false,
-                maxRetries: Mule::p("errHsptl.maxRetries") as Number default 5
-            }
-            // writeback oppty failure
-            else if (!isEmpty(item.writebackOpptyError))
-            {
-                errorType: item.writebackOpptyError.statusCode default "UNKNOWN_ERROR",
-                errorMessage: item.writebackOpptyError.message default "An unknown error occurred",
-                description: "An error occurred writing oppty back to _SRC",
-                // update as needed depending on retryable error types
-                isRetryable: (retryableTypes contains item.upsertOpptyError.statusCode) default false,
-                maxRetries: Mule::p("errHsptl.maxRetries") as Number default 5
-            }
-            // unknown error
-            else 
-            {
-                errorType: "UNKNOWN_ERROR",
-                errorMessage: "An unknown error occurred",
-                description: "An unknown error occurred; please check logs for transaction Id",
-                // update as needed depending on retryable error types
-                isRetryable: (retryableTypes contains item.upsertOpptyError.statusCode) default false,
-                maxRetries: Mule::p("errHsptl.maxRetries") as Number default 5
-            }
-    })
+        failedRecords: (records default []) map ((o) -> do {
+            var recordId = o.recordId default ""
+            var createOppResp = o.createOpptyResponse default {}
+            var updateOppResp = o.updateOpptyResponse default {}
+            var createOliResponses = o.createOpptyProductResponses default []
+            var updateOliResponses = o.updateOpptyProductResponses default []
+            var deleteOliResponses = o.deleteOpptyProductResponses default []
 
-// refactor (can't use getLastException() in aggregator)
-fun buildSendSystemErrorRecordsToErrHsptlRequest(records, transactionId) = 
-    records default [] map ((item, index) -> do {
-        var errorData = Batch::getLastException()
-        ---
-        {
-            recordId: item.Id,
-            transactionId: transactionId, 
-            error: {
-                errorType: errorData.errorType default "UNKNOWN_ERROR",
-                errorMessage: errorData.errorMessage default "An unknown error occurred",
-                description: "A system error occurred during batch processing",
-                // update as needed depending on retryable error types
-                isRetryable: (retryableTypes contains item.errorData.errorType) default false,
-                maxRetries: Mule::p("errHsptl.maxRetries") as Number default 5
-            }
-        }
-    })
+            var defType = defaultErrorType()
+            var defMsg = defaultErrorMessage()
+            var defDesc = defaultErrorDescription()
+            var maxRetries = defaultMaxRetries()
 
-fun buildDeleteRecordsFromErrHsptlRequest(records) =
-    records.Id default [] distinctBy ((item) -> item) default []
+            var createOppFailed = ((createOppResp.success default true) == false)
+            var updateOppFailed = ((updateOppResp.success default true) == false)
+            var anyCreateOliFailed = (((toArray(createOliResponses)).*success default []) contains false)
+            var anyUpdateOliFailed = (((toArray(updateOliResponses)).*success default []) contains false)
+            var anyDeleteOliFailed = (((toArray(deleteOliResponses)).*success default []) contains false)
+
+            var resolvedError =
+                if (createOppFailed) do {
+                    var e = firstError(createOppResp)
+                    ---
+                    {
+                        errorType: (e.statusCode as String) default defType,
+                        errorMessage: (e.message as String) default defMsg,
+                        description: "An error occurred creating Opportunity in _TGT; please check integration logs with this transaction Id for more details"
+                    }
+                }
+                else if (updateOppFailed) do {
+                    var e = firstError(updateOppResp)
+                    ---
+                    {
+                        errorType: (e.statusCode as String) default defType,
+                        errorMessage: (e.message as String) default defMsg,
+                        description: "An error occurred updating Opportunity in _TGT; please check integration logs with this transaction Id for more details"
+                    }
+                }
+                else if (anyCreateOliFailed)
+                    {
+                        errorType: collectErrorField(createOliResponses, "statusCode") default defType,
+                        errorMessage: collectErrorField(createOliResponses, "message") default defMsg,
+                        description: "An error occurred creating OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
+                    }
+                else if (anyUpdateOliFailed)
+                    {
+                        errorType: collectErrorField(updateOliResponses, "statusCode") default defType,
+                        errorMessage: collectErrorField(updateOliResponses, "message") default defMsg,
+                        description: "An error occurred updating OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
+                    }
+                else if (anyDeleteOliFailed)
+                    {
+                        errorType: collectErrorField(deleteOliResponses, "statusCode") default defType,
+                        errorMessage: collectErrorField(deleteOliResponses, "message") default defMsg,
+                        description: "An error occurred deleting OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
+                    }
+                else
+                    {
+                        errorType: defType,
+                        errorMessage: defMsg,
+                        description: defDesc
+                    }
+            ---
+            {
+                recordId: recordId,
+                error: {
+                    errorType: (resolvedError.errorType default defType),
+                    errorMessage: (resolvedError.errorMessage default defMsg),
+                    description: (resolvedError.description default defDesc),
+                    maxRetries: maxRetries
+                }
+            }
+        })
+    }
+
+fun buildSendSystemErrorRecordsToErrHsptlRequest(records, transactionId) =
+    {
+        appName: defaultAppName(),
+        domain: defaultDomain(),
+        transactionId: transactionId,
+        failedRecords: (records default []) map ((o) -> do {
+            var defType = defaultErrorType()
+            var defMsg = defaultErrorMessage()
+            var defDesc = defaultErrorDescription()
+            var maxRetries = defaultMaxRetries()
+
+            var recordId = o.recordId default ""
+            var errorData = o.errorData default {}
+            // Expect object placed into errorData.message earlier; if not an object, fallback.
+            var originalError =
+                if ((errorData.message default null) is Object)
+                    (errorData.message as Object)
+                else
+                    {}
+
+            var errType = (originalError.errorType as String) default null
+            var errMsg = (originalError.errorMessage as String) default null
+            var description = (Mule::p("error.defaultDescription") as String) default defDesc
+            ---
+            {
+                recordId: recordId,
+                error: {
+                    errorType: errType default defType,
+                    errorMessage: errMsg default defMsg,
+                    description: description default defDesc,
+                    maxRetries: maxRetries
+                }
+            }
+        })
+    }
