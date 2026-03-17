@@ -2,7 +2,7 @@ d<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Scheduler Error Notification</title>
+  <title>Error Hospital API Error Notification</title>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -49,29 +49,30 @@ d<!DOCTYPE html>
 <body>
 
 <div class="container">
-  <h2>Scheduler Error Notification</h2>
+  <h2>Error Hospital API Error Notification</h2>
 
   <p>
-    An error occurred during the scheduled job prior to batch processing. The transaction referenced below
+    An error occurred while attempting to communicate with the
+    <strong>Error Hospital API</strong>. The transaction referenced below
     could not be processed.
   </p>
 
   <div class="section">
     <p><span class="label">Transaction ID:</span><br>
-      #[output application/java --- vars.notificationProperties.transactionId]
+      #[output application/java --- vars.notification.content.transactionId]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Error Type:</span><br>
-      #[output application/java --- vars.notificationProperties.errorType]
+      #[output application/java --- vars.notification.content.errorType]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Error Description:</span></p>
     <div class="highlight">
-      #[output application/java --- vars.notificationProperties.errorMessage]
+      #[output application/java --- vars.notification.content.errorMessage]
     </div>
   </div>
 

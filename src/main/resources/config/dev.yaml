@@ -1,0 +1,55 @@
+amq:
+  clientId: "4e9fee5567394e3baaa0daf8c5ccec3c"
+  errHsptlInsertRecordsQueue: "errHsptlInsertRecordsQueue"
+  errHsptlRemoveRecordsQueue: "errHsptlRemoveRecordsQueue"
+  url: "https://mq-us-east-1.anypoint.mulesoft.com/api/v1/organizations/a0341e01-9078-43f6-86f4-72a5cfb1db90/environments/a796e386-3ec6-4ce5-935a-377353244b2c"
+batch:
+  aggregatorSize:
+    errHsptl: "100"
+    opp: "100"
+    oli: "50"
+  blockSize: "100"
+errHsptl:
+  maxRetries: "5"
+  retrieveLimit: "100"
+error:
+  defaultDescription: "An error occurred during the Opportunity mirroring process; please check integration logs with this transaction Id for more details"
+  defaultMessage: "An unknown error occurred"
+  defaultType: "UNKNOWN_ERROR"
+httpListener:
+  port: "8084"
+  readTimeout: "30000"
+orgName: "MNA-Tech"
+pbe.map.json: >
+  {
+    "SRC_to_TGT": {
+      "01uKa00000AeCAcIAN":  "01ugL000002WgsbQAC",
+      "01uKa00000AeCAeIAN": "01ugL000002WgkXQAS",
+      "01uKa00000AeCAdIAN": "01ugL000002WgkYQAS",
+      "01uKa00000AeqiSIAR": "01ugL000002X6OrQAK"
+    }
+  }
+projectName: "mna-oppty-mirror-accel"
+scheduler:
+  main:
+    cronExpression: "0 0 * * * ?"
+    timezone: "GMT"
+  retry:
+    cronExpression: "0 0/10 * * * ?"
+    timezone: "GMT"
+smtp:
+  enable: "true"
+  host: "smtp.gmail.com"
+  port: "587"
+  subject:
+    errHsptlError: "[mna-oppty-mirror-accel] Error Hospital Write Error"
+    batchSummary: "[mna-oppty-mirror-accel] Batch Completion Error Summary"
+    batchPreprocessingError: "[mna-oppty-mirror-accel] Batch Pre-processing Error"
+    batchPostprocessingError: "[mna-oppty-mirror-accel] Batch Post-processing Error"
+  toEmailAddresses: "cbyam.ms@gmail.com"
+src:
+  authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
+tgt:
+  authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
+watermark:
+  timezone: "GMT"

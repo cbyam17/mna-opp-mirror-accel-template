@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<ee:transform doc:name="Transform Message"
 			doc:id="f053bad1-6b12-4514-a3ad-5dad4f79c6f1">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryAcctsById_TGT from module::Acct
+				<ee:set-payload><![CDATA[import buildQueryAcctsById_TGT from module::Account
 output application/java
 ---
 buildQueryAcctsById_TGT(payload.Account.Acct_Id_TGT__c)]]></ee:set-payload>
@@ -25,12 +25,12 @@ buildQueryAcctsById_TGT(payload.Account.Acct_Id_TGT__c)]]></ee:set-payload>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_TGT" doc:id="a459a5d7-688d-4984-9cd5-01eb1b9ff162" name="querySubflow_TGT" />
 	</sub-flow>
-	<sub-flow name="getOpptysByExternalIdSubflow_TGT"
+	<sub-flow name="getOppsByExternalIdSubflow_TGT"
 		doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78">
 		<ee:transform doc:name="Transform Message"
 			doc:id="0ee97f96-be2a-4209-be95-aaa50cbaa1a3">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptysByExternalId_TGT from module::Oppty
+				<ee:set-payload><![CDATA[import buildQueryOpptysByExternalId_TGT from module::Opportunity
 output application/java
 ---
 buildQueryOpptysByExternalId_TGT(payload.Id)]]></ee:set-payload>
@@ -38,12 +38,12 @@ buildQueryOpptysByExternalId_TGT(payload.Id)]]></ee:set-payload>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_TGT" doc:id="243871bd-3ff0-4c3e-9bd6-85773ecf521d" name="querySubflow_TGT" />
 	</sub-flow>
-	<sub-flow name="getOpptyProductsByOpptyIdSubflow_TGT"
+	<sub-flow name="getOlisByOppIdSubflow_TGT"
 		doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
 		<ee:transform doc:name="Transform Message"
 			doc:id="d4a9f468-c366-48f2-9533-5e5ccb79a91e">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyExternalId_TGT from module::OpptyProduct
+				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyExternalId_TGT from module::OpportunityLineItem
 output application/java
 ---
 buildQueryOpptyProductsByOpptyExternalId_TGT(payload.Id)]]></ee:set-payload>

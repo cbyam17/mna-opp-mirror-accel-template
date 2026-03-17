@@ -11,41 +11,43 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
-	<sub-flow name="retrieveOpptyFromSourceByDateSubflow"
+	<sub-flow name="getOppsByDateSubflow_SRC"
 		doc:id="3d3f4d2e-0f31-4b22-911d-391b7fe6e2f2">
 		<ee:transform doc:name="Transform Message"
 			doc:id="a92cc586-6f2c-4b15-b3db-93345aad18ac">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyFromSourceByDate from module::Oppty
+				<ee:set-payload><![CDATA[import buildQueryOpptysByDate_SRC from module::Opportunity
 output application/json
 ---
-buildQueryOpptyFromSourceByDate(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
+buildQueryOpptysByDate_SRC(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="885cabfd-3b4d-45dc-b16c-c18e5c22865b" name="querySubflow_SRC" />
 	</sub-flow>
-	<sub-flow name="retrieveOpptyFromSourceByIdSubflow"
+	<sub-flow name="getOppsByIdSubflow_SRC"
 		doc:id="e84678de-b208-477e-8ef4-76ed704c96ce">
 		<ee:transform doc:name="Transform Message"
 			doc:id="fe8a5bcb-4971-4723-9cb2-97c5ded36583">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptysById_SRC from module::Oppty
+				<ee:set-payload><![CDATA[import buildQueryOpptysById_SRC from module::Opportunity
 output application/json
 ---
-buildQueryOpptysById_SRC(payload.externalIds)]]></ee:set-payload>
+//payload.externalIds for admin endpoint, payload.Id for retry scheduler
+if (!isEmpty(payload.externalIds)) buildQueryOpptysById_SRC(payload.externalIds)
+else buildQueryOpptysById_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="7ddf0597-562f-4b70-8f8f-8a378fbd3d12" name="querySubflow_SRC" />
 	</sub-flow>
-	<sub-flow name="getOpptyProductsByOpptyIdSubflow_SRC"
+	<sub-flow name="getOlisByOppIdSubflow_SRC"
 		doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
 		<ee:transform doc:name="Transform Message"
 			doc:id="1bf342f0-aace-40fa-b26e-373fd6658e7d">
 			<ee:message>
-				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByOpptyId_SRC from module::OpptyProduct
+				<ee:set-payload><![CDATA[import buildQueryOpptyProductsByoppId_SRC from module::OpportunityLineItem
 output application/java
 ---
-buildQueryOpptyProductsByOpptyId_SRC(payload.Id)]]></ee:set-payload>
+buildQueryOpptyProductsByoppId_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="querySubflow_SRC" doc:id="fd40478d-2ef9-4c42-ba32-06d2992406a2" name="querySubflow_SRC"/>

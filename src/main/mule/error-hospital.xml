@@ -43,7 +43,7 @@ buildGetRecordsFromErrHsptlByIdRequest(payload.Id)]]></ee:set-payload>
 	<sub-flow name="errHsptlApiSubflow" doc:id="9e99ce4a-43af-404b-8bb9-4d0a56c5d107" >
 		<choice doc:name="Choice" doc:id="853a3bea-6e7d-445c-9ebc-82c914b76683" >
 			<when expression='#[vars.requestType == "getRecords"]'>
-				<os:retrieve-all doc:name="Retrieve all" doc:id="d8f11847-c985-43be-b109-5987d0e77f18" objectStore="errorHospitalStore"/>
+				<os:retrieve-all doc:name="Retrieve all" doc:id="d8f11847-c985-43be-b109-5987d0e77f18" objectStore="Object_Store_ErrorHospital"/>
 				<ee:transform doc:name="Transform Message" doc:id="03e3e7ee-f82d-4599-b576-fa4148d60cca" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -66,7 +66,7 @@ else
 			<when expression='#[vars.requestType == "getRecordsById"]'>
 				<set-variable value="#[output application/json --- []]" doc:name="results" doc:id="06a78f62-4cb3-4fda-a6de-083631963f03" variableName="results" />
 				<foreach doc:name="For Each" doc:id="41f5ca22-e428-4c6e-b06e-a066fc714398" collection="#[payload]" >
-					<os:retrieve doc:name="Retrieve" doc:id="3ec1f6c8-ce84-4581-88f8-9ae6b1a780d7" key="#[payload]" objectStore="errorHospitalStore">
+					<os:retrieve doc:name="Retrieve" doc:id="3ec1f6c8-ce84-4581-88f8-9ae6b1a780d7" key="#[payload]" objectStore="Object_Store_ErrorHospital">
 						<os:default-value ><![CDATA[#[""]]]></os:default-value>
 					</os:retrieve>
 					<ee:transform doc:name="Transform Message" doc:id="0632beae-24af-41e4-a8dd-07cd7254d17c" >
@@ -112,10 +112,10 @@ payload.failedRecords map ((item) -> {
 					</ee:message>
 				</ee:transform>
 				<foreach doc:name="For Each" doc:id="519e8c9a-8bed-402f-b6f4-69cc1486d631" collection="#[payload]" >
-					<os:contains doc:name="Contains" doc:id="1d51662f-bffe-4370-809d-0e2b4ff01e48" key="#[payload.recordId]" objectStore="errorHospitalStore" target="isExistingRecord" />
+					<os:contains doc:name="Contains" doc:id="1d51662f-bffe-4370-809d-0e2b4ff01e48" key="#[payload.recordId]" objectStore="Object_Store_ErrorHospital" target="isExistingRecord" />
 					<choice doc:name="Choice" doc:id="080594a2-60de-4017-b9e2-0c0b5a86ef9a" >
 						<when expression="#[vars.isExistingRecord]" >
-							<os:retrieve doc:name="Retrieve" doc:id="20dd4389-df8c-4048-874a-c6a74b2b8f01" key="#[payload.recordId]" objectStore="errorHospitalStore" target="existingRecord" >
+							<os:retrieve doc:name="Retrieve" doc:id="20dd4389-df8c-4048-874a-c6a74b2b8f01" key="#[payload.recordId]" objectStore="Object_Store_ErrorHospital" target="existingRecord" >
 								<os:default-value ><![CDATA[#[""]]]></os:default-value>
 							</os:retrieve>
 							<ee:transform doc:name="Transform Message" doc:id="9f676cd7-fd95-410b-acdd-1b77f011cab5" >
@@ -133,12 +133,12 @@ payload update {
 							</ee:transform>
 						</when>
 					</choice>
-					<os:store doc:name="Store" doc:id="8d2d0e72-9658-44b6-bac2-96f4be9cf36a" key="#[payload.recordId]" objectStore="errorHospitalStore" />
+					<os:store doc:name="Store" doc:id="8d2d0e72-9658-44b6-bac2-96f4be9cf36a" key="#[payload.recordId]" objectStore="Object_Store_ErrorHospital" />
 				</foreach>
 			</when>
 			<when expression='#[vars.requestType == "deleteRecords"]'>
 				<foreach doc:name="For Each" doc:id="94e001c3-b76c-453c-ae57-a31285fb8e12" collection="#[payload]">
-					<os:remove doc:name="Remove" doc:id="e3bfddc9-fb6a-4204-a5ca-bce5326afb1b" key="#[payload]" objectStore="errorHospitalStore" />
+					<os:remove doc:name="Remove" doc:id="e3bfddc9-fb6a-4204-a5ca-bce5326afb1b" key="#[payload]" objectStore="Object_Store_ErrorHospital" />
 				</foreach>
 			</when>
 			<otherwise>

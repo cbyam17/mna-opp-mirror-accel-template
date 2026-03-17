@@ -10,7 +10,9 @@
 	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
@@ -20,56 +22,62 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
 http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
 	<configuration-properties
-		doc:name="propertiesConfig"
-		doc:id="dfb0576c-cf3b-4b55-abd2-842252cc3183"
-		file="config/properties.yaml" />
+		doc:name="Configuration properties"
+		doc:id="b96c84df-83c6-42e2-ac85-a4dae9fdbfd2"
+		file="config/${mule.env}.yaml" />
 	<secure-properties:config
-		name="securePropertiesConfig" doc:name="securePropertiesConfig"
+		name="Secure_Properties_Config" doc:name="securePropertiesConfig"
 		doc:id="326599eb-fb20-4eff-a9e4-14fc3267c812"
 		file="config/secure-properties.yaml" key="${mule.key}" />
-	<os:config name="objectStoreConfig"
-		doc:name="ObjectStore Config"
-		doc:id="65dc7685-6812-4ecb-b921-f30f312a92e9" />
-	<os:object-store name="errorHospitalStore"
-		doc:name="Object store" doc:id="016aca5e-9058-494a-92e3-236df837b841"
-		config-ref="objectStoreConfig" />
-	<os:object-store name="batchStatusStore"
+	<os:object-store name="Object_Store_ErrorHospital"
+		doc:name="Object store" doc:id="016aca5e-9058-494a-92e3-236df837b841" />
+	<os:object-store name="Object_Store_BatchStatus"
 		doc:name="Object store" doc:id="e752a7dc-43b0-4a9e-ae61-aef57c39453c" />
-	<os:object-store name="watermarkStore"
+	<os:object-store name="Object_Store_Watermark"
 		doc:name="Object store" doc:id="5bf27458-72b4-4ffc-8956-b93eee9c54c7" />
-	<os:object-store name="currentRunDateTimeStore"
+	<os:object-store name="Object_Store_CurrentRunDateTime"
 		doc:name="Object store" doc:id="61676613-7b9d-4101-b40d-e7cdfb03dfec" />
 	<salesforce:sfdc-config
-		name="salesforceConfig_SRC" doc:name="Salesforce Config"
+		name="Salesforce_Config_SRC" doc:name="Salesforce Config"
 		doc:id="ef243f98-46cd-49e0-b857-a469de334471">
 		<salesforce:basic-connection
-			username="${secure::source.username}"
-			password="${secure::source.password}"
-			securityToken="${secure::source.securityToken}" />
+			username="${secure::src.username}" password="${secure::src.password}"
+			securityToken="${secure::src.securityToken}" url="${src.authUrl}" />
 	</salesforce:sfdc-config>
 	<salesforce:sfdc-config
-		name="salesforceConfig_TGT" doc:name="Salesforce Config"
+		name="Salesforce_Config_TGT" doc:name="Salesforce Config"
 		doc:id="91c035e9-034f-4781-b8d6-30fd94a7473f">
 		<salesforce:basic-connection
-			username="${secure::target.username}"
-			password="${secure::target.password}"
-			securityToken="${secure::target.securityToken}" />
+			username="${secure::tgt.username}" password="${secure::tgt.password}"
+			securityToken="${secure::tgt.securityToken}" url="${tgt.authUrl}" />
 	</salesforce:sfdc-config>
 	<http:listener-config name="HTTP_Listener_config"
 		doc:name="HTTP Listener config"
 		doc:id="a86eca8c-7857-4b2f-b3ec-a97d856dbe6b">
 		<http:listener-connection host="0.0.0.0"
-			port="${httpListener.port}" readTimeout="${httpListener.readTimeout}"/>
+			port="${httpListener.port}" readTimeout="${httpListener.readTimeout}" />
 	</http:listener-config>
-	<email:smtp-config name="emailConfig" doc:name="Email SMTP" doc:id="96a0e188-e9a7-4f3b-a9b3-5829ca2f5952" >
-		<email:smtp-connection host="smtp.gmail.com" port="587" user="cbyam.ms@gmail.com" password="sdko izqh laje jefk">
-			<email:properties >
-				<email:property key="mail.smtp.starttls.enable" value="true" />
+	<email:smtp-config name="Email_SMTP"
+		doc:name="Email SMTP" doc:id="96a0e188-e9a7-4f3b-a9b3-5829ca2f5952">
+		<email:smtp-connection host="${smtp.host}"
+			port="${smtp.port}" user="${secure::smtp.user}"
+			password="${secure::smtp.password}">
+			<email:properties>
+				<email:property key="mail.smtp.starttls.enable"
+					value="true" />
 				<email:property key="mail.smtp.auth" value="true" />
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
-	<anypoint-mq:config name="anypointMqConfig" doc:name="Anypoint MQ Config" doc:id="dd6badc9-a814-43d8-aa88-772c2cb0247d" >
-		<anypoint-mq:connection url="${amq.url}" clientId="${amq.clientId}" clientSecret="${secure::amq.clientSecret}"/>
+	<anypoint-mq:config name="Anypoint_MQ_Config"
+		doc:name="Anypoint MQ Config"
+		doc:id="dd6badc9-a814-43d8-aa88-772c2cb0247d">
+		<anypoint-mq:connection url="${amq.url}"
+			clientId="${amq.clientId}" clientSecret="${secure::amq.clientSecret}" />
 	</anypoint-mq:config>
+	<global-property doc:name="Global Property"
+		doc:id="4b4a7120-3796-46e5-9db0-9a40d0375993" name="mule.key"
+		value="accelerator12345" />
+	<global-property doc:name="Global Property"
+		doc:id="b05c0317-cfa1-46cd-99d0-310d7f1e1488" name="mule.env" value="dev" />
 </mule>

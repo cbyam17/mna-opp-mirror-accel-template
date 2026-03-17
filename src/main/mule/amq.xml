@@ -1,40 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
 	xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd
-http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
-	<sub-flow name="amqPublishInsertRecordsToErrHsptl" doc:id="1f1bed41-ea02-476c-9837-ab1851dec770">
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+	<sub-flow name="amqPublishInsertRecordsToErrorHospital" doc:id="1f1bed41-ea02-476c-9837-ab1851dec770">
 		<anypoint-mq:publish doc:name="Publish" doc:id="a63b898c-4253-4523-a7d0-c15079e653b6" destination="${amq.errHsptlInsertRecordsQueue}" config-ref="anypointMqConfig">
 			<anypoint-mq:body ><![CDATA[#[output application/json --- payload]]]></anypoint-mq:body>
+			<anypoint-mq:properties ><![CDATA[#[output application/java --- { transactionId: correlationId}]]]></anypoint-mq:properties>
 		</anypoint-mq:publish>
 	</sub-flow>
-	<sub-flow name="amqPublishRemoveRecordsFromErrHsptl"
+	<sub-flow name="amqPublishRemoveRecordsFromErrorHospital"
 		doc:id="d19291aa-a3f6-495d-bf3a-1b35957621a2">
 		<anypoint-mq:publish doc:name="Publish" doc:id="5a6b6b60-1f7f-4bc0-89cd-ba7655a80adc" config-ref="anypointMqConfig" destination="${amq.errHsptlRemoveRecordsQueue}">
 			<anypoint-mq:body ><![CDATA[#[output application/json --- payload]]]></anypoint-mq:body>
+			<anypoint-mq:properties ><![CDATA[#[output application/java --- { transactionId: correlationId}]]]></anypoint-mq:properties>
 		</anypoint-mq:publish>
 	</sub-flow>
-	<flow name="vmListenerSendRecordsToErrHsptl"
+	<flow name="vmListenerSendRecordsToErrorHospital"
 		doc:id="4803ef34-5de8-43da-b95c-d73eb2dc3886">
 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="db4e5709-5c6d-4853-bc28-a621afd68ea1" config-ref="anypointMqConfig" destination="${amq.errHsptlInsertRecordsQueue}"/>
-		<flow-ref doc:name="sendRecordsToErrHsptlSubflow"
-			doc:id="5ea01d9e-6ce3-4daa-8c74-0331764c121f"
-			name="sendRecordsToErrHsptlSubflow" />
+		<set-variable value="#[output application/java --- attributes.properties.transactionId]" doc:name="transactionId" doc:id="7e672f64-9c49-427c-bfda-9b9ef0d11329" variableName="transactionId"/>
+		<flow-ref doc:name="sendRecordsToErrHsptlSubflow" doc:id="5ea01d9e-6ce3-4daa-8c74-0331764c121f" name="sendRecordsToErrHsptlSubflow" />
 		<error-handler ref="errorHospitalWriteErrorHandler" />
 	</flow>
-	<flow name="vmListenerhRemoveRecordsFromErrHsptl"
+	<flow name="vmListenerhRemoveRecordsFromErrorHospital"
 		doc:id="35a4df5f-958c-4dd1-ad44-035535ed97ca">
 		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="8ea09e03-93a1-4a31-94ed-108606ef91e9" config-ref="anypointMqConfig" destination="${amq.errHsptlRemoveRecordsQueue}"/>
-		<flow-ref doc:name="removeRecordsFromErrHsptlSubflow"
-			doc:id="55c94c73-7ff9-4438-a123-cd81d7bc52f0"
-			name="removeRecordsFromErrHsptlSubflow" />
+		<set-variable value="#[output application/java --- attributes.properties.transactionId]" doc:name="transactionId" doc:id="3a692efa-9135-40b4-b5bd-3ea0c9db097d" variableName="transactionId" />
+		<flow-ref doc:name="removeRecordsFromErrHsptlSubflow" doc:id="55c94c73-7ff9-4438-a123-cd81d7bc52f0" name="removeRecordsFromErrHsptlSubflow" />
 		<error-handler ref="errorHospitalWriteErrorHandler" />
 	</flow>
 </mule>

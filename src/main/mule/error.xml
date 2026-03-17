@@ -41,14 +41,19 @@ buildPingEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 			</ee:transform>
 		</on-error-continue>
 	</error-handler>
-	<error-handler name="schedulerErrorHandler" doc:id="9a9101f9-555c-4bd0-be38-d3d815193de8" >
+	<error-handler name="batchPreprocessingErrorHandler" doc:id="9a9101f9-555c-4bd0-be38-d3d815193de8" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" >
-			<flow-ref doc:name="sendSchedulerFailureEmailSubflow" doc:id="6957d07f-2389-46c1-a3de-244a39e43418" name="sendSchedulerErrorEmailSubflow" />
+			<flow-ref doc:name="sendSchedulerFailureEmailSubflow" doc:id="6957d07f-2389-46c1-a3de-244a39e43418" name="sendbatchPreprocessingErrorEmailSubflow" />
 		</on-error-propagate>
 	</error-handler>
 	<error-handler name="errorHospitalWriteErrorHandler" doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd8fa5ae-ee63-4863-b254-831786782cf4">
-			<flow-ref doc:name="sendErrHsptlFailureEmailSubflow" doc:id="b40065a7-f85b-4ea1-ac4b-fb7bc243b8be" name="sendErrHsptlFailureEmailSubflow" />
+			<flow-ref doc:name="sendErrHsptlWriteErrorEmailSubflow" doc:id="b40065a7-f85b-4ea1-ac4b-fb7bc243b8be" name="sendErrHsptlWriteErrorEmailSubflow" />
+		</on-error-propagate>
+	</error-handler>
+	<error-handler name="batchPostprocessingErrorHandler" doc:id="46800d61-dc69-4403-9dcf-3091170d3edd" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a58a1d69-b960-4ae7-8aad-9bae8537395d" >
+			<flow-ref doc:name="sendbatchPostprocessingErrorEmailSubflow" doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955" name="sendBatchPostprocessingErrorEmailSubflow" />
 		</on-error-propagate>
 	</error-handler>
 </mule>

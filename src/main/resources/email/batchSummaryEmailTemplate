@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Batch Job Completion Summary</title>
+  <title>Batch Completion Error Summary</title>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -49,7 +49,7 @@
 <body>
 
 <div class="container">
-  <h2>Batch Job Completion Summary</h2>
+  <h2>Batch Completion Error Summary</h2>
 
   <p>
     The batch job has completed with errors. Review the details below to determine whether any
@@ -60,87 +60,87 @@
   
   <div class="section">
     <p><span class="label">Transaction ID:</span><br>
-      #[output application/java --- vars.notificationProperties.transactionId]
+      #[output application/java --- vars.notification.content.transactionId]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Batch Job Instance ID:</span><br>
-      #[output application/java --- vars.notificationProperties.batchJobInstanceId]
+      #[output application/java --- vars.notification.content.batchJobInstanceId]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Total Records:</span><br>
-      #[output application/java --- vars.notificationProperties.totalRecords]
+      #[output application/java --- vars.notification.content.totalRecords]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Loaded Records:</span><br>
-      #[output application/java --- vars.notificationProperties.loadedRecords]
+      #[output application/java --- vars.notification.content.loadedRecords]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Processed Records:</span><br>
-      #[output application/java --- vars.notificationProperties.processedRecords]
+      #[output application/java --- vars.notification.content.processedRecords]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Successful Records:</span><br>
-      #[output application/java --- vars.notificationProperties.successfulRecords]
+      #[output application/java --- vars.notification.content.successfulRecords]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Failed Records:</span></p><br>
-      #[output application/java --- vars.notificationProperties.failedRecords]
+      #[output application/java --- vars.notification.content.failedRecords]
   </div>
   
   <div class="section">
     <p><span class="label">Elapsed Time (ms):</span><br>
-      #[output application/java --- vars.notificationProperties.elapsedTimeInMillis]
+      #[output application/java --- vars.notification.content.elapsedTimeInMillis]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Failed on Input Phase:</span><br>
-      #[output application/java --- vars.notificationProperties.failedOnInputPhase]
+      #[output application/java --- vars.notification.content.failedOnInputPhase]
     </p>
   </div>
   
   <div class="section">
     <p><span class="label">Input Phase Exception:</span></p>
     <div class="highlight">
-      #[output application/java --- vars.notificationProperties.inputPhaseException]
+      #[output application/java --- vars.notification.content.inputPhaseException]
     </div>
   </div>
 
   <div class="section">
     <p><span class="label">Failed on Loading Phase:</span><br>
-      #[output application/java --- vars.notificationProperties.failedOnLoadingPhase]
+      #[output application/java --- vars.notification.content.failedOnLoadingPhase]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">Loading Phase Exception:</span></p>
     <div class="highlight">
-      #[output application/java --- vars.notificationProperties.loadingPhaseException]
+      #[output application/java --- vars.notification.content.loadingPhaseException]
     </div>
   </div>
 
   <div class="section">
     <p><span class="label">Failed On Complete Phase:</span><br>
-      #[output application/java --- vars.notificationProperties.failedOnCompletePhase]
+      #[output application/java --- vars.notification.content.failedOnCompletePhase]
     </p>
   </div>
 
   <div class="section">
     <p><span class="label">On Complete Phase Exception:</span></p>
     <div class="highlight">
-      #[output application/java --- vars.notificationProperties.onCompletePhaseException]
+      #[output application/java --- vars.notification.content.onCompletePhaseException]
     </div>
   </div>
 

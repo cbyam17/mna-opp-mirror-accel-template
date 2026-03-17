@@ -41,12 +41,12 @@ output application/json
 	<sub-flow name="watermarkApiSubflow" doc:id="1ee2b324-507e-4166-b1c6-745d30bb942e" >
 		<choice doc:name="Choice" doc:id="746ff248-9346-4ee8-bb76-4f55ffb88855" >
 			<when expression='#[vars.requestType == "getWatermark"]'>
-				<os:retrieve doc:name="Retrieve" doc:id="5c185eb9-1b5a-41e6-9175-593dc11aa39b" key="lastRunDateTime" objectStore="watermarkStore">
+				<os:retrieve doc:name="Retrieve" doc:id="5c185eb9-1b5a-41e6-9175-593dc11aa39b" key="lastRunDateTime" objectStore="Object_Store_Watermark">
 			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
 			</when>
 			<when expression='#[vars.requestType == "updateWatermark"]'>
-				<os:store doc:name="Store" doc:id="db2b634e-21ce-4c94-b442-4121f8586332" key="lastRunDateTime" objectStore="watermarkStore">
+				<os:store doc:name="Store" doc:id="db2b634e-21ce-4c94-b442-4121f8586332" key="lastRunDateTime" objectStore="Object_Store_Watermark">
 			<os:value><![CDATA[#[payload.lastRunDateTime]]]></os:value>
 		</os:store>
 			</when>

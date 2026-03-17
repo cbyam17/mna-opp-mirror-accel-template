@@ -21,9 +21,6 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169" name="pingSubflow"
 			target="pingResponse"
 			targetValue="#[output applicatin/json --- payload]" />
-		<logger level="DEBUG" doc:name="DEBUG"
-			doc:id="a22a6731-a29c-453c-b57e-e0724eed181a"
-			message='#["Connectivity status response: " ++ write(vars.pingResponse,"application/json")]' />
 		<choice doc:name="Choice"
 			doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7">
 			<when expression='#[vars.pingResponse.status == "UP"]'>
@@ -32,9 +29,10 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 					variableName="pingResponse" />
 				<async doc:name="Async"
 					doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5">
-					<flow-ref doc:name="processAdminSubflow"
-						doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b"
-						name="processAdminSubflow" />
+					<try doc:name="Try" doc:id="8893a0d1-f8f1-4627-bf31-79fad4964e06" >
+						<flow-ref doc:name="processAdminSubflow" doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b" name="processAdminSubflow" />
+						<error-handler ref="batchPreprocessingErrorHandler" />
+					</try>
 				</async>
 				<ee:transform doc:name="Transform Message"
 					doc:id="16ca052e-40c7-4a0e-b6ed-0a7412715f96">
@@ -70,9 +68,6 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="8af4619f-ce37-445f-bfa1-7ad5ebe6bc55"
-			message='#["adminReprocessSubflow exit"]' />
 	</sub-flow>
 	<sub-flow name="validateAdminRequestSubflow"
 		doc:id="08f9728b-f525-4c6a-8830-dee3b5f9942c">

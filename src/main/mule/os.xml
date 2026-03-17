@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="2d1ee816-f147-4d23-9907-011782a0b3ed">
 		<os:retrieve doc:name="Retrieve"
 			doc:id="c5f554b6-3276-4a5a-a179-5114b0e6ece7"
-			objectStore="batchStatusStore" key='batchStatus'>
+			objectStore="Object_Store_BatchStatus" key='batchStatus'>
 			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
 	</sub-flow>
@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="a0d2f9d2-bdf4-42ee-aaad-e23e345a870f">
 		<os:store doc:name="Store"
 			doc:id="9c44b10c-e481-4ce0-afc5-e1027531b253"
-			key="currentRunDateTime" objectStore="currentRunDateTimeStore">
+			key="currentRunDateTime" objectStore="Object_Store_CurrentRunDateTime">
 			<os:value><![CDATA[#[output application/json --- vars.watermarkCurrentRunDateTime]]]></os:value>
 		</os:store>
 	</sub-flow>
@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="e8530087-4a4c-4d19-9529-37f880bfdc2a">
 		<os:store doc:name="Store"
 			doc:id="67b2de8c-0642-4259-bc88-76073be5014a" key="batchStatus"
-			objectStore="batchStatusStore">
+			objectStore="Object_Store_BatchStatus">
 			<os:value><![CDATA[#[output application/json --- "IN_PROGRESS"]]]></os:value>
 		</os:store>
 	</sub-flow>
@@ -36,20 +36,30 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="bc79ce21-9cea-46fe-8227-11c61d9b2e76">
 		<os:clear doc:name="Clear"
 			doc:id="624b08b6-720d-4208-b3a7-14940f7ef1d6"
-			objectStore="batchStatusStore" />
+			objectStore="Object_Store_BatchStatus" />
 	</sub-flow>
 	<sub-flow name="clearOsBatchStatusRetrySubflow"
 		doc:id="507cd6a6-a10c-46bb-b33b-00a98345e323">
 		<os:clear doc:name="Clear"
 			doc:id="1b0ce841-c10b-4d4b-bb2c-b70d8009b56f"
-			objectStore="batchStatusStore" />
+			objectStore="Object_Store_BatchStatus" />
 	</sub-flow>
 	<sub-flow name="retrieveOsCurrentRunDateTimeSubflow"
 		doc:id="ef907932-8928-49ee-862f-36ce987794aa">
 		<os:retrieve doc:name="Retrieve"
 			doc:id="aa21f478-17f7-43b1-99fc-fc146d10782b"
-			key="currentRunDateTime">
+			key="currentRunDateTime" objectStore="Object_Store_Watermark">
 			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
+	</sub-flow>
+	<sub-flow name="retrieveOsBatchStatusRetrySubflow" doc:id="160c2ea3-9aad-4dd6-9dcd-50bdf862c2be" >
+		<os:retrieve doc:name="Retrieve" doc:id="90cb3ce6-c13c-4257-a7fe-8fc3e1c44b91" key="batchRetryStatus" objectStore="Object_Store_BatchStatus">
+			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		</os:retrieve>
+	</sub-flow>
+	<sub-flow name="storeOsBatchStatusRetryInProgressSubflow" doc:id="76aad48d-f58f-434d-b460-e1f5fca4e338" >
+		<os:store doc:name="Store" doc:id="9395ec26-38fb-4321-bb6c-b174140d9c8c" key="batchRetryStatus" objectStore="Object_Store_BatchStatus">
+			<os:value ><![CDATA[#[output application/json --- "IN_PROGRESS"]]]></os:value>
+		</os:store>
 	</sub-flow>
 </mule>
