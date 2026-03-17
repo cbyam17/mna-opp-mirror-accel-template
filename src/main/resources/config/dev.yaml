@@ -46,7 +46,7 @@ smtp:
     batchSummary: "[mna-oppty-mirror-accel] Batch Completion Error Summary"
     batchPreprocessingError: "[mna-oppty-mirror-accel] Batch Pre-processing Error"
     batchPostprocessingError: "[mna-oppty-mirror-accel] Batch Post-processing Error"
-  toEmailAddresses: "cbyam.ms@gmail.com"
+  toEmailAddresses: "notifications@mycompany.com"
 src:
   authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
 tgt:

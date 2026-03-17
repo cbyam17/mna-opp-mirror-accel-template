@@ -75,9 +75,4 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 		<anypoint-mq:connection url="${amq.url}"
 			clientId="${amq.clientId}" clientSecret="${secure::amq.clientSecret}" />
 	</anypoint-mq:config>
-	<global-property doc:name="Global Property"
-		doc:id="4b4a7120-3796-46e5-9db0-9a40d0375993" name="mule.key"
-		value="accelerator12345" />
-	<global-property doc:name="Global Property"
-		doc:id="b05c0317-cfa1-46cd-99d0-310d7f1e1488" name="mule.env" value="dev" />
 </mule>
