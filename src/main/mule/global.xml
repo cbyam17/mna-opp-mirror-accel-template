@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 	<secure-properties:config
 		name="Secure_Properties_Config" doc:name="securePropertiesConfig"
 		doc:id="326599eb-fb20-4eff-a9e4-14fc3267c812"
-		file="config/secure-properties.yaml" key="${mule.key}" />
+		file="config/${env}-secure.yaml" key="${mule.key}" />
 	<os:object-store name="Object_Store_ErrorHospital"
 		doc:name="Object store" doc:id="016aca5e-9058-494a-92e3-236df837b841" />
 	<os:object-store name="Object_Store_BatchStatus"
