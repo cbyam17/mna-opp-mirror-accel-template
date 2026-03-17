@@ -153,6 +153,6 @@ enrichOppsWithQueryResults(payload, vars.existingOpps, vars.olis, vars.existingO
 		<remove-variable doc:name="existingAccts" doc:id="26584828-e8b7-435c-bab4-06ab44302367" variableName="existingAccts" />
 		<remove-variable doc:name="existingOpps" doc:id="059c6c12-95bd-4d28-89ce-2ef7095899fe" variableName="existingOpps" />
 		<remove-variable doc:name="existingOlis" doc:id="d96b0c43-2800-4b92-a1a3-bf4e4c39ddf8" variableName="existingOlis" />
-		<remove-variable doc:name="opptyProducts" doc:id="23b80ce3-06ba-483e-a345-77ced743fba7" variableName="opptyProducts" />
+		<remove-variable doc:name="olis" doc:id="23b80ce3-06ba-483e-a345-77ced743fba7" variableName="olis" />
 	</sub-flow>
 </mule>

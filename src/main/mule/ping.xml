@@ -45,10 +45,7 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
-			<salesforce:get-server-timestamp
-				doc:name="Get server timestamp"
-				doc:id="931ef439-df70-4e9f-8711-e9b436302292"
-				config-ref="salesforceConfig_TGT" />
+			<flow-ref doc:name="getServerTimestamp_TGT" doc:id="7f1cdd4b-1eec-4e1c-b74b-2cea6505d80e" name="getServerTimestamp_TGT" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88"
 				name="buildPingEndpointResponseSubflow" />
@@ -61,10 +58,7 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:id="b4aab529-1343-4104-8bf1-f336e792a380"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
-			<salesforce:get-server-timestamp
-				doc:name="Get server timestamp"
-				doc:id="755fb409-8dd5-4873-9b06-20f8c4d44185"
-				config-ref="salesforceConfig_SRC" />
+			<flow-ref doc:name="getServerTimestamp_SRC" doc:id="0a0d5091-ba7d-4251-9476-c9d3df7a4424" name="getServerTimestamp_SRC" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe"
 				name="buildPingEndpointResponseSubflow" />
@@ -77,26 +71,7 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
-
-			<set-variable variableName="key"
-				value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key" />
-			<set-variable variableName="value"
-				value="#[{ ts: now(), probe: 'ping' }]" doc:name="value" />
-
-			<os:store doc:name="Store"
-				doc:id="e9487b87-5833-488d-b0e4-9e0272a5f257"
-				objectStore="Object_Store_ErrorHospital" key="#[vars.key]">
-				<os:value><![CDATA[#[vars.value]]]></os:value>
-			</os:store>
-			<os:contains doc:name="Contains"
-				doc:id="fba2953e-0a6d-4976-b535-917adff6d361" key="#[vars.key]"
-				objectStore="Object_Store_ErrorHospital" target="exists" />
-			<os:retrieve doc:name="Retrieve"
-				doc:id="b9418019-0b31-4ba7-bd47-e9614e42fd92" key="#[vars.key]"
-				target="retrieved" objectStore="Object_Store_ErrorHospital" />
-			<os:remove doc:name="Remove"
-				doc:id="57efab76-086f-413b-999f-9078b58d623c" key="#[vars.key]"
-				objectStore="Object_Store_ErrorHospital" />
+			<flow-ref doc:name="errHsptlPingSubflow" doc:id="31ef9c6b-707b-49e9-87da-594184771a4e" name="errHsptlPingSubflow" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="aa278e33-77f1-4f8c-8022-2cbbfec85b0f"
 				name="buildPingEndpointResponseSubflow" />
@@ -109,26 +84,7 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a">
-			<set-variable
-				value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key"
-				doc:id="39ece61a-ad24-4115-92d1-d4e642852988" variableName="key" />
-			<set-variable value="#[{ ts: now(), probe: 'ping' }]"
-				doc:name="value" doc:id="9008adb2-7572-42e6-8762-faf4795c5e1c"
-				variableName="value" />
-			<os:store doc:name="Store"
-				doc:id="b96f9ff7-8fa0-4a9d-aebb-02a858f09564" key="#[vars.key]"
-				objectStore="Object_Store_Watermark">
-				<os:value><![CDATA[#[vars.value]]]></os:value>
-			</os:store>
-			<os:contains doc:name="Contains"
-				doc:id="3694c9bf-7706-41bf-9902-80f4a823f556" key="#[vars.key]"
-				objectStore="Object_Store_Watermark" target="exists" />
-			<os:retrieve doc:name="Retrieve"
-				doc:id="0df17b90-e49f-48db-94b3-5e00efae337a" key="#[vars.key]"
-				objectStore="Object_Store_Watermark" target="retrieved" />
-			<os:remove doc:name="Remove"
-				doc:id="028e4842-b358-49db-a19f-db14056bb37f" key="#[vars.key]"
-				objectStore="Object_Store_Watermark" />
+			<flow-ref doc:name="watermarkPingSubflow" doc:id="01b33600-8f44-49d6-9fe6-3cfde96aaa81" name="watermarkPingSubflow" />
 			<flow-ref doc:name="buildPingEndpointResponseSubflow"
 				doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0"
 				name="buildPingEndpointResponseSubflow" />

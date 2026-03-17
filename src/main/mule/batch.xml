@@ -48,9 +48,10 @@ transformCreateOpps_TGT(payload)]]></ee:set-variable>
 							<scripting:execute engine="Groovy"
 								doc:name="Execute" doc:id="c072a779-9d21-41d0-824f-1625c126a53a">
 								<scripting:code><![CDATA[vars['record'].payload.createOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters><![CDATA[#[{
-	matchingResponse: vars.createResponses[vars.counter-1]
-}]]]></scripting:parameters>
+								<scripting:parameters><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
+output application/java
+---
+getMatchingOppResponse_TGT(vars.createResponses, (vars.counter-1))]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
@@ -81,9 +82,10 @@ transformUpdateOpps_TGT(payload)]]></ee:set-variable>
 							<scripting:execute engine="Groovy"
 								doc:name="Execute" doc:id="f0f42b56-d2f2-4122-99e5-7ebb9b57bf33">
 								<scripting:code><![CDATA[vars['record'].payload.updateOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters><![CDATA[#[{
-	matchingResponse: vars.updateResponses[vars.counter-1]
-}]]]></scripting:parameters>
+								<scripting:parameters><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
+output application/java
+---
+getMatchingOppResponse_TGT(vars.updateResponses, (vars.counter-1))]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
@@ -100,10 +102,10 @@ output application/java
 ---
 transformCreateOlis_TGT(payload)]]></ee:set-variable>
 								<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
-								<ee:set-variable variableName="srcOppIds" ><![CDATA[import getOppIdsForOlisToCreate from module::OpportunityLineItem
+								<ee:set-variable variableName="oppIds" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
 output application/java
 ---
-getOppIdsForOlisToCreate(payload)]]></ee:set-variable>
+getOppIdsForOlis(payload, "create")]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 						<flow-ref doc:name="createObjectSubflow_TGT" doc:id="42f7c11c-dfcd-401c-adbb-be05c9a54122" name="createObjectSubflow_TGT" target="createResponses" targetValue="#[payload.items.payload default []]" />
@@ -111,15 +113,10 @@ getOppIdsForOlisToCreate(payload)]]></ee:set-variable>
 							<ee:message >
 							</ee:message>
 							<ee:variables >
-								<ee:set-variable variableName="responsesMap" ><![CDATA[
-%dw 2.0
+								<ee:set-variable variableName="responsesMap" ><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
 output application/java
-var zipped = (vars.srcOppIds default []) zip (vars.createResponses default [])
 ---
-zipped map ((oli) -> 
-    oli[1] ++ { 
-    	srcOppId: oli[0]
-    })]]></ee:set-variable>
+buildOliResponsesMap(vars.oppIds, vars.createResponses)]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 						<foreach doc:name="For Each" doc:id="ca16c60d-222e-402a-b29c-2e49144c19f8" >
@@ -128,9 +125,7 @@ zipped map ((oli) ->
 								<scripting:parameters ><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
 output application/java
 ---
-{
-	matchingResponses: getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)
-}]]]></scripting:parameters>
+getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
@@ -145,25 +140,20 @@ output application/java
 output application/java
 ---
 transformUpdateOlis_TGT]]></ee:set-variable>
-							<ee:set-variable variableName="srcOppIds"><![CDATA[import getOppIdsForOlisToUpdate from module::OpportunityLineItem
+								<ee:set-variable variableName="oppIds" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
 output application/java
 ---
-getOppIdsForOlisToUpdate(payload)]]></ee:set-variable>
+getOppIdsForOlis(payload, "update")]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 						<flow-ref doc:name="updateObjectSubflow_TGT" doc:id="50ac5569-ae9d-4661-986e-151b77346008" name="updateObjectSubflow_TGT" target="updateResponses" targetValue="#[payload.items.payload default []]" />
 						<ee:transform doc:name="Transform Message" doc:id="5138c983-14c4-4adc-80ff-78359cabd956">
 						<ee:message />
 						<ee:variables>
-							<ee:set-variable variableName="responsesMap"><![CDATA[
-%dw 2.0
+							<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
 output application/java
-var zipped = (vars.srcOppIds default []) zip (vars.updateResponses default [])
 ---
-zipped map ((oli) -> 
-    oli[1] ++ { 
-    	srcOppId: oli[0]
-    })]]></ee:set-variable>
+buildOliResponsesMap(vars.oppIds, vars.updateResponses)]]></ee:set-variable>
 						</ee:variables>
 					</ee:transform>
 						<foreach doc:name="For Each" doc:id="89da8267-07cd-4da2-92d4-1d07188d10a2">
@@ -172,9 +162,7 @@ zipped map ((oli) ->
 							<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
 output application/java
 ---
-{
-	matchingResponses: getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)
-}]]]></scripting:parameters>
+getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
 						</scripting:execute>
 					</foreach>
 					</batch:aggregator>
@@ -189,25 +177,20 @@ output application/java
 output application/java
 ---
 transformDeleteOlis_TGT(payload)]]></ee:set-variable>
-							<ee:set-variable variableName="srcOppIds"><![CDATA[import getOppIdsForOlisToDelete from module::OpportunityLineItem
+								<ee:set-variable variableName="oppids" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
 output application/java
 ---
-getOppIdsForOlisToDelete(payload)]]></ee:set-variable>
+getOppIdsForOlis(payload, "delete")]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 						<flow-ref doc:name="deleteObjectSubflow_TGT" doc:id="784686c4-21f2-4f23-b1af-c332d9714879" name="deleteObjectSubflow_TGT" target="deleteResponses" targetValue="#[payload.items.payload default []]" />
 						<ee:transform doc:name="Transform Message" doc:id="8dd177d5-dec9-4752-81b7-18a9fbcbf57a">
 						<ee:message />
 						<ee:variables>
-							<ee:set-variable variableName="responsesMap"><![CDATA[
-%dw 2.0
+							<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
 output application/java
-var zipped = (vars.srcOppIds default []) zip (vars.deleteResponses default [])
 ---
-zipped map ((oli) -> 
-    oli[1] ++ { 
-    	srcOppId: oli[0]
-    })]]></ee:set-variable>
+buildOliResponsesMap(vars.oppIds, vars.deleteResponses)]]></ee:set-variable>
 						</ee:variables>
 					</ee:transform>
 						<foreach doc:name="For Each" doc:id="363dd911-c664-4b08-869a-84cff595f360">
@@ -216,9 +199,7 @@ zipped map ((oli) ->
 							<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
 output application/java
 ---
-{
-	matchingResponses: getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)
-}]]]></scripting:parameters>
+getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
 						</scripting:execute>
 					</foreach>
 					</batch:aggregator>
@@ -241,9 +222,10 @@ transformWritebackOpps_SRC(payload)]]></ee:set-variable>
 						<foreach doc:name="For Each" doc:id="9774f49c-51e0-45f9-b9e7-421fef27ecd1" >
 							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="ec525fc4-c599-4216-b552-c5aaf01d8ebc" >
 								<scripting:code ><![CDATA[vars['record'].payload.writebackOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters ><![CDATA[#[{
-	matchingResponse: vars.updateResponses[vars.counter-1]
-}]]]></scripting:parameters>
+								<scripting:parameters ><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
+output application/java
+---
+getMatchingOppResponse_TGT(vars.updateResponses, (vars.counter-1))]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>

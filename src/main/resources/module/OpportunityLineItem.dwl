@@ -86,21 +86,34 @@ fun transformDeleteOlis_TGT(opps) =
     (opp.olisToDelete default []) map ((oli) -> oli.Id)
   )
 
-fun getOppIdsForOlisToCreate(opps) =
-  (opps default []) flatMap ((opp) ->
-    (opp.olisToCreate default []) map ((oli) -> 
-      (opp.Id as String)))
-
-fun getOppIdsForOlisToUpdate(opps) =
-  (opps default []) flatMap ((opp) ->
-    (opp.olisToUpdate default []) map ((oli) -> 
-      (opp.Id as String)))
-
-fun getOppIdsForOlisToDelete(opps) =
-  (opps default []) flatMap ((opp) ->
-    (opp.olisToDelete default []) map ((oli) -> 
-      (opp.Id as String)))
+fun getOppIdsForOlis(opps, operation) =
+  if (operation == "create")
+    (opps default []) flatMap ((opp) ->
+      (opp.olisToCreate default []) map ((oli) -> 
+        (opp.Id as String)))
+  else if (operation == "update")
+    (opps default []) flatMap ((opp) ->
+      (opp.olisToUpdate default []) map ((oli) -> 
+        (opp.Id as String)))
+  else if (operation == "delete")
+    (opps default []) flatMap ((opp) ->
+      (opp.olisToDelete default []) map ((oli) -> 
+        (opp.Id as String)))
+  else
+    []
   
+fun buildOliResponsesMap(oppIds, oliResponses) =
+  do {
+    var zipped = (oppIds default []) zip (oliResponses default [])
+    ---
+    zipped default [] map ((oli) -> 
+      oli[1] ++ { 
+        oppId: oli[0]
+      })
+  }
+
 fun getMatchingOliResponses(responsesMap, oppId) =
-  (responsesMap default [])
-    filter ((oli) -> (oli.srcOppId == oppId))
+{
+  matchingResponses: (responsesMap default [])
+    filter ((item) -> (item.oppId == oppId))
+}

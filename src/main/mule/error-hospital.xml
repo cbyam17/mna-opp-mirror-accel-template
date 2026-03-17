@@ -12,6 +12,10 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="errHsptlPingSubflow" doc:id="cb702816-f350-4da3-944a-d0a223e7a07a" >
+		<set-variable value='#["ping"]' doc:name="requestType" doc:id="c2d5bd7c-d31b-4897-b0c6-865a0a3c03ce" variableName="requestType" />
+		<flow-ref doc:name="errHsptlApiSubflow" doc:id="496830c5-7807-48a0-87b0-87b46b70addf" name="errHsptlApiSubflow" />
+	</sub-flow>
 	<sub-flow name="getRecordsFromErrHsptlSubflow" doc:id="88597b62-a290-4edf-995d-df68a683084c" >
 		<set-variable value='#["getRecords"]' doc:name="requestType" doc:id="85669ce4-cb09-4432-854e-8833145f9b17" variableName="requestType" />
 		<flow-ref doc:name="errHsptlApiSubflow" doc:id="d96b8e24-5399-4d94-a9c8-1bb8e367b0d5" name="errHsptlApiSubflow" />
@@ -140,6 +144,16 @@ payload update {
 				<foreach doc:name="For Each" doc:id="94e001c3-b76c-453c-ae57-a31285fb8e12" collection="#[payload]">
 					<os:remove doc:name="Remove" doc:id="e3bfddc9-fb6a-4204-a5ca-bce5326afb1b" key="#[payload]" objectStore="Object_Store_ErrorHospital" />
 				</foreach>
+			</when>
+			<when expression='#[vars.requestType == "ping"]'>
+				<set-variable value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key" doc:id="2e7de185-63c2-40fe-b129-4d12e42d6ef6" variableName="key" />
+				<set-variable value="#[{ ts: now(), probe: 'ping' }]" doc:name="value" doc:id="fee0094d-647b-4d03-bbad-88fee26f7803" variableName="value" />
+				<os:store doc:name="Store" doc:id="cb102458-8acd-45a1-a01c-191cdbb2973c" key="#[vars.key]" objectStore="Object_Store_ErrorHospital" >
+					<os:value ><![CDATA[#[vars.value]]]></os:value>
+				</os:store>
+				<os:contains doc:name="Contains" doc:id="e479f49f-b44e-4f39-a063-92cbc4c753d6" key="#[vars.key]" objectStore="Object_Store_ErrorHospital" target="exists" />
+				<os:retrieve doc:name="Retrieve" doc:id="c1337c30-b65c-4d44-9261-209053da7f0b" key="#[vars.key]" objectStore="Object_Store_ErrorHospital" target="retrieved" />
+				<os:remove doc:name="Remove" doc:id="eb329dcf-ede1-45ef-9e55-a63b449de07f" key="#[vars.key]" objectStore="Object_Store_ErrorHospital" />
 			</when>
 			<otherwise>
 				<logger level="WARN" doc:name="WARN" doc:id="78b51271-2207-4c63-865d-175ff1d82e91" message='#["no path specified for error hospital API"]'/>

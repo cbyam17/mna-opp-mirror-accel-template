@@ -230,3 +230,8 @@ fun transformWritebackOpps_SRC(opps) =
     else
       transformed
   })
+
+  fun getMatchingOppResponse(responses, index) =
+    {
+	    matchingResponse: responses[index] default null
+    } 
