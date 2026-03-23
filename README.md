@@ -49,8 +49,8 @@ There must be the following fields on the **Opportunity** object:
 | Field                             | Type             | Description |
 | :-------------                    | :--------------  | :-------------- |
 | Is_In_Mirror_Scope_TGT__c         | Boolean          | Determines if Opportunity is in scope to mirror to the target Salesforce instance |
-| Ready_To_Mirror_Datetime_TGT__c   | Datetime         | Datetime that an Opportunity is ready to mirror to the target Salesforce instance |
-| Opp_Id_TGT__c                     | Text (16 chars)  | Id of the target Salesforce instance Opportunity |
+| Ready_To_Mirror_DateTime_TGT__c   | DateTime         | DateTime that an Opportunity is ready to mirror to the target Salesforce instance |
+| Opp_Id_TGT__c                     | Text (18 chars)  | Id of the target Salesforce instance Opportunity |
 | Mirror_Error_TGT__c               | Text (255 chars) | Details of errors encountered during the mirror process |
 
 **Note**: This template does NOT write the target Salesforce instance OLI Ids back to the source Salesforce instance OLIs. If this functionality is required, an extra batch step would need to be configured to do so.
@@ -58,18 +58,18 @@ There must be the following fields on the **Opportunity** object:
 There must be the following field on the **Account** object:
 | Field             | Type             | Description |
 | :-------------    | :--------------  | :-------------- |
-| Acct_Id_TGT__c    | Text (16 chars)  | Id of the target Salesforce instance Account |
+| Acct_Id_TGT__c    | Text (18 chars)  | Id of the target Salesforce instance Account |
 
 ### Salesforce Target Instance
 There must be the following field on the **Opportunity** object:
 | Field             | Type              | Description |
 | :-------------    | :--------------   | :-------------- |
-| Opp_Id_SRC__c     | Text (16 chars)             | Id of the source Salesforce instance Opportunity
+| Opp_Id_SRC__c     | Text (18 chars)             | Id of the source Salesforce instance Opportunity
 
 There must be the following field on the **OLI** object:
 | Field             | Type              | Description |
 | :-------------    | :--------------   | :-------------- |
-| Oli_Id_SRC__c     | Text (16 chars)   | Id of the source Salesforce instance OLI
+| Oli_Id_SRC__c     | Text (18 chars)   | Id of the source Salesforce instance OLI
 
 **Note**: Neither of these fields need to be enabled as an external Ids, but they are required for fetching existing Opportunities and OLIs in the target Salesforce instance during batch preprocessing. If these fields can be enabled as external Ids, the template can be modified to:
 1. Remove the preprocessing step of fetching existing Opportunities in the target Salesforce instance — fetching existing OLIs is still required to conditionally identify OLIs to delete
