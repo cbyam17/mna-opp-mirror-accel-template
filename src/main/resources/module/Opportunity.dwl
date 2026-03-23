@@ -3,26 +3,27 @@
 // ============================================================================
 
 %dw 2.0
-import mergeWith from dw::core::Objects
-import generateIdInClause, buildFieldsToNull, toArray, firstOrNull, truncate from module::CommonUtil
-import mapToTgt, mapToSrc from module::PricebookEntry
+import generateIdInClause, toArray, firstOrNull, truncate from module::CommonUtils
+import mapToSrc from module::PricebookEntry
 import defaultErrorDescription, firstError, collectErrorField from module::ErrorHospital
 
-fun buildQueryOppsByDate_SRC(fromLastRunDateTime, toLastRunDateTime) =
+// Adjust SOQL query as needed
+fun buildQueryOppsByDate_SRC(fromlastRunDateTime, tolastRunDateTime) =
   {
     query:
       "SELECT Id, Account.Acct_Id_TGT__c, CloseDate, Name, StageName " ++
       "FROM Opportunity " ++
-      "WHERE Is_Mirror_Scope_TGT__c = true AND " ++
-      "((Ready_To_Mirror_Date_Time_TGT__c >= :watermarkLastRunDateTime " ++
-      "AND Ready_To_Mirror_Date_Time_TGT__c < :watermarkCurrentRunDateTime) " ++
+      "WHERE Is_In_Mirror_Scope_TGT__c = true AND " ++
+      "((Ready_To_Mirror_Datetime_TGT__c >= :watermarklastRunDateTime " ++
+      "AND Ready_To_Mirror_Datetime_TGT__c < :watermarkCurrentRunDateTime) " ++
       "OR Mirror_Error_TGT__c != null)",
     queryParams: {
-      watermarkLastRunDateTime:  fromLastRunDateTime,
-      watermarkCurrentRunDateTime: toLastRunDateTime
+      watermarklastRunDateTime:  fromlastRunDateTime,
+      watermarkCurrentRunDateTime: tolastRunDateTime
     }
   }
 
+// Adjust SOQL query as needed per Salesforce schema
 fun buildQueryOppsById_SRC(ids) =
   {
     query:
@@ -35,11 +36,12 @@ fun buildQueryOppsById_SRC(ids) =
         reduce ((acc = {}, item) -> acc ++ item)
   }
 
+// Adjust SOQL query as needed per Salesforce schema
 fun buildQueryOppsByExternalId_TGT(externalIds) =
   {
     query:
-      "SELECT Id, Oppty_Id_SRC__c " ++
-      "FROM Opportunity WHERE Oppty_Id_SRC__c IN (" ++ generateIdInClause(externalIds) ++ ")",
+      "SELECT Id, Opp_Id_SRC__c " ++
+      "FROM Opportunity WHERE Opp_Id_SRC__c IN (" ++ generateIdInClause(externalIds) ++ ")",
     queryParams:
       (externalIds default [])
         distinctBy ($)
@@ -47,6 +49,7 @@ fun buildQueryOppsByExternalId_TGT(externalIds) =
         reduce ((acc = {}, item) -> acc ++ item)
   }
 
+// Adjust field mapping as needed per Salesforce schema
 fun enrichOppsWithQueryResults(
   opps,
   existingOpps,
@@ -56,179 +59,136 @@ fun enrichOppsWithQueryResults(
   existingErrHsptlRecords
 ) =
   (opps default []) map ((opp) -> do {
-      var recExistingAcct =
+      var oppExistingAcct =
         firstOrNull((existingAccts default [])
           filter ((item) -> item.Id == opp.Account.Acct_Id_TGT__c))
 
-      var recExistingOpp =
+      var oppExistingOpp =
         firstOrNull((existingOpps default [])
-          filter ((item) -> item.Oppty_Id_SRC__c == opp.Id))
+          filter ((item) -> item.Opp_Id_SRC__c == opp.Id))
 
-      var recExistingErrHsptlRecord =
+      var oppExistingErrHsptlRecord =
         firstOrNull((existingErrHsptlRecords default [])
           filter ((item) -> item.recordId == opp.Id))
 
-      var recExistingOlis =
+      var oppExistingOlis =
         (existingOlis default [])
-          filter ((item)  -> item.Opportunity.Oppty_Id_SRC__c == opp.Id)
+          filter ((item)  -> item.Opportunity.Opp_Id_SRC__c == opp.Id)
 
-      var recOlis =
+      var oppOlis =
         (olis default [])
           filter ((item) -> item.OpportunityId == opp.Id)
 
-      var recExistingPbes =
-        (recExistingOlis default [])
+      var oppPbes =
+        (oppOlis default [])
           map ((oli) -> oli.PricebookEntryId)
 
-      var recPbes =
-        (recOlis default [])
-          map ((oli) -> oli.PricebookEntryId)
-
-      var recOlisToCreate =
-        (recOlis default [])
-          filter ((item) -> !(recExistingPbes contains mapToTgt(item.PricebookEntryId as String)))
-
-      var recOlisToUpdate =
-        (recExistingOlis default [])
-          filter ((item) -> (recPbes contains mapToSrc(item.PricebookEntryId as String)))
-
-      var recOlisToDelete =
-        (recExistingOlis default [])
-          filter ((item) -> !(recPbes contains mapToSrc(item.PricebookEntryId as String)))
+      var oppOlisToDelete =
+        (oppExistingOlis default [])
+          filter ((item) -> !(oppPbes contains mapToSrc(item.PricebookEntryId as String)))
       ---
       opp ++ {
-        existingAcct: recExistingAcct default null,
-        existingOpp: recExistingOpp default null,
-        existingErrHsptlRecord: recExistingErrHsptlRecord default null,
-        existingOlis: recExistingOlis default [],
-        olis: recOlis default [],
-        olisToCreate: recOlisToCreate default [],
-        olisToUpdate: recOlisToUpdate default [],
-        olisToDelete: recOlisToDelete default []
+        existingAcct: oppExistingAcct,
+        existingOpp: oppExistingOpp,
+        existingErrHsptlRecord: oppExistingErrHsptlRecord,
+        existingOlis: oppExistingOlis,
+        olis: oppOlis,
+        olisToDelete: oppOlisToDelete
       }
     })
 
-fun transformOpp_TGT(opp) = do {
-  var prefixedName =
-    if (!isEmpty(opp.Name))
-      "SRC - " ++ opp.Name
-    else
-      null
-  ---
-  {
-    AccountId:        opp.Account.Acct_Id_TGT__c,
-    Oppty_Id_SRC__c:  opp.Id,
-    OwnerId:          opp.existingAcct.OwnerId,
-    // Use truncate if you need strict length: truncate(prefixedName, 120)
-    Name:             prefixedName, 
-    StageName:        opp.StageName,
-    CloseDate:
+// Adjust field mapping as needed per Salesforce schema
+fun transformUpsertOpps_TGT(opps) =
+  (opps default []) map ((opp) -> do {
+    var tgtOppId = opp.existingOpp.Id default null
+    var srcOppId = opp.Id default null
+    var acctId = opp.Account.Acct_Id_TGT__c default null
+    var ownerId = opp.existingAcct.OwnerId default null
+    var prefixedName =
+      if (!isEmpty(opp.Name))
+        "SRC - " ++ opp.Name
+      else
+        null
+    var stageName = opp.StageName default null
+    var closeDate =
       if (!isEmpty(opp.CloseDate))
         opp.CloseDate as Date { format: "yyyy-MM-dd" }
       else
-        null,
-  }
-}
-
-fun transformCreateOpps_TGT(opps) =
-  (opps default []) map ((opp) -> do {
-    var transformed  = transformOpp_TGT(opp)
-    var fieldsToNull = buildFieldsToNull(transformed)
+        null
     ---
-    if (!isEmpty(fieldsToNull))
-      transformed mergeWith { fieldsToNull: fieldsToNull }
-    else
-      transformed
-  })
-
-fun transformUpdateOpps_TGT(opps) =
-  (opps default []) map ((opp) -> do {
-    var transformed =
-      transformOpp_TGT(opp) ++ {
-          Id: opp.existingOpp.Id
-        }
-      var fieldsToNull = buildFieldsToNull(transformed)
-      ---
-      if (!isEmpty(fieldsToNull))
-        transformed mergeWith { fieldsToNull: fieldsToNull }
-      else
-        transformed
+    {
+      Id: tgtOppId,
+      Opp_Id_SRC__c: srcOppId,
+      AccountId: acctId,
+      OwnerId: ownerId,
+      Name: truncate(prefixedName, 120),
+      StageName: stageName,
+      CloseDate: closeDate
     }
-  )
+  })
 
 fun buildErrorMessage(objectType, message) =
   "_TGT mirror error - " ++ (objectType default "") ++ ": " ++ (message default "Unknown error")
 
+// Adjust field mapping as needed per Salesforce schema
 fun transformWritebackOpps_SRC(opps) =
   (opps default []) map ((opp) -> do {
-    var oppId = opp.Id default ""
-    var upsertedOppId =
-      if (!isEmpty(opp.existingOpp))
-        opp.existingOpp.Id
-      else if ((opp.createOppResponse.success default false) == true)
-        opp.createOppResponse.id
-      else null
 
     var defDesc = defaultErrorDescription()
 
-    var createOppResp = opp.createOppResponse default {}
-    var updateOppResp = opp.updateOppResponse default {}
-    var createOliResponses = opp.createOliResponses default []
-    var updateOliResponses = opp.updateOliResponses default []
+    var upsertOppResponse = opp.upsertOppResponse default {}
+    var upsertOliResponses = opp.upsertOliResponses default []
     var deleteOliResponses = opp.deleteOliResponses default []
 
-    var isCreateOppFailed = ((createOppResp.success default true) == false) //confirm default
-    var isUpdateOppFailed = ((updateOppResp.success default true) == false) //confirm default
-    var isAnyCreateOliFailed = (((toArray(createOliResponses)).*success default []) contains false)
-    var isAnyUpdateOliFailed = (((toArray(updateOliResponses)).*success default []) contains false)
-    var isAnyDeleteOliFailed = (((toArray(deleteOliResponses)).*success default []) contains false)
+    var isUpsertOppSuccess= (upsertOppResponse.success default false)
+    var isUpsertOlisSuccess = !(((toArray(upsertOliResponses)).*success default []) contains false)
+    var isDeleteOlisSuccess = !(((toArray(deleteOliResponses)).*success default []) contains false)
 
-    var isSystemError = ((opp.isSystemError default false) == true)
+    var isSystemError = (opp.isSystemError default false)
 
-    var resolvedError =
-      if (isCreateOppFailed) do {
-        var e = firstError(createOppResp)
-        ---
-        buildErrorMessage("Opportunity", (e.message as String) default defDesc)
-      }
-      else if (isUpdateOppFailed) do {
-        var e = firstError(updateOppResp)
-        ---
-        buildErrorMessage("Opportunity", (e.message as String) default defDesc)
-      }
-      else if (isAnyCreateOliFailed) do {
-        var errMsgs = collectErrorField(createOliResponses, "message")
-        ---
-        buildErrorMessage("OpportunityLineItem", (errMsgs as String) default defDesc)
-      }
-      else if (isAnyUpdateOliFailed) do {
-        var errMsgs = collectErrorField(updateOliResponses, "message")
-        ---
-        buildErrorMessage("OpportunityLineItem", (errMsgs as String) default defDesc)
-      }
-      else if (isAnyDeleteOliFailed) do {
-        var errMsgs = collectErrorField(deleteOliResponses, "message")
-        ---
-        buildErrorMessage("OpportunityLineItem", (errMsgs as String) default defDesc)
-      }
-      else if (isSystemError)
-        buildErrorMessage("Opportunity", (defDesc as String))
+    var srcOppId = opp.Id default null
+    var tgtOppId =
+      if (!isEmpty(opp.existingOpp))
+        opp.existingOpp.Id
+      else if (isUpsertOppSuccess)
+        opp.upsertOppResponse.id
       else
         null
 
-    var transformed =
-      {
-        Id:                  oppId,
-        Oppty_Id_TGT__c:     upsertedOppId,
-        Mirror_Error_TGT__c: truncate(resolvedError, 255)
+    var resolvedError =
+      if (isSystemError)
+        buildErrorMessage(
+          "System Error",
+          (defDesc as String))
+      else if (!isUpsertOppSuccess) do {
+        var e = firstError(upsertOppResponse)
+        ---
+        buildErrorMessage(
+          "Opportunity",
+          (e.message as String) default defDesc)
       }
-
-    var fieldsToNull = buildFieldsToNull(transformed)
+      else if (!isUpsertOlisSuccess) do {
+        var errMsgs = collectErrorField(upsertOliResponses, "message")
+        ---
+        buildErrorMessage(
+          "OpportunityLineItem",
+          (errMsgs as String) default defDesc)
+      }
+      else if (!isDeleteOlisSuccess) do {
+        var errMsgs = collectErrorField(deleteOliResponses, "message")
+        ---
+        buildErrorMessage(
+          "OpportunityLineItem",
+          (errMsgs as String) default defDesc)
+      }
+      else
+        null
     ---
-    if (!isEmpty(fieldsToNull))
-      transformed mergeWith { fieldsToNull: fieldsToNull }
-    else
-      transformed
+    {
+      Id: srcOppId,
+      Opp_Id_TGT__c: tgtOppId,
+      Mirror_Error_TGT__c: truncate(resolvedError, 255)
+    }
   })
 
   fun getMatchingOppResponse(responses, index) =

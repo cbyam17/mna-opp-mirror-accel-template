@@ -12,9 +12,6 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<sub-flow name="getServerTimestamp_TGT" doc:id="9aa70493-45a3-43b2-bea8-109051a7b5ef" >
-		<salesforce:get-server-timestamp doc:name="Get server timestamp" doc:id="931ef439-df70-4e9f-8711-e9b436302292" config-ref="Salesforce_Config_TGT" />
-	</sub-flow>
 	<sub-flow name="getAcctsByIdSubflow_TGT"
 		doc:id="a3ff0644-c8a8-49c4-959f-219c39f94948">
 		<ee:transform doc:name="Transform Message"
@@ -26,7 +23,8 @@ output application/java
 buildQueryAcctsById_TGT(payload.Account.Acct_Id_TGT__c)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_TGT" doc:id="a459a5d7-688d-4984-9cd5-01eb1b9ff162" name="querySubflow_TGT" />
+		<flow-ref doc:name="querySubflow_TGT"
+			doc:id="a459a5d7-688d-4984-9cd5-01eb1b9ff162" name="querySubflow_TGT" />
 	</sub-flow>
 	<sub-flow name="getOppsByExternalIdSubflow_TGT"
 		doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78">
@@ -39,7 +37,8 @@ output application/java
 buildQueryOppsByExternalId_TGT(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_TGT" doc:id="243871bd-3ff0-4c3e-9bd6-85773ecf521d" name="querySubflow_TGT" />
+		<flow-ref doc:name="querySubflow_TGT"
+			doc:id="243871bd-3ff0-4c3e-9bd6-85773ecf521d" name="querySubflow_TGT" />
 	</sub-flow>
 	<sub-flow name="getOlisByOppIdSubflow_TGT"
 		doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
@@ -52,49 +51,61 @@ output application/java
 buildQueryOlisByOppExternalId_TGT(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_TGT" doc:id="59c8f150-a360-4179-ac02-59fe21f210b1" name="querySubflow_TGT"/>
+		<flow-ref doc:name="querySubflow_TGT"
+			doc:id="59c8f150-a360-4179-ac02-59fe21f210b1" name="querySubflow_TGT" />
 	</sub-flow>
-	<sub-flow name="createObjectSubflow_TGT" doc:id="4d9cf89f-a4fc-4a40-b143-d3bd30baaa0e" >
-		<logger level="INFO" doc:name="Logger" doc:id="cfa8218b-ece1-4644-b7e3-9f424ae3f99f" message="#[output application/json --- vars.recordsToCreate]" />
-		<try doc:name="Try" doc:id="7ef8fa13-1bcd-4de2-916b-c6149d770710">
-			<salesforce:create doc:name="Create" doc:id="2583b9c9-6dc0-4265-a84a-e9cb47cd41a8" type="#[vars.objectType]" config-ref="Salesforce_Config_TGT">
-			<salesforce:records><![CDATA[#[output application/java --- vars.recordsToCreate]]]></salesforce:records>
-		</salesforce:create>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="5df1cbea-6ce0-47db-a560-c8915ade6adc" message="#[output application/json --- payload]" />
+	<sub-flow name="getServerTimestamp_TGT"
+		doc:id="9aa70493-45a3-43b2-bea8-109051a7b5ef">
+		<salesforce:get-server-timestamp
+			doc:name="Get server timestamp"
+			doc:id="931ef439-df70-4e9f-8711-e9b436302292"
+			config-ref="Salesforce_Config_TGT" />
 	</sub-flow>
-	<sub-flow name="updateObjectSubflow_TGT" doc:id="bf44c214-4bc8-4dab-bbec-186aa7320690" >
-		<logger level="INFO" doc:name="Logger" doc:id="2fe5a080-79dc-45c5-9806-df2fb7bd596f" message="#[output application/json --- vars.recordsToUpdate]" />
-		<try doc:name="Try" doc:id="a122274c-62ed-4742-b81a-839c0f456899">
-			<salesforce:update doc:name="Update" doc:id="cb09cc24-236b-42da-b1c3-fe42d60040fd" config-ref="Salesforce_Config_TGT" type="#[vars.objectType]">
-			<salesforce:records><![CDATA[#[output application/java --- vars.recordsToUpdate]]]></salesforce:records>
-		</salesforce:update>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="da0da80c-e23f-4ac2-b6fd-966b77f2a16a" message="#[output application/json --- payload]" />
-	</sub-flow>
-	<sub-flow name="deleteObjectSubflow_TGT" doc:id="e82de062-295b-4c77-9f4c-ca429f0316d2" >
-		<logger level="INFO" doc:name="Logger" doc:id="60fac5e6-1b2a-484e-842c-3b982e7e8a3c" message="#[output application/json --- vars.recordsToDelete]" />
-		<try doc:name="Try" doc:id="661294b3-e362-4365-af76-e08065558878">
-			<salesforce:delete doc:name="Delete" doc:id="177245fb-1e9b-41ec-9b54-79a6c4f73a8d" config-ref="Salesforce_Config_TGT">
-			<salesforce:ids><![CDATA[#[output application/java --- vars.recordsToDelete]]]></salesforce:ids>
-		</salesforce:delete>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="7fcff98a-8137-4996-857b-d7f08e4ea1ba" message="#[output application/json --- payload]" />
-	</sub-flow>
-	<sub-flow name="querySubflow_TGT" doc:id="9f75a4fa-d18a-41bb-9bb1-f7c271cac71d" >
-		<logger level="INFO" doc:name="Logger" doc:id="cdc86023-7b7b-4435-9e8c-8983991f0206" message="#[output application/json --- payload]" />
-		<try doc:name="Try" doc:id="4362c291-2a85-4ef5-8b4e-c5b3a4ab7db3">
-			<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="090d9879-6156-4785-a80a-e2a5347ad547" config-ref="Salesforce_Config_TGT">
+	<sub-flow name="querySubflow_TGT"
+		doc:id="9f75a4fa-d18a-41bb-9bb1-f7c271cac71d">
+		<logger level="INFO" doc:name="Logger"
+			doc:id="cdc86023-7b7b-4435-9e8c-8983991f0206"
+			message="#[output application/json --- payload]" />
+		<salesforce:query-xml-stream
+			doc:name="Query xml stream"
+			doc:id="090d9879-6156-4785-a80a-e2a5347ad547"
+			config-ref="Salesforce_Config_TGT">
 			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
 ---
 payload.queryParams]]]></salesforce:parameters>
 		</salesforce:query-xml-stream>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="569c7055-419f-450c-a6ad-94d993526a2d" message="#[output application/json --- payload]" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="569c7055-419f-450c-a6ad-94d993526a2d"
+			message="#[output application/json --- payload]" />
+	</sub-flow>
+	<sub-flow name="deleteObjectSubflow_TGT"
+		doc:id="e82de062-295b-4c77-9f4c-ca429f0316d2">
+		<logger level="INFO" doc:name="Logger"
+			doc:id="60fac5e6-1b2a-484e-842c-3b982e7e8a3c"
+			message="#[output application/json --- vars.recordsToDelete]" />
+		<salesforce:delete doc:name="Delete"
+			doc:id="177245fb-1e9b-41ec-9b54-79a6c4f73a8d"
+			config-ref="Salesforce_Config_TGT">
+			<salesforce:ids><![CDATA[#[output application/java --- vars.records]]]></salesforce:ids>
+		</salesforce:delete>
+		<logger level="INFO" doc:name="Logger"
+			doc:id="7fcff98a-8137-4996-857b-d7f08e4ea1ba"
+			message="#[output application/json --- payload]" />
+	</sub-flow>
+	<sub-flow name="upsertObjectSubflow_TGT"
+		doc:id="bc4cb947-cf9e-4566-b972-7f3e67e77778">
+		<logger level="INFO" doc:name="Logger"
+			doc:id="bd47c320-5b0a-424a-ab53-d6dbdd56b2e4"
+			message="#[output application/json --- vars.recordsToCreate]" />
+		<salesforce:upsert doc:name="Upsert"
+			doc:id="e879e56e-1596-4cda-a311-8616f52b204d"
+			config-ref="Salesforce_Config_TGT" objectType="#[vars.objectType]"
+			externalIdFieldName="Id">
+			<salesforce:records><![CDATA[#[output application/java --- vars.records]]]></salesforce:records>
+		</salesforce:upsert>
+		<logger level="INFO" doc:name="Logger"
+			doc:id="2d91284e-dea1-48eb-9634-adc7cd94d8c1"
+			message="#[output application/json --- payload]" />
 	</sub-flow>
 </mule>

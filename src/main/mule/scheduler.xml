@@ -23,8 +23,9 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 		<choice doc:name="Choice"
 			doc:id="56f92143-0d90-4042-8d90-7859b78ab716">
 			<when expression="#[isEmpty(payload)]">
-				<flow-ref doc:name="pingSubflow"
-					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="pingSubflow" />
+				<flow-ref doc:name="healthCheckSubflow"
+					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57"
+					name="healthCheckSubflow" />
 				<choice doc:name="Choice"
 					doc:id="ab612b9c-98f1-4a55-97c4-cf3b90946384">
 					<when expression='#[payload.status == "UP"]'>
@@ -36,9 +37,9 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 						<logger level="INFO" doc:name="INFO"
 							doc:id="954c1c23-5582-4a89-9f28-fc573e44b3f5"
 							message='#["At least one connection is unsuccessful; cannot proceed"]' />
-						<flow-ref doc:name="sendConnectionFailureEmailSubflow"
+						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow"
 							doc:id="7d2dcca2-f91a-4a28-a108-c7032a1a59a8"
-							name="sendConnectionFailureEmailSubflow" />
+							name="sendHealthCheckErrorEmailSubflow" />
 					</otherwise>
 				</choice>
 			</when>
@@ -50,25 +51,50 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 		</choice>
 		<error-handler ref="batchPreprocessingErrorHandler" />
 	</flow>
-	<flow name="schedulerRetryFlow" doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" 
-		initialState="started" > <scheduler doc:name="Retry Scheduler" doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0" 
-		> <scheduling-strategy > <cron expression="${scheduler.retry.cronExpression}" 
-		timeZone="${scheduler.retry.timezone}" /> </scheduling-strategy> </scheduler> <flow-ref doc:name="retrieveOsBatchStatusRetrySubflow" 
-		doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa" name="retrieveOsBatchStatusRetrySubflow" 
-		/> <choice doc:name="Choice" doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1" 
-		> <when expression="#[!isEmpty(payload)]" > <flow-ref doc:name="pingSubflow" 
-		doc:id="c06d6684-436c-431f-a825-0c542f037051" name="pingSubflow" /> 
-		<choice doc:name="Choice" doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9" > 
-		<when expression='#[payload.status == "Success"]' > <flow-ref doc:name="processRetrySubflow" 
-		doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89" name="processRetrySubflow" 
-		/> </when> <otherwise > <logger level="INFO" doc:name="INFO" doc:id="89c3a6c0-8255-4e0f-94fe-f573b7124a44" 
-		message='#["At least one connection is unsuccessful; cannot proceed"]' 
-		/> <flow-ref doc:name="sendConnectionFailureEmailSubflow" doc:id="0c41023e-627e-4918-bd6a-0dff09a621fc" 
-		name="sendConnectionFailureEmailSubflow" /> </otherwise> </choice> </when> 
-		<otherwise > <logger level="WARN" doc:name="WARN" doc:id="560fcb44-94c7-48c5-b724-86bd971b2b26" 
-		message='#["Previous retry batch run is in progress; skipping this run"]' 
-		/> </otherwise> </choice> <logger level="INFO" doc:name="INFO" doc:id="204ffd49-c53d-4d90-995b-07691e9492f2" 
-		message='#["schedulerRetryFlow exit"]'/>
-		<error-handler ref="batchPreprocessingErrorHandler" /> 
-</flow>
+	<flow name="schedulerRetryFlow"
+		doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" initialState="started">
+		<scheduler doc:name="Retry Scheduler"
+			doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0">
+			<scheduling-strategy>
+				<cron expression="${scheduler.retry.cronExpression}"
+					timeZone="${scheduler.retry.timezone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow"
+			doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa"
+			name="retrieveOsBatchStatusRetrySubflow" />
+		<choice doc:name="Choice"
+			doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1">
+			<when expression="#[!isEmpty(payload)]">
+				<flow-ref doc:name="healthCheckSubflow"
+					doc:id="c06d6684-436c-431f-a825-0c542f037051"
+					name="healthCheckSubflow" />
+				<choice doc:name="Choice"
+					doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9">
+					<when expression='#[payload.status == "Success"]'>
+						<flow-ref doc:name="processRetrySubflow"
+							doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89"
+							name="processRetrySubflow" />
+					</when>
+					<otherwise>
+						<logger level="INFO" doc:name="INFO"
+							doc:id="89c3a6c0-8255-4e0f-94fe-f573b7124a44"
+							message='#["At least one connection is unsuccessful; cannot proceed"]' />
+						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow"
+							doc:id="0c41023e-627e-4918-bd6a-0dff09a621fc"
+							name="sendHealthCheckErrorEmailSubflow" />
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<logger level="WARN" doc:name="WARN"
+					doc:id="560fcb44-94c7-48c5-b724-86bd971b2b26"
+					message='#["Previous retry batch run is in progress; skipping this run"]' />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO"
+			doc:id="204ffd49-c53d-4d90-995b-07691e9492f2"
+			message='#["schedulerRetryFlow exit"]' />
+		<error-handler ref="batchPreprocessingErrorHandler" />
+	</flow>
 </mule>

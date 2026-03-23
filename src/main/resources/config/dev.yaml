@@ -17,7 +17,7 @@ error:
   defaultMessage: "An unknown error occurred"
   defaultType: "UNKNOWN_ERROR"
 httpListener:
-  port: "8084"
+  port: "8081"
   readTimeout: "30000"
 orgName: "MNA-Tech"
 pbe.map.json: >
@@ -38,14 +38,16 @@ scheduler:
     cronExpression: "0 0/10 * * * ?"
     timezone: "GMT"
 smtp:
-  enable: "true"
-  host: "smtp.gmail.com"
-  port: "587"
+  enable: "false"
+  host: ""
+  port: ""
   subject:
     errHsptlError: "[mna-oppty-mirror-accel] Error Hospital Write Error"
     batchSummary: "[mna-oppty-mirror-accel] Batch Completion Error Summary"
     batchPreprocessingError: "[mna-oppty-mirror-accel] Batch Pre-processing Error"
     batchPostprocessingError: "[mna-oppty-mirror-accel] Batch Post-processing Error"
+    errHsptlError: "[mna-oppty-mirror-accel] Error Hospital Write Error"
+    healthCheckError: "[mna-oppty-mirror-accel] Health Check Error"
   toEmailAddresses: "notifications@mycompany.com"
 src:
   authUrl: "https://login.salesforce.com/services/Soap/u/64.0"

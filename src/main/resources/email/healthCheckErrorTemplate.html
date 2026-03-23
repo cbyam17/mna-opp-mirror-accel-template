@@ -1,8 +1,8 @@
-d<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Error Hospital API Error Notification</title>
+  <title>Health Check Error</title>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -49,12 +49,11 @@ d<!DOCTYPE html>
 <body>
 
 <div class="container">
-  <h2>Error Hospital API Error Notification</h2>
+  <h2>Health Check Error</h2>
 
   <p>
-    An error occurred while attempting to communicate with the
-    <strong>Error Hospital API</strong>. The transaction referenced below
-    could not be processed.
+    An error occurred while performing a health check on the integration endpoints.
+    The transaction referenced below could not be processed.
   </p>
 
   <div class="section">
@@ -64,16 +63,9 @@ d<!DOCTYPE html>
   </div>
 
   <div class="section">
-    <p><span class="label">Error Type:</span><br>
-      #[output application/java --- vars.notification.content.errorType]
+    <p><span class="label">Error Details:</span><br>
+      #[output application/java --- vars.notification.content.healthCheckResponse]
     </p>
-  </div>
-
-  <div class="section">
-    <p><span class="label">Error Description:</span></p>
-    <div class="highlight">
-      #[output application/java --- vars.notification.content.errorMessage]
-    </div>
   </div>
 
   <p>

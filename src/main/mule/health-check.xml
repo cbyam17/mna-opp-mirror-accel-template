@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<sub-flow name="pingSubflow"
+	<sub-flow name="healthCheckSubflow"
 		doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
 		<flow-ref doc:name="validateSalesforceConnectionSubflow_TGT"
 			doc:id="fd426013-379a-465b-855e-2fafdf45270e"
@@ -33,9 +33,9 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
-import buildPingResponse from module::CommonUtil
+import buildHealthCheckResponse from module::CommonUtils
 ---
-buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ vars.errHsptlConnResp ++ vars.watermarkConnResp)]]></ee:set-payload>
+buildHealthCheckResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ vars.errHsptlConnResp ++ vars.watermarkConnResp)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</sub-flow>
@@ -45,11 +45,13 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
-			<flow-ref doc:name="getServerTimestamp_TGT" doc:id="7f1cdd4b-1eec-4e1c-b74b-2cea6505d80e" name="getServerTimestamp_TGT" />
-			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+			<flow-ref doc:name="getServerTimestamp_TGT"
+				doc:id="7f1cdd4b-1eec-4e1c-b74b-2cea6505d80e"
+				name="getServerTimestamp_TGT" />
+			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
 				doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88"
-				name="buildPingEndpointResponseSubflow" />
-			<error-handler ref="pingErrorHandler" />
+				name="buildHealthCheckEndpointResponseSubflow" />
+			<error-handler ref="healthCheckErrorHandler" />
 		</try>
 	</sub-flow>
 	<sub-flow name="validateSalesforceConnectionSubflow_SRC"
@@ -58,11 +60,13 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:id="b4aab529-1343-4104-8bf1-f336e792a380"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
-			<flow-ref doc:name="getServerTimestamp_SRC" doc:id="0a0d5091-ba7d-4251-9476-c9d3df7a4424" name="getServerTimestamp_SRC" />
-			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+			<flow-ref doc:name="getServerTimestamp_SRC"
+				doc:id="0a0d5091-ba7d-4251-9476-c9d3df7a4424"
+				name="getServerTimestamp_SRC" />
+			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
 				doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe"
-				name="buildPingEndpointResponseSubflow" />
-			<error-handler ref="pingErrorHandler" />
+				name="buildHealthCheckEndpointResponseSubflow" />
+			<error-handler ref="healthCheckErrorHandler" />
 		</try>
 	</sub-flow>
 	<sub-flow name="validateErrHstplConnectionSubflow"
@@ -71,11 +75,13 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
-			<flow-ref doc:name="errHsptlPingSubflow" doc:id="31ef9c6b-707b-49e9-87da-594184771a4e" name="errHsptlPingSubflow" />
-			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+			<flow-ref doc:name="errHsptlhealthCheckSubflow"
+				doc:id="31ef9c6b-707b-49e9-87da-594184771a4e"
+				name="errHsptlhealthCheckSubflow" />
+			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
 				doc:id="aa278e33-77f1-4f8c-8022-2cbbfec85b0f"
-				name="buildPingEndpointResponseSubflow" />
-			<error-handler ref="pingErrorHandler" />
+				name="buildHealthCheckEndpointResponseSubflow" />
+			<error-handler ref="healthCheckErrorHandler" />
 		</try>
 	</sub-flow>
 	<sub-flow name="validateWatermarkConnectionSubflow"
@@ -84,22 +90,24 @@ buildPingResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ 
 			doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0"
 			variableName="systemName" />
 		<try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a">
-			<flow-ref doc:name="watermarkPingSubflow" doc:id="01b33600-8f44-49d6-9fe6-3cfde96aaa81" name="watermarkPingSubflow" />
-			<flow-ref doc:name="buildPingEndpointResponseSubflow"
+			<flow-ref doc:name="watermarkhealthCheckSubflow"
+				doc:id="01b33600-8f44-49d6-9fe6-3cfde96aaa81"
+				name="watermarkhealthCheckSubflow" />
+			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
 				doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0"
-				name="buildPingEndpointResponseSubflow" />
-			<error-handler ref="pingErrorHandler" />
+				name="buildHealthCheckEndpointResponseSubflow" />
+			<error-handler ref="healthCheckErrorHandler" />
 		</try>
 	</sub-flow>
-	<sub-flow name="buildPingEndpointResponseSubflow"
+	<sub-flow name="buildHealthCheckEndpointResponseSubflow"
 		doc:id="adeb093c-1900-41be-9be0-554f8def1ed4">
 		<ee:transform doc:name="Transform Message"
 			doc:id="ed021c0f-e826-4811-9863-9751c2e2581a">
 			<ee:message>
 				<ee:set-payload><![CDATA[output application/json
-import buildPingEndpointResponse from module::CommonUtil
+import buildHealthCheckEndpointResponse from module::CommonUtils
 ---
-buildPingEndpointResponse(vars.systemName, null)]]></ee:set-payload>
+buildHealthCheckEndpointResponse(vars.systemName, null)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</sub-flow>

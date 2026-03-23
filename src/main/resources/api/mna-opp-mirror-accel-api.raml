@@ -1,0 +1,84 @@
+#%RAML 1.0
+title: mna-opp-mirror-accel-api
+version: v1
+description: API used to access mna-opp-mirror-accel-api
+baseUri: https://api.mycompany.com/{version}
+
+/admin:
+  /reprocess:
+    description: Support ad hoc admin reprocessing of Opportunities by external Id
+    post:
+      headers:
+        client_id:
+          description: Client identifier used for authentication
+          type: string
+          required: true
+        client_secret:
+          description: Secret key associated with the client
+          type: string
+          required: true
+      body:
+        application/json:
+          properties:
+            externalIds:
+              description: One or more Opportunity external Ids
+              required: true
+              type: array
+              minItems: 1
+              items:
+                type: string
+                pattern: '^[a-zA-Z0-9_-]*$'
+                maxLength: 18
+              example: ["006Ka00000WDClmIAH"]
+      responses:
+        200:
+          body:
+            application/json:
+        401:
+          description: Unauthorized — missing or invalid credentials
+  /watermark:
+    put:
+      description: Update the watermark lastRunDateTime value
+      headers:
+        client_id:
+          description: Client identifier used for authentication
+          type: string
+          required: true
+        client_secret:
+          description: Secret key associated with the client
+          type: string
+          required: true
+      body:
+        application/json:
+          properties:
+            lastRunDateTime:
+              description: The new watermark timestamp value in GMT
+              type: string
+              required: true
+              example: "2026-03-23T19:44:50.69668Z"
+      responses:
+        200:
+          body:
+            application/json:
+        401:
+          description: Unauthorized — missing or invalid credentials
+
+/health-check:
+  get:
+    description: Health check endpoint to verify API is running
+    headers:
+      client_id:
+        description: Client identifier used for authentication
+        type: string
+        required: true
+      client_secret:
+        description: Secret key associated with the client
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+      401:
+        description: Unauthorized — missing or invalid credentials
+

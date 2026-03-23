@@ -11,9 +11,6 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
-	<sub-flow name="getServerTimestamp_SRC" doc:id="a5b3484c-6178-4425-afaf-e1b907bb6a97" >
-		<salesforce:get-server-timestamp doc:name="Get server timestamp" doc:id="755fb409-8dd5-4873-9b06-20f8c4d44185" config-ref="Salesforce_Config_SRC" />
-	</sub-flow>
 	<sub-flow name="getOppsByDateSubflow_SRC"
 		doc:id="3d3f4d2e-0f31-4b22-911d-391b7fe6e2f2">
 		<ee:transform doc:name="Transform Message"
@@ -22,10 +19,11 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 				<ee:set-payload><![CDATA[import buildQueryOppsByDate_SRC from module::Opportunity
 output application/json
 ---
-buildQueryOppsByDate_SRC(vars.watermarkLastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
+buildQueryOppsByDate_SRC(vars.watermarklastRunDateTime, vars.watermarkCurrentRunDateTime)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="885cabfd-3b4d-45dc-b16c-c18e5c22865b" name="querySubflow_SRC" />
+		<flow-ref doc:name="querySubflow_SRC"
+			doc:id="885cabfd-3b4d-45dc-b16c-c18e5c22865b" name="querySubflow_SRC" />
 	</sub-flow>
 	<sub-flow name="getOppsByIdSubflow_SRC"
 		doc:id="e84678de-b208-477e-8ef4-76ed704c96ce">
@@ -40,7 +38,8 @@ if (!isEmpty(payload.externalIds)) buildQueryOppsById_SRC(payload.externalIds)
 else buildQueryOppsById_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="7ddf0597-562f-4b70-8f8f-8a378fbd3d12" name="querySubflow_SRC" />
+		<flow-ref doc:name="querySubflow_SRC"
+			doc:id="7ddf0597-562f-4b70-8f8f-8a378fbd3d12" name="querySubflow_SRC" />
 	</sub-flow>
 	<sub-flow name="getOlisByOppIdSubflow_SRC"
 		doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
@@ -53,29 +52,46 @@ output application/java
 buildQueryOlisByOppId_SRC(payload.Id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="querySubflow_SRC" doc:id="fd40478d-2ef9-4c42-ba32-06d2992406a2" name="querySubflow_SRC"/>
+		<flow-ref doc:name="querySubflow_SRC"
+			doc:id="fd40478d-2ef9-4c42-ba32-06d2992406a2" name="querySubflow_SRC" />
 	</sub-flow>
-	<sub-flow name="updateObjectSubflow_SRC" doc:id="ef177266-7489-4b74-9b5d-c5d0be6c5c84" >
-		<logger level="INFO" doc:name="Logger" doc:id="a4a43bb7-0915-4c8f-a3f5-c401cde8413a" message="#[output application/json --- vars.recordsToUpdate]"/>
-		<try doc:name="Try" doc:id="e20aed95-8bf0-4b38-aec2-949bfde63eb1" >
-			<salesforce:update type="#[vars.objectType]" doc:name="Update" doc:id="06bfaea6-6efd-41d2-b6cf-c610b82ed039" config-ref="Salesforce_Config_SRC">
-			<salesforce:records><![CDATA[#[output application/java --- vars.recordsToUpdate]]]></salesforce:records>
-		</salesforce:update>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="0210f190-4472-4c42-80ce-b6a467e14877" message="#[output application/json --- payload]" />
+	<sub-flow name="getServerTimestamp_SRC"
+		doc:id="a5b3484c-6178-4425-afaf-e1b907bb6a97">
+		<salesforce:get-server-timestamp
+			doc:name="Get server timestamp"
+			doc:id="755fb409-8dd5-4873-9b06-20f8c4d44185"
+			config-ref="Salesforce_Config_SRC" />
 	</sub-flow>
-	<sub-flow name="querySubflow_SRC" doc:id="bbd6872d-e39e-4212-bb1f-f938b4ba65f7" >
-		<logger level="INFO" doc:name="Logger" doc:id="a59392b6-2058-45fd-9d10-b0d03f8ff876" message="#[output application/json --- payload]" />
-		<try doc:name="Try" doc:id="c288ae2c-95f0-436d-9662-dbfeb70ab9e9" >
-			<salesforce:query-xml-stream doc:name="Query xml stream" doc:id="a6cd3b57-0fc7-4a80-9aad-dc523ae4eb5d" config-ref="Salesforce_Config_SRC">
+	<sub-flow name="querySubflow_SRC"
+		doc:id="bbd6872d-e39e-4212-bb1f-f938b4ba65f7">
+		<logger level="INFO" doc:name="Logger"
+			doc:id="a59392b6-2058-45fd-9d10-b0d03f8ff876"
+			message="#[output application/json --- payload]" />
+		<salesforce:query-xml-stream
+			doc:name="Query xml stream"
+			doc:id="a6cd3b57-0fc7-4a80-9aad-dc523ae4eb5d"
+			config-ref="Salesforce_Config_SRC">
 			<salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
 ---
 payload.queryParams]]]></salesforce:parameters>
 		</salesforce:query-xml-stream>
-			<error-handler ref="salesforceErrorHandler" />
-		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="60df8c29-e773-4fb9-afa9-ac6f84e931d4" message="#[output application/json --- payload]" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="60df8c29-e773-4fb9-afa9-ac6f84e931d4"
+			message="#[output application/json --- payload]" />
+	</sub-flow>
+	<sub-flow name="updateObjectSubflow_SRC"
+		doc:id="ef177266-7489-4b74-9b5d-c5d0be6c5c84">
+		<logger level="INFO" doc:name="Logger"
+			doc:id="a4a43bb7-0915-4c8f-a3f5-c401cde8413a"
+			message="#[output application/json --- vars.recordsToUpdate]" />
+		<salesforce:update type="#[vars.objectType]"
+			doc:name="Update" doc:id="06bfaea6-6efd-41d2-b6cf-c610b82ed039"
+			config-ref="Salesforce_Config_SRC">
+			<salesforce:records><![CDATA[#[output application/java --- vars.records]]]></salesforce:records>
+		</salesforce:update>
+		<logger level="INFO" doc:name="Logger"
+			doc:id="0210f190-4472-4c42-80ce-b6a467e14877"
+			message="#[output application/json --- payload]" />
 	</sub-flow>
 </mule>

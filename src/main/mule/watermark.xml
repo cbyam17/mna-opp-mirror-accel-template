@@ -4,16 +4,23 @@
 	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="watermarkPingSubflow" doc:id="db721ebb-ad29-47d7-bff6-1cd383d30a8f" >
-		<set-variable value='#["ping"]' doc:name="requestType" doc:id="32454269-78ff-479a-a124-2e393a212b4c" variableName="requestType" />
-		<flow-ref doc:name="watermarkApiSubflow" doc:id="21bd53b0-49aa-454c-8962-3c2c1a371f73" name="watermarkApiSubflow" />
+	<sub-flow name="watermarkhealthCheckSubflow"
+		doc:id="db721ebb-ad29-47d7-bff6-1cd383d30a8f">
+		<set-variable value='#["ping"]' doc:name="requestType"
+			doc:id="32454269-78ff-479a-a124-2e393a212b4c"
+			variableName="requestType" />
+		<flow-ref doc:name="watermarkApiSubflow"
+			doc:id="21bd53b0-49aa-454c-8962-3c2c1a371f73"
+			name="watermarkApiSubflow" />
 	</sub-flow>
 	<sub-flow name="retrieveWatermarkSubflow"
 		doc:id="56848ba5-3587-4221-8537-b7b6e06387ad">
-		<ee:transform doc:name="Transform Message" doc:id="ec8fe723-1b2e-4dd1-b029-48358c2f9b87">
+		<ee:transform doc:name="Transform Message"
+			doc:id="ec8fe723-1b2e-4dd1-b029-48358c2f9b87">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -23,49 +30,78 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<set-variable value='#["getWatermark"]' doc:name="requestType" doc:id="b214f838-178f-4696-9af0-088d26891bab" variableName="requestType"/>
-		<flow-ref doc:name="watermarkApiSubflow" doc:id="ad9f71d9-be2f-4cfd-9149-6c8c7a74ad4f" name="watermarkApiSubflow"/>
+		<set-variable value='#["getWatermark"]'
+			doc:name="requestType" doc:id="b214f838-178f-4696-9af0-088d26891bab"
+			variableName="requestType" />
+		<flow-ref doc:name="watermarkApiSubflow"
+			doc:id="ad9f71d9-be2f-4cfd-9149-6c8c7a74ad4f"
+			name="watermarkApiSubflow" />
 	</sub-flow>
 	<sub-flow name="updateWatermarkSubflow"
 		doc:id="b573c738-12a6-42a6-a57d-18f26af4186f">
-		<ee:transform doc:name="Transform Message" doc:id="17eb3c16-fa14-49a3-b33c-8a8269ad87f0">
+		<ee:transform doc:name="Transform Message"
+			doc:id="17eb3c16-fa14-49a3-b33c-8a8269ad87f0">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	appName: Mule::p("projectName"),
-	lastRunDateTime: vars.watermarkLastRunDateTimeUpdated
+	lastRunDateTime: vars.watermarklastRunDateTimeUpdated
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<set-variable value='#["updateWatermark"]' doc:name="requestType" doc:id="cd8947af-285f-4c74-8ef3-c1c11b6cae37" variableName="requestType"/>
-		<flow-ref doc:name="watermarkApiSubflow" doc:id="c7378989-1cca-4859-85b6-290255ba3c8e" name="watermarkApiSubflow" />
+		<set-variable value='#["updateWatermark"]'
+			doc:name="requestType" doc:id="cd8947af-285f-4c74-8ef3-c1c11b6cae37"
+			variableName="requestType" />
+		<flow-ref doc:name="watermarkApiSubflow"
+			doc:id="c7378989-1cca-4859-85b6-290255ba3c8e"
+			name="watermarkApiSubflow" />
 	</sub-flow>
-	<sub-flow name="watermarkApiSubflow" doc:id="1ee2b324-507e-4166-b1c6-745d30bb942e" >
-		<choice doc:name="Choice" doc:id="746ff248-9346-4ee8-bb76-4f55ffb88855" >
+	<sub-flow name="watermarkApiSubflow"
+		doc:id="1ee2b324-507e-4166-b1c6-745d30bb942e">
+		<choice doc:name="Choice"
+			doc:id="746ff248-9346-4ee8-bb76-4f55ffb88855">
 			<when expression='#[vars.requestType == "ping"]'>
-				<set-variable value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key" doc:id="8bd9fd56-779f-4f1b-92b9-749eb1c99b73" variableName="key" />
-				<set-variable value="#[{ ts: now(), probe: 'ping' }]" doc:name="value" doc:id="1e004430-bbd2-4f26-bf15-2275fa4292fc" variableName="value" />
-				<os:store doc:name="Store" doc:id="c57f692c-a506-428a-b364-3d15b2dd543c" key="#[vars.key]" objectStore="Object_Store_Watermark" >
-					<os:value ><![CDATA[#[vars.value]]]></os:value>
+				<set-variable
+					value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key"
+					doc:id="8bd9fd56-779f-4f1b-92b9-749eb1c99b73" variableName="key" />
+				<set-variable value="#[{ ts: now(), probe: 'ping' }]"
+					doc:name="value" doc:id="1e004430-bbd2-4f26-bf15-2275fa4292fc"
+					variableName="value" />
+				<os:store doc:name="Store"
+					doc:id="c57f692c-a506-428a-b364-3d15b2dd543c" key="#[vars.key]"
+					objectStore="Object_Store_Watermark">
+					<os:value><![CDATA[#[vars.value]]]></os:value>
 				</os:store>
-				<os:contains doc:name="Contains" doc:id="d683ed8e-e2dd-4892-a789-9ac03fa70ffe" key="#[vars.key]" objectStore="Object_Store_Watermark" target="exists" />
-				<os:retrieve doc:name="Retrieve" doc:id="6b663742-be12-4acd-b070-331646d152f8" key="#[vars.key]" objectStore="Object_Store_Watermark" target="retrieved" />
-				<os:remove doc:name="Remove" doc:id="4b1e01ba-139f-4121-8099-95ecc62626c7" key="#[vars.key]" objectStore="Object_Store_Watermark" />
+				<os:contains doc:name="Contains"
+					doc:id="d683ed8e-e2dd-4892-a789-9ac03fa70ffe" key="#[vars.key]"
+					objectStore="Object_Store_Watermark" target="exists" />
+				<os:retrieve doc:name="Retrieve"
+					doc:id="6b663742-be12-4acd-b070-331646d152f8" key="#[vars.key]"
+					objectStore="Object_Store_Watermark" target="retrieved" />
+				<os:remove doc:name="Remove"
+					doc:id="4b1e01ba-139f-4121-8099-95ecc62626c7" key="#[vars.key]"
+					objectStore="Object_Store_Watermark" />
 			</when>
 			<when expression='#[vars.requestType == "getWatermark"]'>
-				<os:retrieve doc:name="Retrieve" doc:id="5c185eb9-1b5a-41e6-9175-593dc11aa39b" key="lastRunDateTime" objectStore="Object_Store_Watermark">
-			<os:default-value><![CDATA[#[""]]]></os:default-value>
-		</os:retrieve>
+				<os:retrieve doc:name="Retrieve"
+					doc:id="5c185eb9-1b5a-41e6-9175-593dc11aa39b" key="lastRunDateTime"
+					objectStore="Object_Store_Watermark">
+					<os:default-value><![CDATA[#[""]]]></os:default-value>
+				</os:retrieve>
 			</when>
 			<when expression='#[vars.requestType == "updateWatermark"]'>
-				<os:store doc:name="Store" doc:id="db2b634e-21ce-4c94-b442-4121f8586332" key="lastRunDateTime" objectStore="Object_Store_Watermark">
-			<os:value><![CDATA[#[payload.lastRunDateTime]]]></os:value>
-		</os:store>
+				<os:store doc:name="Store"
+					doc:id="db2b634e-21ce-4c94-b442-4121f8586332" key="lastRunDateTime"
+					objectStore="Object_Store_Watermark">
+					<os:value><![CDATA[#[payload.lastRunDateTime]]]></os:value>
+				</os:store>
 			</when>
-			<otherwise >
-				<logger level="WARN" doc:name="WARN" doc:id="b2caf2f5-f57b-4c54-9178-43b4d810f636" message='#["no path specified for watermark API"]' />
+			<otherwise>
+				<logger level="WARN" doc:name="WARN"
+					doc:id="b2caf2f5-f57b-4c54-9178-43b4d810f636"
+					message='#["no path specified for watermark API"]' />
 			</otherwise>
 		</choice>
 	</sub-flow>

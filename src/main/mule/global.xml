@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
 	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
 	xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns:os="http://www.mulesoft.org/schema/mule/os"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
-http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
+	xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
+	<apikit:config name="Router"
+		api="mna-opp-mirror-accel-api.raml"
+		outboundHeadersMapName="outboundHeadersMapName"
+		httpStatusVarName="httpStatus" />
 	<configuration-properties
 		doc:name="Configuration properties"
 		doc:id="b96c84df-83c6-42e2-ac85-a4dae9fdbfd2"
@@ -75,6 +70,4 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 		<anypoint-mq:connection url="${amq.url}"
 			clientId="${amq.clientId}" clientSecret="${secure::amq.clientSecret}" />
 	</anypoint-mq:config>
-	<global-property doc:name="Global Property" doc:id="f7c86ff6-7b25-4195-ad99-2140f1d413b7" name="mule.env" value="dev" />
-	<global-property doc:name="Global Property" doc:id="dcd1df86-8459-43f7-816b-5140f39cb29f" name="mule.key" value="accelerator12345" />
 </mule>

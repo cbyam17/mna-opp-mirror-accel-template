@@ -1,61 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<flow name="httpListenerAdminReprocessFlow"
-		doc:id="f8087b3f-7d8c-42e0-8777-e9a996423fff">
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="apiFlow" doc:id="319e8275-6c79-4387-b821-aaa412258a7d">
 		<http:listener doc:name="Listener"
-			doc:id="1973020a-4bd0-431a-92ee-b78dee8f87b6"
-			path="/api/admin/reprocess" allowedMethods="POST"
-			config-ref="HTTP_Listener_config" />
+			doc:id="7abc3587-b1f0-4b5c-96b8-b176ed55e113"
+			config-ref="HTTP_Listener_config" path="/api/*" />
+		<apikit:router doc:name="APIkit Router"
+			doc:id="3b7ef05f-0ebf-49ed-b9de-4b56522edc7a" config-ref="Router" />
+	</flow>
+	<flow name="get:\health-check:Router">
+		<flow-ref doc:name="healthCheckSubflow"
+			doc:id="f36e514e-8c09-4a07-a5d3-6b7ff45d948c"
+			name="healthCheckSubflow" />
+	</flow>
+	<flow name="post:\admin\reprocess:application\json:Router">
 		<flow-ref doc:name="adminReprocessSubflow"
-			doc:id="a51022ea-78a8-4be6-afd5-9ca4ae9cb8de"
+			doc:id="10d916e4-65cb-4024-8e2b-4bac574e7170"
 			name="adminReprocessSubflow" />
 	</flow>
-	<flow name="httpListenerPingFlow"
-		doc:id="6793c35e-6c88-4b45-ba70-2e9e87cc8e08">
-		<http:listener doc:name="Listener"
-			doc:id="ba17db14-c200-4453-8a54-b22a4c041002"
-			config-ref="HTTP_Listener_config" path="/api/ping"
-			allowedMethods="GET" />
-		<flow-ref doc:name="pingSubflow"
-			doc:id="33176948-ba48-4b9c-ad7d-d5fbcc19b73a" name="pingSubflow" />
-	</flow>
-	<flow name="httpListenerUpdateWatermarkFlow"
-		doc:id="f6e3d655-b943-4687-b076-741c27b562d9">
-		<http:listener doc:name="Listener"
-			doc:id="31b55406-0fee-4b30-b25e-bd7b0439892e"
-			config-ref="HTTP_Listener_config" path="/api/watermark"
-			allowedMethods="POST" />
+	<flow name="put:\admin\watermark:application\json:Router">
 		<set-variable
-			value='#[output application/json --- now() &gt;&gt; Mule::p("watermark.timezone")]'
-			doc:name="watermarkLastRunDateTimeUpdated"
-			doc:id="d1c9d4c6-5a7e-4385-b67a-cc37ad5d2fd2"
-			variableName="watermarkLastRunDateTimeUpdated" />
-		<flow-ref doc:name="updateWatermarkSubflow"
-			doc:id="6c9f20c7-32dd-4878-9c76-a6e6f0004ee4"
-			name="updateWatermarkSubflow" />
-		<flow-ref doc:name="retrieveWatermarkSubflow"
-			doc:id="b5152acc-d039-4fb5-adb0-8fbb9ab99285"
-			name="retrieveWatermarkSubflow" target="watermarkLastRunDateTime"
-			targetValue="#[output application/json --- payload]" />
-		<ee:transform doc:name="Transform Message"
-			doc:id="69d8b14f-ebcf-484d-a1fa-13e15b87a10d">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
+			value="#[output application/json --- payload.lastRunDateTime &gt;&gt; Mule::p(&quot;watermark.timezone&quot;)]"
+			doc:name="watermarklastRunDateTimeUpdated"
+			doc:id="68b79549-513c-4f7d-8834-f53979b90b2e"
+			variableName="watermarklastRunDateTimeUpdated" />
+		<flow-ref doc:name="updateWatermarkSubflow" doc:id="83449fac-9a02-4cb0-9c5b-d04501ac6dbb" name="updateWatermarkSubflow" />
+		<flow-ref doc:name="retrieveWatermarkSubflow" doc:id="635e379c-b6cc-41b1-bf38-c91cb4536767" name="retrieveWatermarkSubflow" target="watermarklastRunDateTime" targetValue="#[output application/json --- payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="9a9f64fe-fb7c-4060-9896-057e1663a578">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	"message": "watermark updated",
-	"watermarkLastRunDateTime": vars.watermarkLastRunDateTime
+	"watermarklastRunDateTime": vars.watermarklastRunDateTime
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</flow>
+            </ee:message>
+        </ee:transform>
+    </flow>
 </mule>

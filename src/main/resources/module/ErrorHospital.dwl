@@ -3,16 +3,16 @@
 // ============================================================================
 
 %dw 2.0
-import toArray from module::CommonUtil
+import toArray from module::CommonUtils
 
 fun firstError(resp) =
   (((resp.errors default []) as Array)[0]) default {}
 
 fun collectErrorField(container, fieldName) =
   do {
-    var values = container
-                   flatMap ((rec) -> rec.errors)
-                   map ((e) -> e[fieldName])
+    var values =
+      container flatMap ((rec) -> rec.errors)
+        map ((e) -> e[fieldName])
     ---
     (values map (v) ->
       if (v is Array)
@@ -37,75 +37,55 @@ fun buildGetRecordsFromErrHsptlByIdRequest(oppIds) =
 fun buildDeleteRecordsFromErrHsptlRequest(oppIds) =
   (oppIds default []) distinctBy ((item) -> item) default []
 
-fun buildSendRecordsToErrHsptlRequest(opps, transactionId) =
+fun buildSendFailedRecordsToErrHsptlRequest(opps, transactionId) =
   {
     appName:       defaultAppName(),
     domain:        defaultDomain(),
     transactionId: transactionId,
     failedRecords:
-      (opps default []) map ((opp) ->
-        do {
-          var recordId = opp.Id default ""
-          var createOppResp = opp.createOppResponse default {}
-          var updateOppResp = opp.updateOppResponse default {}
-          var createOliResponses = opp.createOliResponses default []
-          var updateOliResponses = opp.updateOliResponses default []
-          var deleteOliResponses = opp.deleteOliResponses default []
+      (opps default []) map ((opp) -> do {
+        var upsertOppResponse = opp.upsertOppResponse default {}
+        var upsertOliResponses = opp.upsertOliResponses default []
+        var deleteOliResponses = opp.deleteOliResponses default []
 
-          var defType = defaultErrorType()
-          var defMsg = defaultErrorMessage()
-          var defDesc = defaultErrorDescription()
-          var maxRetries = defaultMaxRetries()
+        var defType = defaultErrorType()
+        var defMsg = defaultErrorMessage()
+        var defDesc = defaultErrorDescription()
+        var maxRetries = defaultMaxRetries()
 
-          var isCreateOppFailed = ((createOppResp.success default true) == false)
-          var isUpdateOppFailed = ((updateOppResp.success default true) == false)
-          var isAnyCreateOliFailed = (((toArray(createOliResponses)).*success default []) contains false)
-          var isAnyUpdateOliFailed = (((toArray(updateOliResponses)).*success default []) contains false)
-          var isAnyDeleteOliFailed = (((toArray(deleteOliResponses)).*success default []) contains false)
+        var isUpsertOppSuccess = (upsertOppResponse.success default true)
+        var isUpsertOlisSuccess = !(((toArray(upsertOliResponses)).*success default []) contains false)
+        var isDeleteOlisSuccess = !(((toArray(deleteOliResponses)).*success default []) contains false)
 
-          var resolvedError =
-            if (isCreateOppFailed) do {
-              var e = firstError(createOppResp)
-              ---
-              {
-                errorType: (e.statusCode as String) default defType,
-                errorMessage: (e.message as String) default defMsg,
-                description: "An error occurred creating Opportunity in _TGT; please check integration logs with this transaction Id for more details"
-              }
+        var recordId = opp.Id default ""
+        var resolvedError =
+          if (!isUpsertOppSuccess) do {
+            var e = firstError(upsertOppResponse)
+            ---
+            {
+              errorType: (e.statusCode as String) default defType,
+              errorMessage: (e.message as String) default defMsg,
+              description: "An error occurred upserting Opportunity in _TGT; please check integration logs with this transaction Id for more details"
             }
-            else if (isUpdateOppFailed) do {
-              var e = firstError(updateOppResp)
-              ---
-              {
-                errorType: (e.statusCode as String) default defType,
-                errorMessage: (e.message as String) default defMsg,
-                description: "An error occurred updating Opportunity in _TGT; please check integration logs with this transaction Id for more details"
-              }
+          }
+          else if (!isUpsertOlisSuccess)
+            {
+              errorType: collectErrorField(upsertOliResponses, "statusCode") default defType,
+              errorMessage: collectErrorField(upsertOliResponses, "message") default defMsg,
+              description: "An error occurred upserting OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
             }
-            else if (isAnyCreateOliFailed)
-              {
-                errorType: collectErrorField(createOliResponses, "statusCode") default defType,
-                errorMessage: collectErrorField(createOliResponses, "message") default defMsg,
-                description: "An error occurred creating OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
-              }
-            else if (isAnyUpdateOliFailed)
-              {
-                errorType: collectErrorField(updateOliResponses, "statusCode") default defType,
-                errorMessage: collectErrorField(updateOliResponses, "message") default defMsg,
-                description: "An error occurred updating OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
-              }
-            else if (isAnyDeleteOliFailed)
-              {
-                errorType: collectErrorField(deleteOliResponses, "statusCode") default defType,
-                errorMessage: collectErrorField(deleteOliResponses, "message") default defMsg,
-                description: "An error occurred deleting OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
-              }
-            else
-              {
-                errorType:    defType,
-                errorMessage: defMsg,
-                description:  defDesc
-              }
+          else if (!isDeleteOlisSuccess)
+            {
+              errorType: collectErrorField(deleteOliResponses, "statusCode") default defType,
+              errorMessage: collectErrorField(deleteOliResponses, "message") default defMsg,
+              description: "An error occurred deleting OpportunityLineItem(s) in _TGT; please check integration logs with this transaction Id for more details"
+            }
+          else
+            {
+              errorType:    defType,
+              errorMessage: defMsg,
+              description:  defDesc
+            }
           ---
           {
             recordId: recordId,
@@ -116,9 +96,8 @@ fun buildSendRecordsToErrHsptlRequest(opps, transactionId) =
               maxRetries:  maxRetries
             }
           }
-        }
-      )
-  }
+        })
+    }
 
 fun buildSendSystemErrorRecordsToErrHsptlRequest(opps, transactionId) =
   {
@@ -126,36 +105,27 @@ fun buildSendSystemErrorRecordsToErrHsptlRequest(opps, transactionId) =
     domain:        defaultDomain(),
     transactionId: transactionId,
     failedRecords:
-      (opps default []) map ((opp) ->
-        do {
-          var defType = defaultErrorType()
-          var defMsg = defaultErrorMessage()
-          var defDesc = defaultErrorDescription()
-          var maxRetries = defaultMaxRetries()
+      (opps default []) map ((opp) -> do {
+        var defType = defaultErrorType()
+        var defMsg = defaultErrorMessage()
+        var defDesc = defaultErrorDescription()
+        var maxRetries = defaultMaxRetries()
 
-          var recordId = opp.Id default ""
-          var errorData = opp.errorData default {}
+        var recordId = opp.Id default null
+        var errorData = opp.systemErrorData default {}
 
-          // Expect object placed into errorData.message earlier; if not an object, fallback.
-          var originalError =
-            if ((errorData.message default null) is Object)
-              (errorData.message as Object)
-            else
-              {}
-
-          var errType = (originalError.errorType as String) default defType
-          var errMsg = (originalError.errorMessage as String) default defMsg
-          var description = (Mule::p("error.defaultDescription") as String) default defDesc
-          ---
-          {
-            recordId: recordId,
-            error: {
-              errorType: errType default defType,
-              errorMessage: errMsg default defMsg,
-              description: description default defDesc,
-              maxRetries: maxRetries
-            }
+        var errorType = (errorData.errorType as String) default defType
+        var errorMessage = (errorData.errorMessage as String) default defMsg
+        var description = defDesc
+        ---
+        {
+          recordId: recordId,
+          error: {
+            errorType: errorType,
+            errorMessage: errorMessage,
+            description: description,
+            maxRetries: maxRetries
           }
         }
-      )
+      })
   }

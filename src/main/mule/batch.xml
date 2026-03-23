@@ -11,7 +11,8 @@
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
@@ -25,270 +26,270 @@ http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/m
 		<batch:job jobName="oppBatch"
 			doc:id="e850532a-d8c3-4fbe-a642-090fa9afd132" maxFailedRecords="-1">
 			<batch:process-records>
-				<batch:step name="Batch_Step_Create_Opportunities_TGT"
-					doc:id="604bc159-50e7-47eb-9f88-42b6d123c5a3"
-					acceptExpression="#[isEmpty(payload.existingOpp)]">
+				<batch:step name="Batch_Step_Upsert_Opportunities_TGT"
+					doc:id="c767dcfc-9d68-471a-beed-3a85e2cc7e1f">
 					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="33a49cc8-241c-42ea-9f79-926e1ce151d8"
+						doc:id="a94fa59e-5b06-45b3-b191-379185753968"
 						size="${batch.aggregatorSize.opp}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="6368e8a2-c917-42d2-8e56-aa085668e6a3">
-								<ee:message>
-								</ee:message>
-								<ee:variables>
-									<ee:set-variable variableName="objectType"><![CDATA["Opportunity"]]></ee:set-variable>
-								<ee:set-variable variableName="recordsToCreate" ><![CDATA[import transformCreateOpps_TGT from module::Opportunity
+						<ee:transform doc:name="Transform Message"
+							doc:id="31970ccc-0a01-435c-ae57-76ebc2e8e08f">
+							<ee:message />
+							<ee:variables>
+								<ee:set-variable variableName="objectType"><![CDATA["Opportunity"]]></ee:set-variable>
+								<ee:set-variable variableName="records"><![CDATA[import transformUpsertOpps_TGT from module::Opportunity
 output application/java
 ---
-transformCreateOpps_TGT(payload)]]></ee:set-variable>
-								</ee:variables>
-							</ee:transform>
-						<flow-ref doc:name="createObjectSubflow_TGT" doc:id="3db10586-8b [STUDIO] --&gt;fc-4dce-9d37-d860343b1b3d" name="createObjectSubflow_TGT" target="createResponses" targetValue="#[payload.items.payload default []]" />
-						<foreach doc:name="For Each"
-							doc:id="53052119-4e93-400c-87af-28dcd4852aa2">
-							<scripting:execute engine="Groovy"
-								doc:name="Execute" doc:id="c072a779-9d21-41d0-824f-1625c126a53a">
-								<scripting:code><![CDATA[vars['record'].payload.createOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
-output application/java
----
-getMatchingOppResponse_TGT(vars.createResponses, (vars.counter-1))]]]></scripting:parameters>
-							</scripting:execute>
-						</foreach>
-					</batch:aggregator>
-					
-<!-- Step-level Error Handler -->
-					
-				</batch:step>
-				<batch:step name="Batch_Step_Update_Opportunities_TGT"
-					doc:id="e52d4796-bac1-4f5d-9f55-e1ab20574581"
-					acceptExpression="#[!isEmpty(payload.existingOpp)]">
-					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="8b82c02f-ec84-4435-814f-24d57d26cb3b"
-						size="${batch.aggregatorSize.opp}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="61824918-ecf6-4940-9105-1cda8f538066">
-								<ee:message>
-								</ee:message>
-								<ee:variables>
-									<ee:set-variable variableName="objectType"><![CDATA["Opportunity"]]></ee:set-variable>
-								<ee:set-variable variableName="recordsToUpdate" ><![CDATA[import transformUpdateOpps_TGT from module::Opportunity
-output application/java
----
-transformUpdateOpps_TGT(payload)]]></ee:set-variable>
-								</ee:variables>
-							</ee:transform>
-						<flow-ref doc:name="updateObjectSubflow_TGT" doc:id="0893fc3e-a171-496c-91b2-f4ab2233124a" name="updateObjectSubflow_TGT" target="updateResponses" targetValue="#[payload.items.payload default []]" />
-						<foreach doc:name="For Each"
-							doc:id="ada676bd-8cf9-40d0-a6e8-b9abfb2b3239">
-							<scripting:execute engine="Groovy"
-								doc:name="Execute" doc:id="f0f42b56-d2f2-4122-99e5-7ebb9b57bf33">
-								<scripting:code><![CDATA[vars['record'].payload.updateOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
-output application/java
----
-getMatchingOppResponse_TGT(vars.updateResponses, (vars.counter-1))]]]></scripting:parameters>
-							</scripting:execute>
-						</foreach>
-					</batch:aggregator>
-				</batch:step>
-				
-<batch:step name="Batch_Step_Create_OpportunityLineItems_TGT" doc:id="cfd73e31-e0f9-49b0-bdb2-f9d06186eeb2" acceptExpression="#[((payload.createOppResponse.success == true) or (payload.updateOppResponse.success == true)) and !isEmpty(payload.olisToCreate)]">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="b995542e-7a59-4975-be6e-0948e738ee6d" size="${batch.aggregatorSize.oli}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="f270932f-fbb5-4f51-ba0f-1015581a8846" >
-							<ee:message >
-							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="recordsToCreate" ><![CDATA[import transformCreateOlis_TGT from module::OpportunityLineItem
-output application/java
----
-transformCreateOlis_TGT(payload)]]></ee:set-variable>
-								<ee:set-variable variableName="objectType" ><![CDATA["OpportunityLineItem"]]></ee:set-variable>
-								<ee:set-variable variableName="oppIds" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
-output application/java
----
-getOppIdsForOlis(payload, "create")]]></ee:set-variable>
+transformUpsertOpps_TGT(payload)]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-						<flow-ref doc:name="createObjectSubflow_TGT" doc:id="42f7c11c-dfcd-401c-adbb-be05c9a54122" name="createObjectSubflow_TGT" target="createResponses" targetValue="#[payload.items.payload default []]" />
-						<ee:transform doc:name="Transform Message" doc:id="db0f3fd5-5feb-4924-ad52-7c8efdc57dea" >
-							<ee:message >
-							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="responsesMap" ><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
+						<flow-ref doc:name="upsertObjectSubflow_TGT"
+							doc:id="c03164c9-2695-46ca-80bb-d414c7ea073f"
+							name="upsertObjectSubflow_TGT" target="responses"
+							targetValue="#[payload.items.payload default []]" />
+						<foreach doc:name="For Each"
+							doc:id="f138c38c-aaba-4e95-ad90-78c65a1818ed">
+							<scripting:execute engine="Groovy"
+								doc:name="Execute" doc:id="c2166f2b-1acb-4bd7-8a20-3f8d5db417cd">
+								<scripting:code><![CDATA[vars['record'].payload.upsertOppResponse = matchingResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[import getMatchingOppResponse from module::Opportunity
 output application/java
 ---
-buildOliResponsesMap(vars.oppIds, vars.createResponses)]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
-						<foreach doc:name="For Each" doc:id="ca16c60d-222e-402a-b29c-2e49144c19f8" >
-							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="f9f72338-c6c9-4c77-9d7c-286790cad524" >
-								<scripting:code ><![CDATA[vars['record'].payload.createOliResponses = matchingResponses]]></scripting:code>
-								<scripting:parameters ><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
-output application/java
----
-getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
+getMatchingOppResponse(vars.responses, (vars.counter-1))]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Batch_Step_Update_OpportunityLineItems_TGT" doc:id="da485bad-79e9-4f63-af8e-e40ff8f6ffca" acceptExpression="#[((payload.createOppResponse.success == true) or (payload.updateOppResponse.success == true)) and !isEmpty(payload.olisToUpdate)]">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="21a870b2-652f-4b5c-9599-a9544ad05e90" size="${batch.aggregatorSize.oli}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="aaf07b71-ae29-42e4-a988-4e1ad147d095">
+
+				<batch:step
+					name="Batch_Step_Upsert_OpportunityLineItems_TGT"
+					doc:id="3168f64e-8010-462b-87d3-74e06114b1da"
+					acceptExpression="#[(payload.upsertOppResponse.success default false) and !isEmpty(payload.olis)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="feae0480-0765-48dc-ba7e-2a8f855303f5"
+						size="${batch.aggregatorSize.oli}" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message"
+							doc:id="07e728b3-c647-4a9c-8957-43cd6be63ace">
 							<ee:message />
 							<ee:variables>
 								<ee:set-variable variableName="objectType"><![CDATA["OpportunityLineItem"]]></ee:set-variable>
-							<ee:set-variable variableName="recordsToUpdate"><![CDATA[import transformUpdateOlis_TGTule::OpportunityLineItem
+								<ee:set-variable variableName="oppIds"><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
 output application/java
 ---
-transformUpdateOlis_TGT]]></ee:set-variable>
-								<ee:set-variable variableName="oppIds" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
+getOppIdsForOlis(payload, "upsert")]]></ee:set-variable>
+								<ee:set-variable variableName="records"><![CDATA[import transformUpsertOlis_TGT from module::OpportunityLineItem
 output application/java
 ---
-getOppIdsForOlis(payload, "update")]]></ee:set-variable>
+transformUpsertOlis_TGT(payload)]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-						<flow-ref doc:name="updateObjectSubflow_TGT" doc:id="50ac5569-ae9d-4661-986e-151b77346008" name="updateObjectSubflow_TGT" target="updateResponses" targetValue="#[payload.items.payload default []]" />
-						<ee:transform doc:name="Transform Message" doc:id="5138c983-14c4-4adc-80ff-78359cabd956">
-						<ee:message />
-						<ee:variables>
-							<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
+						<flow-ref doc:name="upsertObjectSubflow_TGT"
+							doc:id="46d5e3d3-ff94-48eb-ac76-028af820612a"
+							name="upsertObjectSubflow_TGT" target="responses"
+							targetValue="#[payload.items.payload default []]" />
+						<ee:transform doc:name="Transform Message"
+							doc:id="ef3c9198-8a8f-42cc-895d-d399815a76a8">
+							<ee:message />
+							<ee:variables>
+								<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
 output application/java
 ---
-buildOliResponsesMap(vars.oppIds, vars.updateResponses)]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-						<foreach doc:name="For Each" doc:id="89da8267-07cd-4da2-92d4-1d07188d10a2">
-						<scripting:execute engine="Groovy" doc:name="Execute" doc:id="74d746b0-cef9-46df-a7fc-1fd194007d11">
-							<scripting:code><![CDATA[vars['record'].payload.updateOliResponses = matchingResponses]]></scripting:code>
-							<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
+buildOliResponsesMap(vars.oppIds, vars.responses)]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<foreach doc:name="For Each"
+							doc:id="03f6f889-dff0-4d8b-b373-3813f1bea7e3">
+							<scripting:execute engine="Groovy"
+								doc:name="Execute" doc:id="953859b2-385a-4671-80b2-b9c878151bfc">
+								<scripting:code><![CDATA[vars['record'].payload.upsertOliResponses = matchingResponses]]></scripting:code>
+								<scripting:parameters><![CDATA[#[import getMatchingOliResponses from module::OpportunityLineItem
 output application/java
 ---
-getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
-						</scripting:execute>
-					</foreach>
+getMatchingOliResponses(vars.responsesMap, payload.Id)]]]></scripting:parameters>
+							</scripting:execute>
+						</foreach>
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Batch_Step_Delete_OpportunityLineItems_TGT" doc:id="2e5138db-eacb-4aa0-8a2a-eb3bc6c86b0d" acceptExpression="#[((payload.createOppResponse.success == true) or (payload.updateOppResponse.success == true)) and !isEmpty(payload.olisToDelete)]">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="4b7fec53-633a-48a2-913f-45f329465925" size="${batch.aggregatorSize.oli}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="a3921ada-7912-4280-a777-1703157b11c3">
+				<batch:step
+					name="Batch_Step_Delete_OpportunityLineItems_TGT"
+					doc:id="2e5138db-eacb-4aa0-8a2a-eb3bc6c86b0d"
+					acceptExpression="#[(payload.upsertOppResponse.success default false) and !isEmpty(payload.olisToDelete)]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="4b7fec53-633a-48a2-913f-45f329465925"
+						size="${batch.aggregatorSize.oli}" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message"
+							doc:id="a3921ada-7912-4280-a777-1703157b11c3">
 							<ee:message />
 							<ee:variables>
 								<ee:set-variable variableName="objectType"><![CDATA["OpportunityLineItem"]]></ee:set-variable>
-							<ee:set-variable variableName="recordsToDelete"><![CDATA[import transformDeleteOlis_TGT from module::OpportunityLineItem
-output application/java
----
-transformDeleteOlis_TGT(payload)]]></ee:set-variable>
-								<ee:set-variable variableName="oppids" ><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
+								<ee:set-variable variableName="oppids"><![CDATA[import getOppIdsForOlis from module::OpportunityLineItem
 output application/java
 ---
 getOppIdsForOlis(payload, "delete")]]></ee:set-variable>
-							</ee:variables>
-						</ee:transform>
-						<flow-ref doc:name="deleteObjectSubflow_TGT" doc:id="784686c4-21f2-4f23-b1af-c332d9714879" name="deleteObjectSubflow_TGT" target="deleteResponses" targetValue="#[payload.items.payload default []]" />
-						<ee:transform doc:name="Transform Message" doc:id="8dd177d5-dec9-4752-81b7-18a9fbcbf57a">
-						<ee:message />
-						<ee:variables>
-							<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
+								<ee:set-variable variableName="records"><![CDATA[import transformDeleteOlis_TGT from module::OpportunityLineItem
 output application/java
 ---
-buildOliResponsesMap(vars.oppIds, vars.deleteResponses)]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-						<foreach doc:name="For Each" doc:id="363dd911-c664-4b08-869a-84cff595f360">
-							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="57c576c0-2e85-4c2a-90cd-2629180644e2">
-							<scripting:code><![CDATA[vars['record'].payload.deleteOliResponses = matchingResponses]]></scripting:code>
-							<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
+transformDeleteOlis_TGT(payload)]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<flow-ref doc:name="deleteObjectSubflow_TGT"
+							doc:id="784686c4-21f2-4f23-b1af-c332d9714879"
+							name="deleteObjectSubflow_TGT" target="responses"
+							targetValue="#[payload.items.payload default []]" />
+						<ee:transform doc:name="Transform Message"
+							doc:id="8dd177d5-dec9-4752-81b7-18a9fbcbf57a">
+							<ee:message />
+							<ee:variables>
+								<ee:set-variable variableName="responsesMap"><![CDATA[import buildOliResponsesMap from module::OpportunityLineItem
+output application/java
+---
+buildOliResponsesMap(vars.oppIds, vars.responses)]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<foreach doc:name="For Each"
+							doc:id="363dd911-c664-4b08-869a-84cff595f360">
+							<scripting:execute engine="Groovy"
+								doc:name="Execute" doc:id="57c576c0-2e85-4c2a-90cd-2629180644e2">
+								<scripting:code><![CDATA[vars['record'].payload.deleteOliResponses = matchingResponses]]></scripting:code>
+								<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
 output application/java
 ---
 getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
-						</scripting:execute>
-					</foreach>
+							</scripting:execute>
+						</foreach>
 					</batch:aggregator>
 				</batch:step>
 				<batch:step name="Batch_Step_Writeback_Opportunities_SRC"
 					doc:id="df422e29-1828-4fe0-a9bf-062d6f0fbd8b" acceptPolicy="ALL">
-					<set-variable value="#[output application/java --- !isEmpty(Batch::getLastException()) default false]" doc:name="isSystemError" doc:id="0a2aae12-c009-45f1-a5a5-58e4e9aa5d7c" variableName="isSystemError" />
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="1e36fd1e-f8a6-4b08-b080-000674f32454" size="${batch.aggregatorSize.opp}">
-						<ee:transform doc:name="Transform Message" doc:id="c2ff2548-54aa-4c92-9153-16ccd9293f72" >
+					<ee:transform doc:name="Transform Message"
+						doc:id="6327b325-8b01-4531-9a48-4db7a548e7d3">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ { isSystemError: true }]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="1e36fd1e-f8a6-4b08-b080-000674f32454"
+						size="${batch.aggregatorSize.opp}">
+						<ee:transform doc:name="Transform Message"
+							doc:id="c2ff2548-54aa-4c92-9153-16ccd9293f72">
 							<ee:message />
-							<ee:variables >
-								<ee:set-variable variableName="objectType" ><![CDATA["Opportunity"]]></ee:set-variable>
-								<ee:set-variable variableName="recordsToUpdate" ><![CDATA[import transformWritebackOpps_SRC from module::Opportunity
+							<ee:variables>
+								<ee:set-variable variableName="objectType"><![CDATA["Opportunity"]]></ee:set-variable>
+								<ee:set-variable variableName="records"><![CDATA[import transformWritebackOpps_SRC from module::Opportunity
 output application/java
 ---
 transformWritebackOpps_SRC(payload)]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
-						<flow-ref doc:name="updateObjectSubflow_SRC" doc:id="fec699d8-b14f-429d-9991-1e6d4192cb7f" name="updateObjectSubflow_SRC" target="updateResponses" targetValue="#[payload.items.payload default []]" />
-						<foreach doc:name="For Each" doc:id="9774f49c-51e0-45f9-b9e7-421fef27ecd1" >
-							<scripting:execute engine="Groovy" doc:name="Execute" doc:id="ec525fc4-c599-4216-b552-c5aaf01d8ebc" >
-								<scripting:code ><![CDATA[vars['record'].payload.writebackOppResponse = matchingResponse]]></scripting:code>
-								<scripting:parameters ><![CDATA[#[import getMatchingOppResponse_TGT from module::Opportunity
+						<flow-ref doc:name="updateObjectSubflow_SRC"
+							doc:id="fec699d8-b14f-429d-9991-1e6d4192cb7f"
+							name="updateObjectSubflow_SRC" target="responses"
+							targetValue="#[payload.items.payload default []]" />
+						<foreach doc:name="For Each"
+							doc:id="9774f49c-51e0-45f9-b9e7-421fef27ecd1">
+							<scripting:execute engine="Groovy"
+								doc:name="Execute" doc:id="ec525fc4-c599-4216-b552-c5aaf01d8ebc">
+								<scripting:code><![CDATA[vars['record'].payload.writebackOppResponse = matchingResponse]]></scripting:code>
+								<scripting:parameters><![CDATA[#[import getMatchingOppResponse from module::Opportunity
 output application/java
 ---
-getMatchingOppResponse_TGT(vars.updateResponses, (vars.counter-1))]]]></scripting:parameters>
+getMatchingOppResponse(vars.responses, (vars.counter-1))]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Batch_Step_Send_Failed_Records_To_Error_Hospital"
-					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103" acceptExpression="#[(payload.createOppResponse.success == false) or (payload.updateOppResponse.success == false) or(payload.createOliResponses.success contains false) or (payload.updateOliResponses.success contains false) or(payload.deleteOliResponses.success contains false) or (payload.writebackOppResponse.success == false)]">
-					<set-variable value="#[output application/java --- true]" doc:name="isFailedRecord" doc:id="9042d391-190b-43d4-a5be-4f4cce497fdf" variableName="isFailedRecord"/>
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="54892d1e-45a4-4666-aeeb-8cd5ed7686f6" size="${batch.aggregatorSize.errHsptl}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="cff12ebf-9e67-490c-89a2-715c53c48780">
-						<ee:message>
-							<ee:set-payload><![CDATA[import buildSendRecordsToErrHsptlRequest from module::ErrorHospital
+				<batch:step name="Batch_Step_Flag_Failed_Records"
+					doc:id="c52576ad-0a4a-4f28-bf0c-7ab217adcb22">
+					<set-variable
+						value="#[output application/java&#10;---&#10;!(payload.upsertOppResponse.success default false) or &#10;(payload.upsertOliResponses.success default [] contains false) or &#10;(payload.deleteOliResponses.success default [] contains false) or &#10;!(payload.writebackOppResponse.success default false)]"
+						doc:name="isFailedRecord"
+						doc:id="5f30a43d-4ab4-4dec-89fe-da2730a9cd0c"
+						variableName="isFailedRecord" />
+				</batch:step>
+				<batch:step
+					name="Batch_Step_Send_Failed_Records_To_Error_Hospital"
+					doc:id="1fa78a7a-c608-4f9d-a7fd-7242c7eb9103"
+					acceptExpression="#[vars.isFailedRecord]">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="54892d1e-45a4-4666-aeeb-8cd5ed7686f6"
+						size="${batch.aggregatorSize.errHsptl}" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message"
+							doc:id="cff12ebf-9e67-490c-89a2-715c53c48780">
+							<ee:message>
+								<ee:set-payload><![CDATA[import buildSendFailedRecordsToErrHsptlRequest from module::ErrorHospital
 output application/json
 ---
-buildSendRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
-						</ee:message>
-						<ee:variables>
-						</ee:variables>
-					</ee:transform>
-						<flow-ref doc:name="amqPublishInsertRecordsToErrorHospital" doc:id="f166b9a6-bdc7-4586-b091-66ff04b2acfa" name="amqPublishInsertRecordsToErrorHospital" />
+buildSendFailedRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
+							</ee:message>
+							<ee:variables>
+							</ee:variables>
+						</ee:transform>
+						<flow-ref
+							doc:name="amqPublishInsertRecordsToErrorHospital"
+							doc:id="f166b9a6-bdc7-4586-b091-66ff04b2acfa"
+							name="amqPublishInsertRecordsToErrorHospital" />
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Batch_Step_Send_System_Error_Records_To_Error_Hospital" doc:id="be8289a7-36f2-4e1d-a84d-926d5752576e" acceptPolicy="ONLY_FAILURES">
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="6438c5ce-3c90-480e-befc-6e8fc1b7e879" size="${batch.aggregatorSize.errHsptl}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="9076a6b9-3204-4855-b5b7-0dc587199fb2">
-						<ee:message>
-							<ee:set-payload><![CDATA[import buildSendSystemErrorRecordsToErrHsptlRequest from module::ErrorHospital
-output application/json
----
-buildSendSystemErrorRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-						<flow-ref doc:name="amqPublishInsertRecordsToErrorHospital" doc:id="fe590973-429a-4381-b02a-544f50a77fcf" name="amqPublishInsertRecordsToErrorHospital" />
-					</batch:aggregator>
-					<ee:transform doc:name="Transform Message" doc:id="ed470df9-951c-46f4-a280-ed0ce4631e6d" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-payload ++ {
-	errorData: Batch::getLastException()
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-				</batch:step>
-				<batch:step name="Batch_Step_Remove_Successful_Records_From_Error_Hospital"
+				<batch:step
+					name="Batch_Step_Remove_Successful_Records_From_Error_Hospital"
 					doc:id="286946a8-3c81-4ae6-bdc6-2d3f3daee349"
-					acceptExpression="#[!isEmpty(payload.existingErrHsptlRecord) and isEmpty(vars.isFailedRecord)]">
+					acceptExpression="#[!isEmpty(payload.existingErrHsptlRecord) and !(vars.isFailedRecord default false)]">
 					<batch:aggregator doc:name="Batch Aggregator"
 						doc:id="517ca65b-1e52-4c22-bb9b-a8872fe879f7"
 						size="${batch.aggregatorSize.errHsptl}" preserveMimeTypes="true">
-						<ee:transform doc:name="Transform Message" doc:id="5c781b35-c615-4d4c-abc5-0067a64014fb">
-						<ee:message>
-							<ee:set-payload><![CDATA[import buildDeleteRecordsFromErrHsptlRequest from module::ErrorHospital
+						<ee:transform doc:name="Transform Message"
+							doc:id="5c781b35-c615-4d4c-abc5-0067a64014fb">
+							<ee:message>
+								<ee:set-payload><![CDATA[import buildDeleteRecordsFromErrHsptlRequest from module::ErrorHospital
 output application/json
 ---
 buildDeleteRecordsFromErrHsptlRequest(payload.Id)]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-						<flow-ref doc:name="amqPublishRemoveRecordsFromErrorHospital" doc:id="8bb88bdc-c450-440e-ad62-47a66fd697c8" name="amqPublishRemoveRecordsFromErrorHospital" />
+							</ee:message>
+						</ee:transform>
+						<flow-ref
+							doc:name="amqPublishRemoveRecordsFromErrorHospital"
+							doc:id="8bb88bdc-c450-440e-ad62-47a66fd697c8"
+							name="amqPublishRemoveRecordsFromErrorHospital" />
 					</batch:aggregator>
 				</batch:step>
-				<batch:step name="Batch_Step_Raise_Silent_Errors" doc:id="ccae90f8-a67b-402e-9922-d97f8a1b7ff2" acceptExpression="#[vars.isFailedRecord == true]">
-					<raise-error doc:name="Raise error" doc:id="d5106227-d224-4d57-8623-9f044f216da3" type="APP:DATA_ERROR"/>
+				<batch:step
+					name="Batch_Step_Send_System_Error_Records_To_Error_Hospital"
+					doc:id="be8289a7-36f2-4e1d-a84d-926d5752576e"
+					acceptPolicy="ONLY_FAILURES">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="6438c5ce-3c90-480e-befc-6e8fc1b7e879"
+						size="${batch.aggregatorSize.errHsptl}" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message"
+							doc:id="9076a6b9-3204-4855-b5b7-0dc587199fb2">
+							<ee:message>
+								<ee:set-payload><![CDATA[import buildSendSystemErrorRecordsToErrHsptlRequest from module::ErrorHospital
+output application/json
+---
+buildSendSystemErrorRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<flow-ref
+							doc:name="amqPublishInsertRecordsToErrorHospital"
+							doc:id="fe590973-429a-4381-b02a-544f50a77fcf"
+							name="amqPublishInsertRecordsToErrorHospital" />
+					</batch:aggregator>
+					<ee:transform doc:name="Transform Message"
+						doc:id="ed470df9-951c-46f4-a280-ed0ce4631e6d">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var error = Batch::getLastError()
+---
+payload ++ {
+	systemErrorData: {
+		errorType: error.errorType.namespace ++ ":" ++ error.errorType.identifier,
+		errorMessage: error.description
+	}
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete>
@@ -297,40 +298,71 @@ buildDeleteRecordsFromErrHsptlRequest(payload.Id)]]></ee:set-payload>
 					name="batchOnCompleteSubflow" />
 			</batch:on-complete>
 		</batch:job>
-		<error-handler ref="batchPostprocessingErrorHandler"/>
+		<error-handler ref="batchPostprocessingErrorHandler" />
 	</flow>
-	<sub-flow name="batchOnCompleteSubflow" doc:id="8455c12d-efb1-40c6-b4fc-dac571830301" >
-		<logger level="INFO" doc:name="INFO" doc:id="b416e75d-0ef3-488e-ae08-5bdbdb1638c8" message='#["Batch job summary: " ++ write(payload,"application/json")]' />
-		<choice doc:name="Choice" doc:id="49fd9203-d9d2-44ca-b1a0-b99046408406" >
-			<when expression="#[vars.isRetryJob == true]" >
-				<flow-ref doc:name="clearOsBatchStatusRetrySubflow" doc:id="bb7914f9-26c5-4435-9283-10c8e56b9891" name="clearOsBatchStatusRetrySubflow" />
-				<flow-ref doc:name="batchOnCompleteSendEmailSubflow" doc:id="41b11581-0f7e-4e8e-929b-9f6e40615308" name="batchOnCompleteSendEmailSubflow" />
+	<sub-flow name="batchOnCompleteSubflow"
+		doc:id="8455c12d-efb1-40c6-b4fc-dac571830301">
+		<logger level="INFO" doc:name="INFO"
+			doc:id="b416e75d-0ef3-488e-ae08-5bdbdb1638c8"
+			message='#["Batch job summary: " ++ write(payload,"application/json")]' />
+		<choice doc:name="Choice"
+			doc:id="49fd9203-d9d2-44ca-b1a0-b99046408406">
+			<when expression="#[vars.isRetryJob == true]">
+				<flow-ref doc:name="clearOsBatchStatusRetrySubflow"
+					doc:id="bb7914f9-26c5-4435-9283-10c8e56b9891"
+					name="clearOsBatchStatusRetrySubflow" />
+				<flow-ref doc:name="batchOnCompleteSendEmailSubflow"
+					doc:id="41b11581-0f7e-4e8e-929b-9f6e40615308"
+					name="batchOnCompleteSendEmailSubflow" />
 			</when>
-			<otherwise >
-				<flow-ref doc:name="clearOsBatchStatusSubflow" doc:id="28db0246-cc48-44b0-beaf-81f529e37775" name="clearOsBatchStatusSubflow" />
-				<flow-ref doc:name="batchOnCompleteSendEmailSubflow" doc:id="e06fe15c-551f-422a-82a5-92ae81682813" name="batchOnCompleteSendEmailSubflow" />
-				<flow-ref doc:name="batchOnCompleteUpdateWatermarkSubflow" doc:id="cb5e5000-f978-4b12-ac1e-27c13b926dcb" name="batchOnCompleteUpdateWatermarkSubflow" />
+			<otherwise>
+				<flow-ref doc:name="clearOsBatchStatusSubflow"
+					doc:id="28db0246-cc48-44b0-beaf-81f529e37775"
+					name="clearOsBatchStatusSubflow" />
+				<flow-ref doc:name="batchOnCompleteSendEmailSubflow"
+					doc:id="e06fe15c-551f-422a-82a5-92ae81682813"
+					name="batchOnCompleteSendEmailSubflow" />
+				<flow-ref doc:name="batchOnCompleteUpdateWatermarkSubflow"
+					doc:id="cb5e5000-f978-4b12-ac1e-27c13b926dcb"
+					name="batchOnCompleteUpdateWatermarkSubflow" />
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="batchOnCompleteSendEmailSubflow" doc:id="e2085fa3-7fb6-4aa9-b001-1ae663f1a3d3" >
-		<choice doc:name="Choice" doc:id="f8fdc84b-48ec-4f8e-ad67-ce7c8b8f8bac" >
-			<when expression="#[payload.failedRecords &gt; 0]" >
-				<flow-ref doc:name="sendBatchSummaryEmailSubflow" doc:id="c6c526cb-e7f7-4859-bd21-fa2348dd6288" name="sendBatchSummaryEmailSubflow" />
+	<sub-flow name="batchOnCompleteSendEmailSubflow"
+		doc:id="e2085fa3-7fb6-4aa9-b001-1ae663f1a3d3">
+		<choice doc:name="Choice"
+			doc:id="f8fdc84b-48ec-4f8e-ad67-ce7c8b8f8bac">
+			<when expression="#[payload.failedRecords &gt; 0]">
+				<flow-ref doc:name="sendBatchSummaryEmailSubflow"
+					doc:id="c6c526cb-e7f7-4859-bd21-fa2348dd6288"
+					name="sendBatchSummaryEmailSubflow" />
 			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="INFO" doc:id="ab351423-8bfd-4cf9-b53e-1e10d188d0fc" message='#["No need to send failure email as failedRecords count is zero"]' />
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="ab351423-8bfd-4cf9-b53e-1e10d188d0fc"
+					message='#["No need to send failure email as failedRecords count is zero"]' />
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="batchOnCompleteUpdateWatermarkSubflow" doc:id="9ab57273-9e31-4f2d-8b1a-7f135398ed3b" >
-		<flow-ref doc:name="retrieveOsCurrentRunDateTimeSubflow" doc:id="e9aa51a8-ea52-4259-b6f5-dfbce14018a9" name="retrieveOsCurrentRunDateTimeSubflow" target="watermarkLastRunDateTimeUpdated" targetValue="#[output application/json --- payload]" />
-		<choice doc:name="Choice" doc:id="f1478acf-f9a2-4f45-a929-d854c35a27f5" >
-			<when expression="#[!isEmpty(vars.watermarkLastRunDateTimeUpdated)]" >
-				<flow-ref doc:name="updateWatermarkSubflow" doc:id="20f56cfd-2787-4d9a-b313-9ba936b50734" name="updateWatermarkSubflow" />
+	<sub-flow name="batchOnCompleteUpdateWatermarkSubflow"
+		doc:id="9ab57273-9e31-4f2d-8b1a-7f135398ed3b">
+		<flow-ref doc:name="retrieveOsCurrentRunDateTimeSubflow"
+			doc:id="e9aa51a8-ea52-4259-b6f5-dfbce14018a9"
+			name="retrieveOsCurrentRunDateTimeSubflow"
+			target="watermarklastRunDateTimeUpdated"
+			targetValue="#[output application/json --- payload]" />
+		<choice doc:name="Choice"
+			doc:id="f1478acf-f9a2-4f45-a929-d854c35a27f5">
+			<when
+				expression="#[!isEmpty(vars.watermarklastRunDateTimeUpdated)]">
+				<flow-ref doc:name="updateWatermarkSubflow"
+					doc:id="20f56cfd-2787-4d9a-b313-9ba936b50734"
+					name="updateWatermarkSubflow" />
 			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="INFO" doc:id="98f5cebd-4332-4eeb-9f8a-350a9d3ed2af" message='#["The watermark value is not available to update back in the watermark service"]' />
+			<otherwise>
+				<logger level="INFO" doc:name="INFO"
+					doc:id="98f5cebd-4332-4eeb-9f8a-350a9d3ed2af"
+					message='#["The watermark value is not available to update back in the watermark service"]' />
 			</otherwise>
 		</choice>
 	</sub-flow>

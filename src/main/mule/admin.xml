@@ -17,20 +17,23 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		<flow-ref doc:name="validateAdminRequestSubflow"
 			doc:id="3fac6f97-f6cd-48df-a90f-9004e6e6f1ce"
 			name="validateAdminRequestSubflow" />
-		<flow-ref doc:name="pingSubflow"
-			doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169" name="pingSubflow"
-			target="pingResponse"
+		<flow-ref doc:name="healthCheckSubflow"
+			doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169"
+			name="healthCheckSubflow" target="healthCheckResponse"
 			targetValue="#[output applicatin/json --- payload]" />
 		<choice doc:name="Choice"
 			doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7">
-			<when expression='#[vars.pingResponse.status == "UP"]'>
-				<remove-variable doc:name="pingResponse"
+			<when expression='#[vars.healthCheckResponse.status == "UP"]'>
+				<remove-variable doc:name="healthCheckResponse"
 					doc:id="e9df0aab-4379-41dd-83a5-b934ec46d4f4"
-					variableName="pingResponse" />
+					variableName="healthCheckResponse" />
 				<async doc:name="Async"
 					doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5">
-					<try doc:name="Try" doc:id="8893a0d1-f8f1-4627-bf31-79fad4964e06" >
-						<flow-ref doc:name="processAdminSubflow" doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b" name="processAdminSubflow" />
+					<try doc:name="Try"
+						doc:id="8893a0d1-f8f1-4627-bf31-79fad4964e06">
+						<flow-ref doc:name="processAdminSubflow"
+							doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b"
+							name="processAdminSubflow" />
 						<error-handler ref="batchPreprocessingErrorHandler" />
 					</try>
 				</async>
@@ -62,7 +65,7 @@ output application/json
 	status: "Failure",
 	message: "At least one connection is unsuccessful; cannot proceed",
 	transactionId: correlationId,
-	connectionStatus: vars.pingResponse 
+	connectionStatus: vars.healthCheckResponse 
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>

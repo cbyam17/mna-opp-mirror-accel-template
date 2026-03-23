@@ -20,7 +20,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="a0d2f9d2-bdf4-42ee-aaad-e23e345a870f">
 		<os:store doc:name="Store"
 			doc:id="9c44b10c-e481-4ce0-afc5-e1027531b253"
-			key="currentRunDateTime" objectStore="Object_Store_CurrentRunDateTime">
+			key="currentRunDateTime"
+			objectStore="Object_Store_CurrentRunDateTime">
 			<os:value><![CDATA[#[output application/json --- vars.watermarkCurrentRunDateTime]]]></os:value>
 		</os:store>
 	</sub-flow>
@@ -52,14 +53,20 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
 	</sub-flow>
-	<sub-flow name="retrieveOsBatchStatusRetrySubflow" doc:id="160c2ea3-9aad-4dd6-9dcd-50bdf862c2be" >
-		<os:retrieve doc:name="Retrieve" doc:id="90cb3ce6-c13c-4257-a7fe-8fc3e1c44b91" key="batchRetryStatus" objectStore="Object_Store_BatchStatus">
-			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+	<sub-flow name="retrieveOsBatchStatusRetrySubflow"
+		doc:id="160c2ea3-9aad-4dd6-9dcd-50bdf862c2be">
+		<os:retrieve doc:name="Retrieve"
+			doc:id="90cb3ce6-c13c-4257-a7fe-8fc3e1c44b91" key="batchRetryStatus"
+			objectStore="Object_Store_BatchStatus">
+			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
 	</sub-flow>
-	<sub-flow name="storeOsBatchStatusRetryInProgressSubflow" doc:id="76aad48d-f58f-434d-b460-e1f5fca4e338" >
-		<os:store doc:name="Store" doc:id="9395ec26-38fb-4321-bb6c-b174140d9c8c" key="batchRetryStatus" objectStore="Object_Store_BatchStatus">
-			<os:value ><![CDATA[#[output application/json --- "IN_PROGRESS"]]]></os:value>
+	<sub-flow name="storeOsBatchStatusRetryInProgressSubflow"
+		doc:id="76aad48d-f58f-434d-b460-e1f5fca4e338">
+		<os:store doc:name="Store"
+			doc:id="9395ec26-38fb-4321-bb6c-b174140d9c8c" key="batchRetryStatus"
+			objectStore="Object_Store_BatchStatus">
+			<os:value><![CDATA[#[output application/json --- "IN_PROGRESS"]]]></os:value>
 		</os:store>
 	</sub-flow>
 </mule>
