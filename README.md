@@ -2,7 +2,7 @@
 This is an accelerator template for an integration solution that mirrors Opportunities and Opportunity Line Items (OLIs) from a source Salesforce CRM instance to a target Salesforce CRM instance to support revenue forecasting during M&A interim operations. The purpose of this template is to reduce the time to deliver an Opportunity mirroring integration solution while minimizing the configuration changes required on both the source and the target Salesforce CRM instances.
 
 ## Process Overview
-There are 3 main flows that fetch Opportunities and OLIs in scope to mirror from the source Salesforce instance, write them to the target Salesforce instance, and write the Opportunity Ids back to the source Salesforce instance.
+There are 3 main flows that fetch Opportunities and OLIs in scope for mirroring from the source Salesforce instance, write them to the target Salesforce instance, and write the Opportunity Ids back to the source Salesforce instance.
 | Flow              | Event Source      | Description
 | :-------------    | :--------------   | :--------------
 | Main Scheduler    | Scheduler         | Regularly scheduled job that processes records from the source Salesforce instance based on the watermark lastRunDateTime value |
