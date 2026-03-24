@@ -78,7 +78,7 @@ There must be the following field on the **OLI** object:
 ### Data Dependencies
 Products and Pricebook Entries for source Salesforce instance Products must be pre-loaded into the target Salesforce instance. Only the Pricebook Entry Id is required for upserting OLIs. The mappings between the source Salesforce instance Pricebook Entries and target Salesforce instance Pricebook Entries for each Product are maintained in the configuration properties so that they are decoupled from the application logic.
 
-Accounts must be migrated.....[tbd]
+Accounts must be migrated from the target Salesforce instance to the source Salesforce instance by either manually or via a separate integration solution, else this template must be modified in order to perform Account lookups in the target Salesforce instance.
 
 ## What is included in this template?
 ### Mule Implementation Files (src/main/mule)
