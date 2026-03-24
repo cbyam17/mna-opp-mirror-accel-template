@@ -53,7 +53,7 @@
 
   <p>
     An error occurred while attempting to communicate with the
-    <strong>Error Hospital API</strong>. The transaction referenced below
+    <strong>Error Hospital</strong>. The transaction referenced below
     could not be processed.
   </p>
 
@@ -64,16 +64,9 @@
   </div>
 
   <div class="section">
-    <p><span class="label">Error Type:</span><br>
-      #[output application/java --- vars.notification.content.errorType]
+    <p><span class="label">Total Failed Records:</span><br>
+      #[output application/java --- vars.notification.content.failedRecordCount]
     </p>
-  </div>
-
-  <div class="section">
-    <p><span class="label">Error Description:</span></p>
-    <div class="highlight">
-      #[output application/java --- vars.notification.content.errorMessage]
-    </div>
   </div>
 
   <p>

@@ -150,10 +150,10 @@ buildOliResponsesMap(vars.oppIds, vars.responses)]]></ee:set-variable>
 							<scripting:execute engine="Groovy"
 								doc:name="Execute" doc:id="57c576c0-2e85-4c2a-90cd-2629180644e2">
 								<scripting:code><![CDATA[vars['record'].payload.deleteOliResponses = matchingResponses]]></scripting:code>
-								<scripting:parameters><![CDATA[#[import getMatchingOliResponses_TGT from module::OpportunityLineItem
+								<scripting:parameters><![CDATA[#[import getMatchingOliResponses from module::OpportunityLineItem
 output application/java
 ---
-getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parameters>
+getMatchingOliResponses(vars.responsesMap, payload.Id)]]]></scripting:parameters>
 							</scripting:execute>
 						</foreach>
 					</batch:aggregator>
@@ -227,10 +227,10 @@ buildSendFailedRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-paylo
 							<ee:variables>
 							</ee:variables>
 						</ee:transform>
-						<flow-ref
-							doc:name="amqPublishInsertRecordsToErrorHospital"
-							doc:id="f166b9a6-bdc7-4586-b091-66ff04b2acfa"
-							name="amqPublishInsertRecordsToErrorHospital" />
+						<try doc:name="Try" doc:id="a1c89673-a627-45ef-a396-435ee3570ad0" >
+							<flow-ref doc:name="sendRecordsToErrHsptlSubflow" doc:id="beed96ca-2228-4611-a1a9-98f70a21afdc" name="sendRecordsToErrHsptlSubflow"/>
+							<error-handler ref="errorHospitalWriteErrorHandler" />
+						</try>
 					</batch:aggregator>
 				</batch:step>
 				<batch:step
@@ -249,10 +249,10 @@ output application/json
 buildDeleteRecordsFromErrHsptlRequest(payload.Id)]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<flow-ref
-							doc:name="amqPublishRemoveRecordsFromErrorHospital"
-							doc:id="8bb88bdc-c450-440e-ad62-47a66fd697c8"
-							name="amqPublishRemoveRecordsFromErrorHospital" />
+						<try doc:name="Try" doc:id="521540e5-b26c-455b-b00d-120774728a88" >
+							<flow-ref doc:name="removeRecordsFromErrHsptlSubflow" doc:id="a645bf14-5cfb-4212-a06c-a535fc1fffbf" name="removeRecordsFromErrHsptlSubflow" />
+							<error-handler ref="errorHospitalWriteErrorHandler" />
+						</try>
 					</batch:aggregator>
 				</batch:step>
 				<batch:step
@@ -271,10 +271,10 @@ output application/json
 buildSendSystemErrorRecordsToErrHsptlRequest(payload, correlationId)]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<flow-ref
-							doc:name="amqPublishInsertRecordsToErrorHospital"
-							doc:id="fe590973-429a-4381-b02a-544f50a77fcf"
-							name="amqPublishInsertRecordsToErrorHospital" />
+						<try doc:name="Try" doc:id="1d3095ae-e233-48cf-826f-8c0e599a1f7b" >
+							<flow-ref doc:name="sendRecordsToErrHsptlSubflow" doc:id="e852c910-dd92-4b61-8c8d-fa83db96a349" name="sendRecordsToErrHsptlSubflow" />
+							<error-handler ref="errorHospitalWriteErrorHandler" />
+						</try>
 					</batch:aggregator>
 					<ee:transform doc:name="Transform Message"
 						doc:id="ed470df9-951c-46f4-a280-ed0ce4631e6d">
@@ -292,7 +292,7 @@ payload ++ {
 						</ee:message>
 					</ee:transform>
 				</batch:step>
-				<batch:step name="Batch_Step_Raise_Silent_Errors" doc:id="c98d5988-f2d3-465a-ac20-541069c8b2b7" >
+				<batch:step name="Batch_Step_Raise_Silent_Errors" doc:id="c98d5988-f2d3-465a-ac20-541069c8b2b7" acceptExpression="#[vars.isFailedRecord]">
 					<raise-error doc:name="Raise error" doc:id="e9f33630-25fc-48c2-8c76-30ece788a9c7" type="APP:SALESFORCE_ERROR"/>
 				</batch:step>
 			</batch:process-records>
@@ -326,6 +326,7 @@ payload ++ {
 				<flow-ref doc:name="batchOnCompleteUpdateWatermarkSubflow"
 					doc:id="cb5e5000-f978-4b12-ac1e-27c13b926dcb"
 					name="batchOnCompleteUpdateWatermarkSubflow" />
+				<flow-ref doc:name="batchOnCompleteCheckFailureBuffer" doc:id="51cac5af-9371-4ee5-8854-66799737e07f" name="batchOnCompleteCheckFailureBuffer" />
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -361,10 +362,32 @@ payload ++ {
 					name="updateWatermarkSubflow" />
 			</when>
 			<otherwise>
-				<logger level="INFO" doc:name="INFO"
+				<logger level="WARN" doc:name="WARN"
 					doc:id="98f5cebd-4332-4eeb-9f8a-350a9d3ed2af"
 					message='#["The watermark value is not available to update back in the watermark service"]' />
 			</otherwise>
 		</choice>
+	</sub-flow>
+	<sub-flow name="batchOnCompleteCheckFailureBuffer" doc:id="1145b24b-cf3a-49ad-a7f9-e60f83a142b6" >
+		<os:retrieve-all doc:name="Retrieve all" doc:id="kksfjv" objectStore="Object_Store_FailureBuffer" targetValue="#[output application/json --- payload]" target="failureEntries"/>
+    <choice doc:name="Choice" doc:id="tjdjjo">
+        
+    <when doc:name="When" expression="#[!isEmpty(vars.failureEntries)]">
+        <ee:transform doc:name="Transform" doc:id="ghviqc">
+      <ee:message>
+      </ee:message>
+			<ee:variables>
+						<ee:set-variable variableName="flattenedFailures" ><![CDATA[%dw 2.0
+output application/json
+---
+flatten(valuesOf(vars.failureEntries) map $.failedRecords)]]></ee:set-variable>
+			</ee:variables>
+    </ee:transform>
+				<flow-ref doc:name="sendErrHsptlWriteErrorEmailSubflow" name="sendErrHsptlWriteErrorEmailSubflow"/>
+        <os:clear doc:name="Clear" doc:id="szaomd" objectStore="Object_Store_FailureBuffer"/></when>
+      <otherwise>
+        <logger doc:name="Logger" doc:id="kqexkp" message='#["No error hospital write failures were recorded"]'/>
+      </otherwise></choice>
+		
 	</sub-flow>
 </mule>

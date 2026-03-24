@@ -3,6 +3,11 @@
 // ============================================================================
 
 %dw 2.0
+
+fun buildFieldsToNullList(record) =
+  record pluck ((value, key) -> key)
+    filter ((fieldName) -> record[fieldName] == null)
+
 fun buildHealthCheckEndpointResponse(name, response) =
   [
     {
@@ -14,9 +19,9 @@ fun buildHealthCheckEndpointResponse(name, response) =
           "DOWN",
       message:
         if (isEmpty(response.errorType))
-          "Ping successful"
+          "Health check successful"
         else
-          "Ping failed: " ++ (response.description default "")
+          "Health check failed: " ++ (response.description default "")
     }
   ]
 

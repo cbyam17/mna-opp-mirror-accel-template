@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 	<error-handler name="apiErrorHandler">
 
 		<!-- 400 Bad Request -->
@@ -124,6 +126,7 @@ output application/json
 		<on-error-continue enableNotifications="true"
 			logException="true" doc:name="On Error Continue"
 			doc:id="790d98dd-1436-495a-bf1c-fb459bf01a6d" type="ANY">
+			<logger level="ERROR" doc:name="Logger" doc:id="7904728e-b689-4796-b293-88f7b7cd64c2" message='#["Health check failure"]' />
 			<ee:transform doc:name="Transform Message"
 				doc:id="2b81a4b5-aaa9-466f-bfb7-37bfa12ea2c5">
 				<ee:message>
@@ -141,19 +144,10 @@ buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 		<on-error-propagate enableNotifications="true"
 			logException="true" doc:name="On Error Propagate"
 			doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" type="ANY">
+			<logger level="ERROR" doc:name="Logger" doc:id="2e0ba7f9-39c0-4310-ad95-54d2ce350e8b" message='#["Batch pre-processing failure"]' />
 			<flow-ref doc:name="sendSchedulerFailureEmailSubflow"
 				doc:id="6957d07f-2389-46c1-a3de-244a39e43418"
 				name="sendbatchPreprocessingErrorEmailSubflow" />
-		</on-error-propagate>
-	</error-handler>
-	<error-handler name="errorHospitalWriteErrorHandler"
-		doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
-		<on-error-propagate enableNotifications="true"
-			logException="true" doc:name="On Error Propagate"
-			doc:id="bd8fa5ae-ee63-4863-b254-831786782cf4" type="ANY">
-			<flow-ref doc:name="sendErrHsptlWriteErrorEmailSubflow"
-				doc:id="b40065a7-f85b-4ea1-ac4b-fb7bc243b8be"
-				name="sendErrHsptlWriteErrorEmailSubflow" />
 		</on-error-propagate>
 	</error-handler>
 	<error-handler name="batchPostprocessingErrorHandler"
@@ -161,15 +155,29 @@ buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 		<on-error-propagate enableNotifications="true"
 			logException="true" doc:name="On Error Propagate"
 			doc:id="a58a1d69-b960-4ae7-8aad-9bae8537395d" type="ANY">
+			<logger level="ERROR" doc:name="Logger" doc:id="02add75b-f653-433d-8109-2771c3cd29e4" message='#["Batch post-processing failure"]' />
 			<flow-ref
 				doc:name="sendbatchPostprocessingErrorEmailSubflow"
 				doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955"
 				name="sendBatchPostprocessingErrorEmailSubflow" />
 		</on-error-propagate>
 	</error-handler>
-	<error-handler name="amqPublishErrorHandler" doc:id="ec949617-6b75-4a7d-a463-d9b9fa0520cc" >
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="333160bb-f0b1-484e-94c3-9b1ada22d722" >
-			<logger level="WARN" doc:name="Logger" doc:id="4b33fcab-4edc-4880-8acb-012c39443d09" message='#["AMQ Publish operation failed"]'/>
+	<error-handler name="errorHospitalWriteErrorHandler" doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5db42ec7-6d74-4b61-809d-ba1378de6bc0">
+			<logger level="ERROR" doc:name="Logger" doc:id="53225cfe-e748-46e9-b21f-f80da3c6a1c1" message='#["Error hospital write failure"]' />
+			<choice doc:name="Choice" doc:id="3e74a92f-2281-40c7-8185-ae1fc2921799" >
+				<when expression="#[vars.isRetryJob default false]">
+					<flow-ref doc:name="osStoreFailureBufferSubflow" doc:id="c6266479-3731-4730-90f3-057de09d39bc" name="storeOsFailureBufferSubflow" />
+				</when>
+				<otherwise >
+					<logger level="WARN" doc:name="Logger" doc:id="45ba74f4-d787-46ac-8140-5ee593e7ca87" message='#["No need to capture error hospital write failure for retry job"]' />
+				</otherwise>
+			</choice>
+		</on-error-continue>
+	</error-handler>
+	<error-handler name="sendEmailErrorHandler" doc:id="0004a733-dd69-443f-91d3-01f989efdc80" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="840bedad-64f3-490c-8f7e-77b2225caa70" >
+			<logger level="ERROR" doc:name="Logger" doc:id="b967ca57-c9bd-4b4b-964d-d9283f4b6bbd" message='#["Send email failure"]' />
 		</on-error-continue>
 	</error-handler>
 </mule>

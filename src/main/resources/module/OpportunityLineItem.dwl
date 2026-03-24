@@ -3,7 +3,7 @@
 // ============================================================================
 
 %dw 2.0
-import generateIdInClause, firstOrNull from module::CommonUtils
+import buildFieldsToNullList, generateIdInClause, firstOrNull from module::CommonUtils
 import mapToTgt from module::PricebookEntry
 
 // Adjust SOQL query as needed per Salesforce schema
@@ -23,7 +23,7 @@ fun buildQueryOlisByOppId_SRC(oppIds) =
 fun buildQueryOlisByOppExternalId_TGT(oppIds) =
   {
     query:
-      "SELECT Id, PricebookEntryId, OpportunityId, Opportunity.Opp_Id_SRC__c " ++
+      "SELECT Id, Oli_Id_SRC__c, PricebookEntryId, OpportunityId, Opportunity.Opp_Id_SRC__c " ++
       "FROM OpportunityLineItem " ++
       "WHERE Opportunity.Opp_Id_SRC__c IN (" ++ generateIdInClause(oppIds) ++ ")",
     queryParams:
@@ -52,15 +52,21 @@ fun transformUpsertOlis_TGT(opps) =
         var pbeId = mapToTgt(oli.PricebookEntryId as String) default null
         var quantity = (oli.Quantity default 0) as Number
         var unitPrice = (oli.UnitPrice default 0) as Number
+
+        var transformed =
+          {
+            Id: tgtOliId,
+            Oli_Id_SRC__c: srcOliId,
+            OpportunityId: oppId,
+            PricebookEntryId: pbeId,
+            Quantity: quantity,
+            UnitPrice: unitPrice,
+          }
+          
+        var fieldsToNullList = buildFieldsToNullList(transformed)
         ---
-        {
-          Id: tgtOliId,
-          Oli_Id_SRC__c: srcOliId,
-          OpportunityId: oppId,
-          PricebookEntryId: pbeId,
-          Quantity: quantity,
-          UnitPrice: unitPrice,
-        }
+        transformed ++ 
+          (fieldsToNull: fieldsToNullList)
       }
     )
   )

@@ -24,23 +24,6 @@
 			name="adminReprocessSubflow" />
 	</flow>
 	<flow name="put:\admin\watermark:application\json:Router">
-		<set-variable
-			value="#[output application/json --- payload.lastRunDateTime &gt;&gt; Mule::p(&quot;watermark.timezone&quot;)]"
-			doc:name="watermarklastRunDateTimeUpdated"
-			doc:id="68b79549-513c-4f7d-8834-f53979b90b2e"
-			variableName="watermarklastRunDateTimeUpdated" />
-		<flow-ref doc:name="updateWatermarkSubflow" doc:id="83449fac-9a02-4cb0-9c5b-d04501ac6dbb" name="updateWatermarkSubflow" />
-		<flow-ref doc:name="retrieveWatermarkSubflow" doc:id="635e379c-b6cc-41b1-bf38-c91cb4536767" name="retrieveWatermarkSubflow" target="watermarklastRunDateTime" targetValue="#[output application/json --- payload]" />
-		<ee:transform doc:name="Transform Message" doc:id="9a9f64fe-fb7c-4060-9896-057e1663a578">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": "watermark updated",
-	"watermarklastRunDateTime": vars.watermarklastRunDateTime
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="b9a1f6fd-2fde-4635-9583-836fbfafff20" name="adminUpdateWatermarkSubflow" />
     </flow>
 </mule>
