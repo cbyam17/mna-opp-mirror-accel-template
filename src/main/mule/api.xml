@@ -12,7 +12,7 @@
 			config-ref="HTTP_Listener_config" path="/api/*" />
 		<apikit:router doc:name="APIkit Router"
 			doc:id="3b7ef05f-0ebf-49ed-b9de-4b56522edc7a" config-ref="Router" />
-	</flow>
+	<error-handler doc:name="Error-handler" ref="apiErrorHandler"></error-handler></flow>
 	<flow name="get:\health-check:Router">
 		<flow-ref doc:name="healthCheckSubflow"
 			doc:id="f36e514e-8c09-4a07-a5d3-6b7ff45d948c"

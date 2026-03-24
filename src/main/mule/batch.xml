@@ -165,8 +165,9 @@ getMatchingOliResponses_TGT(vars.responsesMap, payload.Id)]]]></scripting:parame
 						<ee:message>
 							<ee:set-payload><![CDATA[%dw 2.0
 output application/java
+var isSystemError = !isEmpty(Batch::getLastError())
 ---
-payload ++ { isSystemError: true }]]></ee:set-payload>
+payload ++ { isSystemError: isSystemError }]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
 					<batch:aggregator doc:name="Batch Aggregator"
@@ -291,6 +292,9 @@ payload ++ {
 						</ee:message>
 					</ee:transform>
 				</batch:step>
+				<batch:step name="Batch_Step_Raise_Silent_Errors" doc:id="c98d5988-f2d3-465a-ac20-541069c8b2b7" >
+					<raise-error doc:name="Raise error" doc:id="e9f33630-25fc-48c2-8c76-30ece788a9c7" type="APP:SALESFORCE_ERROR"/>
+				</batch:step>
 			</batch:process-records>
 			<batch:on-complete>
 				<flow-ref doc:name="batchOnCompleteSubflow"
@@ -311,9 +315,6 @@ payload ++ {
 				<flow-ref doc:name="clearOsBatchStatusRetrySubflow"
 					doc:id="bb7914f9-26c5-4435-9283-10c8e56b9891"
 					name="clearOsBatchStatusRetrySubflow" />
-				<flow-ref doc:name="batchOnCompleteSendEmailSubflow"
-					doc:id="41b11581-0f7e-4e8e-929b-9f6e40615308"
-					name="batchOnCompleteSendEmailSubflow" />
 			</when>
 			<otherwise>
 				<flow-ref doc:name="clearOsBatchStatusSubflow"

@@ -28,6 +28,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<flow-ref doc:name="validateWatermarkConnectionSubflow"
 			doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380"
 			name="validateWatermarkConnectionSubflow" target="watermarkConnResp" />
+		<flow-ref doc:name="validateAmqConnectionSubflow" doc:id="7c203c01-e406-4953-896f-9ba433c659d0" name="validateAmqConnectionSubflow" target="amqConnResp" />
 		<ee:transform doc:name="Transform Message"
 			doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
 			<ee:message>
@@ -35,7 +36,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 output application/json
 import buildHealthCheckResponse from module::CommonUtils
 ---
-buildHealthCheckResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ vars.errHsptlConnResp ++ vars.watermarkConnResp)]]></ee:set-payload>
+buildHealthCheckResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ vars.errHsptlConnResp ++ vars.watermarkConnResp ++ vars.amqConnResp)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</sub-flow>
@@ -97,6 +98,13 @@ buildHealthCheckResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_
 				doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0"
 				name="buildHealthCheckEndpointResponseSubflow" />
 			<error-handler ref="healthCheckErrorHandler" />
+		</try>
+	</sub-flow>
+	<sub-flow name="validateAmqConnectionSubflow" doc:id="416fb706-db91-44cb-89bf-75bdbb9a719f">
+		<set-variable value='#["AnypointMQ"]' doc:name="systemName" doc:id="f35f1286-a2cb-4db0-bf1b-fdb57718b35c" variableName="systemName" />
+		<try doc:name="Try" doc:id="9612a3e6-2614-4ac6-b283-ab074c78a904">
+			<flow-ref doc:name="amqHealthCheckSubflow" doc:id="1cf5bddb-b68e-467e-a50f-10cc8f63f1fd" name="amqHealthCheckSubflow" />
+			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow" doc:id="180b563d-e0b7-4eb7-8c5b-90cd3c901f6b" name="buildHealthCheckEndpointResponseSubflow" />
 		</try>
 	</sub-flow>
 	<sub-flow name="buildHealthCheckEndpointResponseSubflow"

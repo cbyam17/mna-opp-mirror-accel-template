@@ -6,6 +6,119 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="apiErrorHandler">
+
+		<!-- 400 Bad Request -->
+		<on-error-propagate type="APIKIT:BAD_REQUEST">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Bad request"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+		<!-- 404 Not Found -->
+		<on-error-propagate type="APIKIT:NOT_FOUND">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Resource not found"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+		<!-- 405 Method Not Allowed -->
+		<on-error-propagate
+			type="APIKIT:METHOD_NOT_ALLOWED">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Method not allowed"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+		<!-- 406 Not Acceptable -->
+		<on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Not acceptable"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[406]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+		<!-- 415 Unsupported Media Type -->
+		<on-error-propagate
+			type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Unsupported media type"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+		<!-- 501 Not Implemented -->
+		<on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+			<ee:transform>
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	transactionId: correlationId,
+	message: "Not implemented"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+
+	</error-handler>
 	<error-handler name="healthCheckErrorHandler"
 		doc:id="baa5e588-002a-49ee-8a98-3edd103ecfa8">
 		<on-error-continue enableNotifications="true"
@@ -53,5 +166,10 @@ buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 				doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955"
 				name="sendBatchPostprocessingErrorEmailSubflow" />
 		</on-error-propagate>
+	</error-handler>
+	<error-handler name="amqPublishErrorHandler" doc:id="ec949617-6b75-4a7d-a463-d9b9fa0520cc" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="333160bb-f0b1-484e-94c3-9b1ada22d722" >
+			<logger level="WARN" doc:name="Logger" doc:id="4b33fcab-4edc-4880-8acb-012c39443d09" message='#["AMQ Publish operation failed"]'/>
+		</on-error-continue>
 	</error-handler>
 </mule>
