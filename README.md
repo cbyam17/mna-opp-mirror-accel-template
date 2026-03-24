@@ -102,7 +102,7 @@ Accounts must be migrated.....[tbd]
 
 ### Dataweave Modules (src/main/resources/module)
 | Module                    | Description |
-| :-------------            | :--------------
+| :-------------            | :-------------- |
 | Account.dwl               | Salesforce Account dataweave transformations |
 | Opportunity.dwl           | Salesforce Opportunity dataweave transformations |
 | OpportunityLineItem.dwl   | Salesforce OLI dataweave transformations |
@@ -122,17 +122,21 @@ Runtime arguments: mule.env and mule.key
 - prod-secure.yaml
 
 ### API (src/main/resource/api)
-RAML spec for admin reprocess endpoint
-- mna-oppty-mirror-accel-template-api.raml
+mna-opp-mirror-accel-template-api.raml
+| Endpoint                     | Description |
+| :-------------               | :-------------- |
+| POST /api/admin/reprocess    | Ad hoc reprocessing of Opportunities by external Id |
+| PUT /api/admin/watermark     | Update watermark lastRunDateTime (if using the built-in watermark service) |
+| GET /api/health-check        | Invoke health check for integration dependencies |
 
 ### Email Templates (src/main/resources/email)
 | Template                              | Description |
 | :-------------                        | :--------------
-| batchPostprocessErrorTemplate.html    | Email template for batch postprocessing error notifications |
-| batchPreprocessErrorTemplate.html     | Email template for batch preprocessing error notifications |
-| batchSummaryErrorTemplate.html        | Email template for batch summary error notifications |
-| errorHospitalWriteErrorTemplate.html  | Email template for error hospital write error notifications |
-| healthCheckErrorTemplate.html         | Email template for health check error notifications |
+| batchPostprocessErrorTemplate.html    | HTML Email template for batch postprocessing error notifications |
+| batchPreprocessErrorTemplate.html     | HTML Email template for batch preprocessing error notifications |
+| batchSummaryErrorTemplate.html        | HTML Email template for batch summary error notifications |
+| errorHospitalWriteErrorTemplate.html  | HTML Email template for error hospital write error notifications |
+| healthCheckErrorTemplate.html         | HTML Email template for health check error notifications |
 
 ## Considerations
 The configuration properties are located in the /config folder, but it may be desirable in a production-ready solution to utilize a CPS service so that properties are decoupled from source code.
