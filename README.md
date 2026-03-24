@@ -72,7 +72,7 @@ There must be the following field on the **OLI** object:
 | Oli_Id_SRC__c     | Text (18 chars)   | Id of the source Salesforce instance OLI
 
 **Note**: Neither of these fields need to be enabled as an external Ids, but they are required for fetching existing Opportunities and OLIs in the target Salesforce instance during batch preprocessing. If these fields can be enabled as external Ids, the template can be modified to:
-1. Remove the preprocessing step of fetching existing Opportunities in the target Salesforce instance — fetching existing OLIs is still required to conditionally identify OLIs to delete
+1. Remove the preprocessing step of fetching existing Opportunities in the target Salesforce instance — fetching existing OLIs is still required to conditionally identify OLIs to delete (if required)
 2. Perform upserts based on these external Ids rather than the native Salesforce Opportunity and OLI Ids
 
 ### Data Dependencies
