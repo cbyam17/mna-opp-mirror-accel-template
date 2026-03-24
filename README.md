@@ -64,7 +64,7 @@ There must be the following field on the **Account** object:
 There must be the following field on the **Opportunity** object:
 | Field             | Type              | Description |
 | :-------------    | :--------------   | :-------------- |
-| Opp_Id_SRC__c     | Text (18 chars)             | Id of the source Salesforce instance Opportunity
+| Opp_Id_SRC__c     | Text (18 chars)   | Id of the source Salesforce instance Opportunity
 
 There must be the following field on the **OLI** object:
 | Field             | Type              | Description |
@@ -125,7 +125,7 @@ Runtime arguments: mule.env and mule.key
 mna-opp-mirror-accel-template-api.raml
 | Endpoint                     | Description |
 | :-------------               | :-------------- |
-| POST /api/admin/reprocess    | Ad hoc reprocessing of Opportunities by external Id |
+| POST /api/admin/reprocess    | Ad hoc reprocessing of Opportunities by external Id (source Salesforce instance) |
 | PUT /api/admin/watermark     | Update watermark lastRunDateTime (if using the built-in watermark service) |
 | GET /api/health-check        | Invoke health check for integration dependencies |
 
