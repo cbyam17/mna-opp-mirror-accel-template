@@ -60,6 +60,7 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 					timeZone="${scheduler.retry.timezone}" />
 			</scheduling-strategy>
 		</scheduler>
+		<set-variable value="#[output application/java --- true]" doc:name="isRetryJob" doc:id="6528472e-0547-4ef2-a150-444c43566707" variableName="isRetryJob" />
 		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow"
 			doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa"
 			name="retrieveOsBatchStatusRetrySubflow" />

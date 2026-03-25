@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="storeOsFailureBufferSubflow" doc:id="b9c4db48-d54b-4864-aa6a-11f7a1942390" >
 		<os:store doc:name="Store" doc:id="57e97aed-e4f6-4dff-8e62-39b6a617c08a" key="#[uuid()]" objectStore="Object_Store_FailureBuffer">
-      <os:value><![CDATA[#[output application/json --- payload]]]></os:value>
+      <os:value><![CDATA[#[output application/java --- write(payload, "application/json")]]]></os:value>
     </os:store>
 	</sub-flow>
 	<sub-flow name="retrieveOsBatchStatusSubflow"

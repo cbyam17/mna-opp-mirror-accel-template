@@ -145,6 +145,14 @@ buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 			logException="true" doc:name="On Error Propagate"
 			doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" type="ANY">
 			<logger level="ERROR" doc:name="Logger" doc:id="2e0ba7f9-39c0-4310-ad95-54d2ce350e8b" message='#["Batch pre-processing failure"]' />
+			<choice doc:name="Choice" doc:id="0981fe35-66a9-4bc6-8946-f06fee7bbad2" >
+				<when expression="#[vars.isRetryJob default false]">
+					<flow-ref doc:name="clearOsBatchStatusRetrySubflow" doc:id="3c1d6bc6-6e4a-48d9-94ec-df4c0edbdda4" name="clearOsBatchStatusRetrySubflow" />
+				</when>
+				<otherwise >
+					<flow-ref doc:name="clearOsBatchStatusSubflow" doc:id="cda78ee1-7f93-45b0-944f-dc00826fb878" name="clearOsBatchStatusSubflow" />
+				</otherwise>
+			</choice>
 			<flow-ref doc:name="sendSchedulerFailureEmailSubflow"
 				doc:id="6957d07f-2389-46c1-a3de-244a39e43418"
 				name="sendbatchPreprocessingErrorEmailSubflow" />
@@ -156,6 +164,14 @@ buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
 			logException="true" doc:name="On Error Propagate"
 			doc:id="a58a1d69-b960-4ae7-8aad-9bae8537395d" type="ANY">
 			<logger level="ERROR" doc:name="Logger" doc:id="02add75b-f653-433d-8109-2771c3cd29e4" message='#["Batch post-processing failure"]' />
+			<choice doc:name="Choice" doc:id="6d31f490-0a90-4b5f-b268-01356a544807">
+				<when expression="#[vars.isRetryJob default false]">
+					<flow-ref doc:name="clearOsBatchStatusRetrySubflow" doc:id="4ead6a05-5a67-4ecf-8677-9591003a6aa3" name="clearOsBatchStatusRetrySubflow" />
+				</when>
+				<otherwise>
+					<flow-ref doc:name="clearOsBatchStatusSubflow" doc:id="ed9c9098-5a8f-47bc-b176-1ff14ad058b5" name="clearOsBatchStatusSubflow" />
+				</otherwise>
+			</choice>
 			<flow-ref
 				doc:name="sendbatchPostprocessingErrorEmailSubflow"
 				doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955"

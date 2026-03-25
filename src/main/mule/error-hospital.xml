@@ -17,18 +17,18 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<set-variable value='#["ping"]' doc:name="requestType"
 			doc:id="c2d5bd7c-d31b-4897-b0c6-865a0a3c03ce"
 			variableName="requestType" />
-		<flow-ref doc:name="errHsptlApiSubflow"
+		<flow-ref doc:name="errorHospitalProxySubflow"
 			doc:id="496830c5-7807-48a0-87b0-87b46b70addf"
-			name="errHsptlApiSubflow" />
+			name="errorHospitalProxySubflow" />
 	</sub-flow>
 	<sub-flow name="getRecordsFromErrHsptlSubflow"
 		doc:id="88597b62-a290-4edf-995d-df68a683084c">
 		<set-variable value='#["getRecords"]'
 			doc:name="requestType" doc:id="85669ce4-cb09-4432-854e-8833145f9b17"
 			variableName="requestType" />
-		<flow-ref doc:name="errHsptlApiSubflow"
+		<flow-ref doc:name="errorHospitalProxySubflow"
 			doc:id="d96b8e24-5399-4d94-a9c8-1bb8e367b0d5"
-			name="errHsptlApiSubflow" />
+			name="errorHospitalProxySubflow" />
 	</sub-flow>
 	<sub-flow name="getRecordsFromErrHsptlByIdSubflow"
 		doc:id="dea2d133-3dec-46c8-94fa-d7319cca46b5">
@@ -44,29 +44,29 @@ buildGetRecordsFromErrHsptlByIdRequest(payload.Id)]]></ee:set-payload>
 		<set-variable value='#["getRecordsById"]'
 			doc:name="requestType" doc:id="cd386e55-231c-4aa8-b541-de30b6a7a309"
 			variableName="requestType" />
-		<flow-ref doc:name="errHsptlApiSubflow"
+		<flow-ref doc:name="errorHospitalProxySubflow"
 			doc:id="66ccaf14-ef2d-49bb-a00c-9a9c3cc1a1a0"
-			name="errHsptlApiSubflow" />
+			name="errorHospitalProxySubflow" />
 	</sub-flow>
 	<sub-flow name="sendRecordsToErrHsptlSubflow"
 		doc:id="54c04c48-f629-4cf0-9da8-9d94d0106a7d">
 		<set-variable value='#["insertRecords"]'
 			doc:name="requestType" doc:id="4edf2e94-5c3d-4052-83c0-a6e568c9992e"
 			variableName="requestType" />
-		<flow-ref doc:name="errHsptlApiSubflow"
+		<flow-ref doc:name="errorHospitalProxySubflow"
 			doc:id="91f2d00d-ce53-4b25-abf8-72e9d697d9ad"
-			name="errHsptlApiSubflow" />
+			name="errorHospitalProxySubflow" />
 	</sub-flow>
 	<sub-flow name="removeRecordsFromErrHsptlSubflow"
 		doc:id="56740b30-4ef3-4949-b3a4-beb5cb621dd5">
 		<set-variable value='#["deleteRecords"]'
 			doc:name="requestType" doc:id="fbc08735-4132-4efc-b1c0-624f16e59e08"
 			variableName="requestType" />
-		<flow-ref doc:name="errHsptlApiSubflow"
+		<flow-ref doc:name="errorHospitalProxySubflow"
 			doc:id="11113c1c-d294-4779-8b14-698bcbb5098f"
-			name="errHsptlApiSubflow" />
+			name="errorHospitalProxySubflow" />
 	</sub-flow>
-	<sub-flow name="errHsptlApiSubflow"
+	<sub-flow name="errorHospitalProxySubflow"
 		doc:id="9e99ce4a-43af-404b-8bb9-4d0a56c5d107">
 		<choice doc:name="Choice"
 			doc:id="853a3bea-6e7d-445c-9ebc-82c914b76683">
@@ -81,13 +81,9 @@ buildGetRecordsFromErrHsptlByIdRequest(payload.Id)]]></ee:set-payload>
 output application/json
 ---
 if (!isEmpty(payload))
-	payload
-	  // turn the Map into an array of { key, value }
-	  pluck ((v, k) -> { key: k, value: v })
-	  // keep items unless remainingRetryCount exists AND equals 0
-	  filter ((item) -> 
-	    not ((item.value.remainingRetryCount default 0) as Number == 0)
-	  )
+	payload pluck ((v, k) -> { key: k, value: read(v as String, "application/json") })
+		filter ((item) ->  not ((item.value.remainingRetryCount default 0) as Number == 0))
+			map ((record) -> record.value)
 else
 	[]
 ]]></ee:set-payload>
@@ -114,9 +110,8 @@ else
 							<ee:set-variable variableName="results"><![CDATA[%dw 2.0
 output application/json
 ---
-// if key found, add record to results, else leave results as is
 if (!isEmpty(payload))
-	vars.results default [] ++ [payload]
+	vars.results default [] ++ [read(payload as String, "application/json")]
 else
 	vars.results]]></ee:set-variable>
 						</ee:variables>
@@ -172,7 +167,8 @@ payload.failedRecords map ((item) -> {
 								<ee:message>
 									<ee:set-payload><![CDATA[%dw 2.0
 output application/json
-var currentRetryCount = vars.existingRecord.remainingRetryCount default 1
+var existingRecordJson = read(vars.existingRecord as String, "application/json")
+var currentRetryCount = existingRecordJson.remainingRetryCount default 1
 var newRetryCount = currentRetryCount - 1
 ---
 payload update {
@@ -185,7 +181,9 @@ payload update {
 					</choice>
 					<os:store doc:name="Store"
 						doc:id="8d2d0e72-9658-44b6-bac2-96f4be9cf36a"
-						key="#[payload.recordId]" objectStore="Object_Store_ErrorHospital" />
+						key="#[payload.recordId]" objectStore="Object_Store_ErrorHospital" >
+						<os:value ><![CDATA[#[output application/java --- write(payload, "application/json")]]]></os:value>
+					</os:store>
 				</foreach>
 			</when>
 			<when expression='#[vars.requestType == "deleteRecords"]'>

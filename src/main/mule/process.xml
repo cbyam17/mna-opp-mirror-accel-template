@@ -74,7 +74,7 @@ http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/m
 				<flow-ref doc:name="getOppsByIdSubflow_SRC"
 					doc:id="704a6f89-934e-448a-a31b-67e575b12cbd"
 					name="getOppsByIdSubflow_SRC" target="opps"
-					targetValue="#[payload default []]" />
+					targetValue="#[output application/java --- payload.payload..records default []]" />
 				<choice doc:name="Choice"
 					doc:id="04f47323-6cfc-483e-bf7a-cf1d0c7c8353">
 					<when
@@ -106,10 +106,6 @@ buildDeleteRecordsFromErrHsptlRequest(recordIdsToDelete)]]></ee:set-payload>
 							doc:name="storeOsBatchStatusRetryInProgressSubflow"
 							doc:id="30413803-a497-4e3f-97f1-5984f7a5bd95"
 							name="storeOsBatchStatusRetryInProgressSubflow" />
-						<set-variable
-							value="#[output application/java --- true]" doc:name="isRetryJob"
-							doc:id="90dd3cee-8b56-4916-aec5-6ac773a8d09d"
-							variableName="isRetryJob" />
 						<flow-ref doc:name="processRemoveVarsSubflow"
 							doc:id="1f1921d4-58b0-4a1a-969e-f12c12e44f66"
 							name="processRemoveVarsSubflow" />

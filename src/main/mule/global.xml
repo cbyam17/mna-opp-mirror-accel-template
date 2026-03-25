@@ -27,11 +27,13 @@
 	<os:object-store name="Object_Store_ErrorHospital"
 		doc:name="Object store" doc:id="016aca5e-9058-494a-92e3-236df837b841" />
 	<os:object-store name="Object_Store_BatchStatus"
-		doc:name="Object store" doc:id="e752a7dc-43b0-4a9e-ae61-aef57c39453c" />
+		doc:name="Object store" doc:id="e752a7dc-43b0-4a9e-ae61-aef57c39453c" persistent="false"/>
 	<os:object-store name="Object_Store_Watermark"
 		doc:name="Object store" doc:id="5bf27458-72b4-4ffc-8956-b93eee9c54c7" />
 	<os:object-store name="Object_Store_CurrentRunDateTime"
-		doc:name="Object store" doc:id="61676613-7b9d-4101-b40d-e7cdfb03dfec" />
+		doc:name="Object store" doc:id="61676613-7b9d-4101-b40d-e7cdfb03dfec" persistent="false"/>
+	<os:object-store name="Object_Store_FailureBuffer"
+		doc:name="Object store" doc:id="a48f024a-d792-4d18-bce2-ac0501b7f54a" persistent="false"/>
 	<salesforce:sfdc-config
 		name="Salesforce_Config_SRC" doc:name="Salesforce Config"
 		doc:id="ef243f98-46cd-49e0-b857-a469de334471">
@@ -64,10 +66,6 @@
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
-	<anypoint-mq:config name="Anypoint_MQ_Config"
-		doc:name="Anypoint MQ Config"
-		doc:id="dd6badc9-a814-43d8-aa88-772c2cb0247d">
-		<anypoint-mq:connection url="${amq.url}"
-			clientId="${amq.clientId}" clientSecret="${secure::amq.clientSecret}" />
-	</anypoint-mq:config>
+	<global-property doc:name="Global Property" doc:id="1dc1b998-1d4b-4a6f-b6da-be4123802c06" name="mule.env" value="dev" />
+	<global-property doc:name="Global Property" doc:id="aa4e2879-d9bd-4c10-a011-de4781b0ad9b" name="mule.key" value="accelerator12345" />
 </mule>

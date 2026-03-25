@@ -21,26 +21,22 @@ The process can be broken down into 4 phases. The watermark service is only used
     - Upsert Opportunities and OLIs in the target Salesforce instance
     - Delete OLIs in the target Salesforce instance (if required)
     - Writeback target Salesforce instance Opportunity Ids and/or mirroring error details to the source Salesforce instance
-    - Publish failed records to an AnypointMQ queue to insert into the error hospital
-    - Publish successful previously failed records to an AnypointMQ queue to remove from the error hospital
+    - Write failed records to the error hospital
+    - Remove successful previously failed records from the error hospital
 3. Postprocessing
     - Clear batchStatus in a transient Object Store
     - Store watermark lastRunDateTime in a persistent Object Store
-    - Send summary email if failedRecords > 0
-4. Error Hospital Writes
-    - Consume messages from an AnypointMQ queue and store records in a persistent Object Store (error hospital)
-    - Consume messages from an AnypointMQ queue and remove records from a persistent Object Store (error hospital)
+    - Send summary email notification if failedRecords > 0
+    - Send email notification if error hospital write errors are found in a transient Object Store
 
-**Note**: To improve batch job performance and avoid noise from non‑critical errors, error hospital writes are decoupled from the core processing logic using AnypointMQ queues.
+**Note**: To improve batch job performance and avoid noise from non‑critical errors, error hospital write failures are caught and written to a failureBuffer transient Object Store for handling in the batch on complete phase.
 
 ## Prerequisites
 ### MuleSoft Platform
 - CloudHub or CloudHub 2.0
+- Object Store v2 (Persistent and Transient)
 - Java 17
 - Mule runtime 4.11.0 ([includes enhanced batch error handling](https://docs.mulesoft.com/release-notes/mule-runtime/mule-4.11.0-release-notes))
-- AnypointMQ
-    - Queue for inserting records into the error hospital 
-    - Queue for removing records from the error hospital
 
 **Note**: VM queues provide a viable fallback when Anypoint MQ is not an option, though they lack message persistence and will not survive application restarts or crashes.
 
@@ -85,7 +81,6 @@ Accounts must be migrated from the target Salesforce instance to the source Sale
 | File              | Description |
 | :-------------    | :--------------
 | admin.xml         | Admin reprocess implementation |
-| amq.xml           | AnypointMQ implementation |
 | api.xml           | API implementation |
 | batch.xml         | Batch process implementation|
 | email.xml         | Email implementation |
