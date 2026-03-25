@@ -153,9 +153,8 @@ output application/java
 	
 	},
 	content: {
-		transactionId: vars.transactionId,
-		errorType: error.errorType.namespace ++ ":" ++ error.errorType.identifier,
-		errorMessage: error.description
+		transactionId: correlationId,
+		failedRecordCount: sizeOf(vars.flattenedFailures)
 	}
 }]]></ee:set-variable>
 			</ee:variables>
@@ -175,28 +174,18 @@ output application/java
 				expression='#[(Mule::p("smtp.enable") as Boolean default false) == true]'>
 				<try doc:name="Try"
 					doc:id="fe3b008d-9d98-4e1e-a8ea-0dfa22367260">
-					<!-- [STUDIO:"Send"]<email:send doc:name="Send" doc:id="70635e43-6646-40fe-8969-04e9bcfc8c38" 
-						config-ref="Email_SMTP" subject="#[vars.notification.properties.subject&#93;" 
-						toAddresses="#[vars.notification.properties.toAddresses&#93;"> <email:body 
-						contentType="text/html"> <email:content><![CDATA[#[vars.emailBody&#93;&#93;&#93;></email:content> 
-						</email:body> </email:send> [STUDIO] -->
-					<logger level="INFO" doc:name="Logger"
-						doc:id="38802ade-f844-4fb9-88c0-f4237ba61661" />
-					<error-handler>
-						<on-error-continue enableNotifications="true"
-							logException="true" doc:name="On Error Continue"
-							doc:id="5f41127e-44f8-4576-a16d-38f84d022674">
-							<logger level="WARN" doc:name="Logger"
-								doc:id="59969898-c8b0-4f8f-973b-bf1d472da135"
-								message='#["Email send failed"]' />
-						</on-error-continue>
-					</error-handler>
+					<email:send doc:name="Send" doc:id="70635e43-6646-40fe-8969-04e9bcfc8c38" 
+						config-ref="Email_SMTP" subject="#[vars.notification.properties.subject]" 
+						toAddresses="#[vars.notification.properties.toAddresses]"> <email:body 
+						contentType="text/html"> <email:content><![CDATA[#[vars.emailBody]]]></email:content> 
+						</email:body> </email:send>
+					<error-handler ref="sendEmailErrorHandler" />
 				</try>
 			</when>
 			<otherwise>
 				<logger level="WARN" doc:name="Logger"
 					doc:id="fb89d1ef-0474-460c-aa55-f134a5b0b100"
-					message='#["Email disabled"]' />
+					message='#["Send email disabled"]' />
 			</otherwise>
 		</choice>
 	</sub-flow>

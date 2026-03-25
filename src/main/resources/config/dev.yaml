@@ -1,7 +1,6 @@
 amq:
   clientId: "4e9fee5567394e3baaa0daf8c5ccec3c"
-  errHsptlInsertRecordsQueue: "errHsptlInsertRecordsQueue"
-  errHsptlRemoveRecordsQueue: "errHsptlRemoveRecordsQueue"
+  errHsptlWriteFailureQueue: "errHsptlWriteFailurQueue"
   url: "https://mq-us-east-1.anypoint.mulesoft.com/api/v1/organizations/a0341e01-9078-43f6-86f4-72a5cfb1db90/environments/a796e386-3ec6-4ce5-935a-377353244b2c"
 batch:
   aggregatorSize:
@@ -33,10 +32,10 @@ projectName: "mna-oppty-mirror-accel"
 scheduler:
   main:
     cronExpression: "0 0 * * * ?"
-    timezone: "GMT"
+    timezone: "UTC"
   retry:
     cronExpression: "0 0/10 * * * ?"
-    timezone: "GMT"
+    timezone: "UTC"
 smtp:
   enable: "false"
   host: ""
@@ -54,4 +53,4 @@ src:
 tgt:
   authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
 watermark:
-  timezone: "GMT"
+  timezone: "UTC"

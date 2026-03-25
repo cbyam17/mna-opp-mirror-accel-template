@@ -8,6 +8,11 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="storeOsFailureBufferSubflow" doc:id="b9c4db48-d54b-4864-aa6a-11f7a1942390" >
+		<os:store doc:name="Store" doc:id="57e97aed-e4f6-4dff-8e62-39b6a617c08a" key="#[uuid()]" objectStore="Object_Store_FailureBuffer">
+      <os:value><![CDATA[#[output application/java --- write(payload, "application/json")]]]></os:value>
+    </os:store>
+	</sub-flow>
 	<sub-flow name="retrieveOsBatchStatusSubflow"
 		doc:id="2d1ee816-f147-4d23-9907-011782a0b3ed">
 		<os:retrieve doc:name="Retrieve"
@@ -49,7 +54,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="ef907932-8928-49ee-862f-36ce987794aa">
 		<os:retrieve doc:name="Retrieve"
 			doc:id="aa21f478-17f7-43b1-99fc-fc146d10782b"
-			key="currentRunDateTime" objectStore="Object_Store_Watermark">
+			key="currentRunDateTime" objectStore="Object_Store_CurrentRunDateTime">
 			<os:default-value><![CDATA[#[""]]]></os:default-value>
 		</os:retrieve>
 	</sub-flow>

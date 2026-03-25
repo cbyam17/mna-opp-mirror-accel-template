@@ -3,8 +3,7 @@
 // ============================================================================
 
 %dw 2.0
-import generateIdInClause, toArray, firstOrNull, truncate from module::CommonUtils
-import mapToSrc from module::PricebookEntry
+import buildFieldsToNullList, generateIdInClause, toArray, firstOrNull, truncate from module::CommonUtils
 import defaultErrorDescription, firstError, collectErrorField from module::ErrorHospital
 
 // Adjust SOQL query as needed
@@ -73,19 +72,17 @@ fun enrichOppsWithQueryResults(
 
       var oppExistingOlis =
         (existingOlis default [])
-          filter ((item)  -> item.Opportunity.Opp_Id_SRC__c == opp.Id)
+          filter ((item) -> item.Opportunity.Opp_Id_SRC__c == opp.Id)
 
       var oppOlis =
         (olis default [])
           filter ((item) -> item.OpportunityId == opp.Id)
-
-      var oppPbes =
-        (oppOlis default [])
-          map ((oli) -> oli.PricebookEntryId)
-
+      
       var oppOlisToDelete =
         (oppExistingOlis default [])
-          filter ((item) -> !(oppPbes contains mapToSrc(item.PricebookEntryId as String)))
+          filter ((item) ->
+            not (oppOlis.*Id contains item.Oli_Id_SRC__c)
+          )
       ---
       opp ++ {
         existingAcct: oppExistingAcct,
@@ -115,16 +112,23 @@ fun transformUpsertOpps_TGT(opps) =
         opp.CloseDate as Date { format: "yyyy-MM-dd" }
       else
         null
+
+    var transformed =
+      {
+        Id: tgtOppId,
+        Opp_Id_SRC__c: srcOppId,
+        AccountId: acctId,
+        OwnerId: ownerId,
+        Name: truncate(prefixedName, 120),
+        StageName: stageName,
+        CloseDate: closeDate
+      }
+
+    var fieldsToNullList = buildFieldsToNullList(transformed)
     ---
-    {
-      Id: tgtOppId,
-      Opp_Id_SRC__c: srcOppId,
-      AccountId: acctId,
-      OwnerId: ownerId,
-      Name: truncate(prefixedName, 120),
-      StageName: stageName,
-      CloseDate: closeDate
-    }
+    transformed ++ 
+      (fieldsToNull: fieldsToNullList)
+
   })
 
 fun buildErrorMessage(objectType, message) =
@@ -183,12 +187,18 @@ fun transformWritebackOpps_SRC(opps) =
       }
       else
         null
+    
+    var transformed =
+      {
+        Id: srcOppId,
+        Opp_Id_TGT__c: tgtOppId,
+        Mirror_Error_TGT__c: truncate(resolvedError, 255)
+      }
+    
+    var fieldsToNullList = buildFieldsToNullList(transformed)
     ---
-    {
-      Id: srcOppId,
-      Opp_Id_TGT__c: tgtOppId,
-      Mirror_Error_TGT__c: truncate(resolvedError, 255)
-    }
+    transformed ++ 
+      (fieldsToNull: fieldsToNullList)
   })
 
   fun getMatchingOppResponse(responses, index) =

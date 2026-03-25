@@ -34,7 +34,7 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 							name="processMainSubflow" />
 					</when>
 					<otherwise>
-						<logger level="INFO" doc:name="INFO"
+						<logger level="WARN" doc:name="WARN"
 							doc:id="954c1c23-5582-4a89-9f28-fc573e44b3f5"
 							message='#["At least one connection is unsuccessful; cannot proceed"]' />
 						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow"
@@ -60,18 +60,19 @@ http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/
 					timeZone="${scheduler.retry.timezone}" />
 			</scheduling-strategy>
 		</scheduler>
+		<set-variable value="#[output application/java --- true]" doc:name="isRetryJob" doc:id="6528472e-0547-4ef2-a150-444c43566707" variableName="isRetryJob" />
 		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow"
 			doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa"
 			name="retrieveOsBatchStatusRetrySubflow" />
 		<choice doc:name="Choice"
 			doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1">
-			<when expression="#[!isEmpty(payload)]">
+			<when expression="#[isEmpty(payload)]">
 				<flow-ref doc:name="healthCheckSubflow"
 					doc:id="c06d6684-436c-431f-a825-0c542f037051"
 					name="healthCheckSubflow" />
 				<choice doc:name="Choice"
 					doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9">
-					<when expression='#[payload.status == "Success"]'>
+					<when expression='#[payload.status == "UP"]'>
 						<flow-ref doc:name="processRetrySubflow"
 							doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89"
 							name="processRetrySubflow" />
