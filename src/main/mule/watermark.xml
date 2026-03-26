@@ -1,98 +1,70 @@
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-    xmlns:os="http://www.mulesoft.org/schema/mule/os"
-    xmlns="http://www.mulesoft.org/schema/mule/core"
-    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
         http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-
     <sub-flow name="watermarkhealthCheckSubflow" doc:id="db721ebb-ad29-47d7-bff6-1cd383d30a8f">
-        <logger level="INFO" doc:name="Entry" message='#["watermarkhealthCheckSubflow entry"]'/>
-
-        <set-variable value='#["ping"]'
-            doc:name="requestType"
-            variableName="requestType" />
-
-        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow"/>
-
-        <logger level="INFO" doc:name="Exit" message='#["watermarkhealthCheckSubflow exit"]'/>
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: watermarkhealthCheckSubflow" />
+        <set-variable value='#["ping"]' doc:name="requestType" variableName="requestType" />
+        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: watermarkhealthCheckSubflow" />
     </sub-flow>
-    
     <sub-flow name="retrieveWatermarkSubflow" doc:id="56848ba5-3587-4221-8537-b7b6e06387ad">
-        <logger level="INFO" doc:name="Entry" message='#["retrieveWatermarkSubflow entry"]'/>
-
-        <set-variable value='#["getWatermark"]'
-            doc:name="requestType"
-            variableName="requestType" />
-
-        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow"/>
-
-        <logger level="INFO" doc:name="Exit" message='#["retrieveWatermarkSubflow exit"]'/>
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: retrieveWatermarkSubflow" />
+        <set-variable value='#["getWatermark"]' doc:name="requestType" variableName="requestType" />
+        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: retrieveWatermarkSubflow" />
     </sub-flow>
-
     <sub-flow name="updateWatermarkSubflow" doc:id="b573c738-12a6-42a6-a57d-18f26af4186f">
-        <logger level="INFO" doc:name="Entry" message='#["updateWatermarkSubflow entry"]'/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: updateWatermarkSubflow" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
 output application/json
 ---
 {
     lastRunDateTime: vars.watermarklastRunDateTimeUpdated
-}]]></ee:set-payload>
+}]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <set-variable value='#["updateWatermark"]'
-            doc:name="requestType"
-            variableName="requestType" />
-
-        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow"/>
-
-        <logger level="INFO" doc:name="Exit" message='#["updateWatermarkSubflow exit"]'/>
+        <set-variable value='#["updateWatermark"]' doc:name="requestType" variableName="requestType" />
+        <flow-ref name="watermarkProxySubflow" doc:name="watermarkProxySubflow" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: updateWatermarkSubflow" />
     </sub-flow>
-
     <sub-flow name="watermarkProxySubflow" doc:id="1ee2b324-507e-4166-b1c6-745d30bb942e">
-        <logger level="INFO" doc:name="Entry" message='#["watermarkProxySubflow entry"]'/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: watermarkProxySubflow" />
         <choice doc:name="Choice">
             <when expression='#[vars.requestType == "ping"]'>
-                <set-variable value="#['osHealthCheck-' ++ (now() as String)]"
-                    doc:name="key" variableName="key"/>
-
-                <set-variable value="#[{ ts: now(), probe: 'ping' }]"
-                    doc:name="value" variableName="value"/>
-
+                <set-variable value="#['osHealthCheck-' ++ (now() as String)]" doc:name="key" variableName="key" />
+                <set-variable value="#[{ ts: now(), probe: 'ping' }]" doc:name="value" variableName="value" />
                 <os:store key="#[vars.key]" objectStore="Object_Store_Watermark" doc:name="Store">
-                    <os:value><![CDATA[#[vars.value]]]></os:value>
+                    <os:value>
+                        <![CDATA[#[vars.value]]]>
+                    </os:value>
                 </os:store>
-
-                <os:contains key="#[vars.key]" objectStore="Object_Store_Watermark" target="exists"/>
-                <os:retrieve key="#[vars.key]" objectStore="Object_Store_Watermark" target="retrieved"/>
-                <os:remove key="#[vars.key]" objectStore="Object_Store_Watermark"/>
+                <os:contains key="#[vars.key]" objectStore="Object_Store_Watermark" target="exists" />
+                <os:retrieve key="#[vars.key]" objectStore="Object_Store_Watermark" target="retrieved" />
+                <os:remove key="#[vars.key]" objectStore="Object_Store_Watermark" />
             </when>
-
             <when expression='#[vars.requestType == "getWatermark"]'>
                 <os:retrieve key="lastRunDateTime" objectStore="Object_Store_Watermark">
-                    <os:default-value><![CDATA[#[""]]]></os:default-value>
+                    <os:default-value>
+                        <![CDATA[#[""]]]>
+                    </os:default-value>
                 </os:retrieve>
             </when>
-
             <when expression='#[vars.requestType == "updateWatermark"]'>
                 <os:store key="lastRunDateTime" objectStore="Object_Store_Watermark">
-                    <os:value><![CDATA[#[payload.lastRunDateTime]]]></os:value>
+                    <os:value>
+                        <![CDATA[#[payload.lastRunDateTime]]]>
+                    </os:value>
                 </os:store>
             </when>
-
             <otherwise>
-                <logger level="WARN" message='#["no path specified for watermark API"]'/>
+                <logger level="WARN" message='#["no path specified for watermark API"]' />
             </otherwise>
         </choice>
-
-        <logger level="INFO" doc:name="Exit" message='#["watermarkProxySubflow exit"]'/>
+        <logger level="INFO" doc:name="EXIT" message="EXIT: watermarkProxySubflow" />
     </sub-flow>
-
 </mule>

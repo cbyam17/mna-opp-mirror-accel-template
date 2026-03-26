@@ -1,101 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracing="http://www.mulesoft.org/schema/mule/tracing"
-	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:tracing="http://www.mulesoft.org/schema/mule/tracing" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/tracing/current/mule-tracing.xsd">
-	<flow name="schedulerMainFlow"
-		doc:id="88f0347d-0c87-4165-ac1c-3ae661fdcb4d">
-		<scheduler doc:name="Main Scheduler"
-			doc:id="2b7e4435-4f23-48ce-95c3-f28cb8e7a31a">
+	<flow name="schedulerMainFlow" doc:id="88f0347d-0c87-4165-ac1c-3ae661fdcb4d">
+		<scheduler doc:name="Main Scheduler" doc:id="2b7e4435-4f23-48ce-95c3-f28cb8e7a31a">
 			<scheduling-strategy>
-				<cron expression="${scheduler.main.cronExpression}"
-					timeZone="${scheduler.main.timezone}" />
+				<cron expression="${scheduler.main.cronExpression}" timeZone="${scheduler.main.timezone}" />
 			</scheduling-strategy>
 		</scheduler>
-		<flow-ref doc:name="retrieveOsBatchStatusSubflow"
-			doc:id="6a709ed5-1140-4faf-bb41-5f556ed13a67"
-			name="retrieveOsBatchStatusSubflow" />
-		<choice doc:name="Choice"
-			doc:id="56f92143-0d90-4042-8d90-7859b78ab716">
-			<when expression="#[isEmpty(payload)]">
-				<flow-ref doc:name="healthCheckSubflow"
-					doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57"
-					name="healthCheckSubflow" />
-				<choice doc:name="Choice"
-					doc:id="ab612b9c-98f1-4a55-97c4-cf3b90946384">
-					<when expression='#[payload.status == "UP"]'>
-						<flow-ref doc:name="processMainSubflow"
-							doc:id="9f9d7288-cb6e-4e91-b9ac-bfbfb6feb925"
-							name="processMainSubflow" />
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: schedulerMainFlow" />
+		<flow-ref doc:name="retrieveOsBatchStatusSubflow" doc:id="6a709ed5-1140-4faf-bb41-5f556ed13a67" name="retrieveOsBatchStatusSubflow" target="batchStaus" />
+		<choice doc:name="Choice" doc:id="56f92143-0d90-4042-8d90-7859b78ab716">
+			<when expression="#[isEmpty(vars.batchStaus)]">
+				<flow-ref doc:name="healthCheckSubflow" doc:id="32ec2cbd-493f-4676-bc44-38888c3fac57" name="healthCheckSubflow" target="healthCheckResponse" targetValue="#[output application/json --- payload]" />
+				<choice doc:name="Choice" doc:id="ab612b9c-98f1-4a55-97c4-cf3b90946384">
+					<when expression='#[vars.healthCheckResponse.status == "UP"]'>
+						<flow-ref doc:name="schedulerRemoveVarsSubflow" doc:id="8855c44f-0add-415c-b761-69686c2d144e" name="schedulerRemoveVarsSubflow" />
+						<flow-ref doc:name="processMainSubflow" doc:id="9f9d7288-cb6e-4e91-b9ac-bfbfb6feb925" name="processMainSubflow" />
 					</when>
 					<otherwise>
-						<logger level="WARN" doc:name="WARN"
-							doc:id="954c1c23-5582-4a89-9f28-fc573e44b3f5"
-							message='#["At least one connection is unsuccessful; cannot proceed"]' />
-						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow"
-							doc:id="7d2dcca2-f91a-4a28-a108-c7032a1a59a8"
-							name="sendHealthCheckErrorEmailSubflow" />
+						<logger level="WARN" doc:name="WARN" doc:id="954c1c23-5582-4a89-9f28-fc573e44b3f5" message='At least one connection is unsuccessful; cannot proceed' />
+						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow" doc:id="7d2dcca2-f91a-4a28-a108-c7032a1a59a8" name="sendHealthCheckErrorEmailSubflow" />
 					</otherwise>
 				</choice>
 			</when>
 			<otherwise>
-				<logger level="WARN" doc:name="WARN"
-					doc:id="a425c1f7-ee23-44c1-8b65-1151643f547a"
-					message='#["Previous batch run is in progress; skipping this run"]' />
+				<logger level="WARN" doc:name="WARN" doc:id="a425c1f7-ee23-44c1-8b65-1151643f547a" message='Previous batch run is in progress; skipping this run' />
 			</otherwise>
 		</choice>
+		<logger level="INFO" doc:name="EXIT" message="EXIT: schedulerMainFlow" />
 		<error-handler ref="batchPreprocessingErrorHandler" />
 	</flow>
-	<flow name="schedulerRetryFlow"
-		doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" initialState="started">
-		<scheduler doc:name="Retry Scheduler"
-			doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0">
+	<flow name="schedulerRetryFlow" doc:id="97b0ebbe-a7ac-40cf-9bfb-d776957f401f" initialState="started">
+		<scheduler doc:name="Retry Scheduler" doc:id="6291690f-2cf7-47a8-ba96-6e51cc0bafd0">
 			<scheduling-strategy>
-				<cron expression="${scheduler.retry.cronExpression}"
-					timeZone="${scheduler.retry.timezone}" />
+				<cron expression="${scheduler.retry.cronExpression}" timeZone="${scheduler.retry.timezone}" />
 			</scheduling-strategy>
 		</scheduler>
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: schedulerRetryFlow" />
 		<set-variable value="#[output application/java --- true]" doc:name="isRetryJob" doc:id="6528472e-0547-4ef2-a150-444c43566707" variableName="isRetryJob" />
-		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow"
-			doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa"
-			name="retrieveOsBatchStatusRetrySubflow" />
-		<choice doc:name="Choice"
-			doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1">
-			<when expression="#[isEmpty(payload)]">
-				<flow-ref doc:name="healthCheckSubflow"
-					doc:id="c06d6684-436c-431f-a825-0c542f037051"
-					name="healthCheckSubflow" />
-				<choice doc:name="Choice"
-					doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9">
-					<when expression='#[payload.status == "UP"]'>
-						<flow-ref doc:name="processRetrySubflow"
-							doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89"
-							name="processRetrySubflow" />
+		<flow-ref doc:name="retrieveOsBatchStatusRetrySubflow" doc:id="d31b5847-1e3f-45c9-8944-49bb9908c1aa" name="retrieveOsBatchStatusRetrySubflow" target="batchRetryStatus" />
+		<choice doc:name="Choice" doc:id="02667efc-857f-4e04-a4a3-4f3ab5d2a3d1">
+			<when expression="#[isEmpty(vars.batchRetryStatus)]">
+				<flow-ref doc:name="healthCheckSubflow" doc:id="c06d6684-436c-431f-a825-0c542f037051" name="healthCheckSubflow" target="healthCheckResponse" />
+				<choice doc:name="Choice" doc:id="13212496-22d9-4aad-89a5-b2e7f60d98f9">
+					<when expression='#[vars.healthCheckResponse.status == "UP"]'>
+						<flow-ref doc:name="schedulerRemoveVarsSubflow" doc:id="91c649a4-c969-4c2a-a4ac-86a117e64cfa" name="schedulerRemoveVarsSubflow" />
+						<flow-ref doc:name="processRetrySubflow" doc:id="bac57a6f-f91f-4bd3-8db1-835efdc21d89" name="processRetrySubflow" />
 					</when>
 					<otherwise>
-						<logger level="INFO" doc:name="INFO"
-							doc:id="89c3a6c0-8255-4e0f-94fe-f573b7124a44"
-							message='#["At least one connection is unsuccessful; cannot proceed"]' />
-						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow"
-							doc:id="0c41023e-627e-4918-bd6a-0dff09a621fc"
-							name="sendHealthCheckErrorEmailSubflow" />
+						<logger level="WARN" doc:name="WARN" doc:id="89c3a6c0-8255-4e0f-94fe-f573b7124a44" message="At least one connection is unsuccessful; cannot proceed" />
+						<flow-ref doc:name="sendHealthCheckErrorEmailSubflow" doc:id="0c41023e-627e-4918-bd6a-0dff09a621fc" name="sendHealthCheckErrorEmailSubflow" />
 					</otherwise>
 				</choice>
 			</when>
 			<otherwise>
-				<logger level="WARN" doc:name="WARN"
-					doc:id="560fcb44-94c7-48c5-b724-86bd971b2b26"
-					message='#["Previous retry batch run is in progress; skipping this run"]' />
+				<logger level="WARN" doc:name="WARN" doc:id="560fcb44-94c7-48c5-b724-86bd971b2b26" message="Previous retry batch run is in progress; skipping this run" />
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="INFO"
-			doc:id="204ffd49-c53d-4d90-995b-07691e9492f2"
-			message='#["schedulerRetryFlow exit"]' />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: schedulerRetryFlow" />
 		<error-handler ref="batchPreprocessingErrorHandler" />
+
 	</flow>
+	<sub-flow name="schedulerRemoveVarsSubflow" doc:id="97de0bce-13ec-447c-8ef3-1d31317fdcec" >
+		<logger level="INFO" doc:name="ENTRY" doc:id="8b76d8cf-3753-4051-86b6-d41cf5570134" message="ENTRY: schedulerRemoveVarsSubflow" />
+		<remove-variable doc:name="batchStaus" doc:id="6ec25962-65bb-43d3-815d-118723c08e20" variableName="batchStaus" />
+		<remove-variable doc:name="batchRetryStatus" doc:id="79449f8c-b6e5-4c63-ba41-424ab2899fd8" variableName="batchRetryStatus" />
+		<remove-variable doc:name="healthCheckResponse" doc:id="39adf029-02f8-4d62-9294-184101b958f7" variableName="healthCheckResponse" />
+		<remove-variable doc:name="errHsptlConnResp" doc:id="c4c00d63-5dce-4b54-a725-9684302bdf9a" variableName="errHsptlConnResp" />
+		<remove-variable doc:name="salesforceConnResp_SRC" doc:id="caa72328-87da-465f-8fdf-896f177e88c6" variableName="salesforceConnResp_SRC" />
+		<remove-variable doc:name="salesforceConnResp_TGT" doc:id="d1d1a151-0336-4ffd-8209-1b1fc8f46977" variableName="salesforceConnResp_TGT" />
+		<remove-variable doc:name="watermarkConnResp" doc:id="cf0d06a9-6095-45da-9fa3-501d0b9bbffc" variableName="watermarkConnResp" />
+		<logger level="INFO" doc:name="EXIT" doc:id="11290e47-38fe-4cc4-8c62-5cfa3fb2455d" message="EXIT: schedulerRemoveVarsSubflow" />
+	</sub-flow>
 </mule>

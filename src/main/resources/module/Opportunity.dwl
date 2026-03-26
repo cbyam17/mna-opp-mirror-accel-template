@@ -81,7 +81,7 @@ fun enrichOppsWithQueryResults(
       var oppOlisToDelete =
         (oppExistingOlis default [])
           filter ((item) ->
-            not (oppOlis.*Id contains item.Oli_Id_SRC__c)
+            not (oppOlis.Id contains item.Oli_Id_SRC__c)
           )
       ---
       opp ++ {
@@ -145,8 +145,8 @@ fun transformWritebackOpps_SRC(opps) =
     var deleteOliResponses = opp.deleteOliResponses default []
 
     var isUpsertOppSuccess= (upsertOppResponse.success default false)
-    var isUpsertOlisSuccess = !(((toArray(upsertOliResponses)).*success default []) contains false)
-    var isDeleteOlisSuccess = !(((toArray(deleteOliResponses)).*success default []) contains false)
+    var isUpsertOlisSuccess = !(((toArray(upsertOliResponses)).success default []) contains false)
+    var isDeleteOlisSuccess = !(((toArray(deleteOliResponses)).success default []) contains false)
 
     var isSystemError = (opp.isSystemError default false)
 
@@ -163,7 +163,7 @@ fun transformWritebackOpps_SRC(opps) =
       if (isSystemError)
         buildErrorMessage(
           "System Error",
-          (defDesc as String))
+          (defDesc as String)) // add error message?
       else if (!isUpsertOppSuccess) do {
         var e = firstError(upsertOppResponse)
         ---

@@ -1,29 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="apiFlow" doc:id="319e8275-6c79-4387-b821-aaa412258a7d">
-		<http:listener doc:name="Listener"
-			doc:id="7abc3587-b1f0-4b5c-96b8-b176ed55e113"
-			config-ref="HTTP_Listener_config" path="/api/*" />
-		<apikit:router doc:name="APIkit Router"
-			doc:id="3b7ef05f-0ebf-49ed-b9de-4b56522edc7a" config-ref="Router" />
-	<error-handler doc:name="Error-handler" ref="apiErrorHandler"></error-handler></flow>
+		<http:listener doc:name="Listener" doc:id="7abc3587-b1f0-4b5c-96b8-b176ed55e113" config-ref="HTTP_Listener_config" path="/api/*" />
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: apiFlow" />
+		<apikit:router doc:name="APIkit Router" doc:id="3b7ef05f-0ebf-49ed-b9de-4b56522edc7a" config-ref="Router" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: apiFlow" />
+		<error-handler doc:name="Error-handler" ref="apiErrorHandler"></error-handler>
+	</flow>
 	<flow name="get:\health-check:Router">
-		<flow-ref doc:name="healthCheckSubflow"
-			doc:id="f36e514e-8c09-4a07-a5d3-6b7ff45d948c"
-			name="healthCheckSubflow" />
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: get:\health-check:Router" />
+		<flow-ref doc:name="healthCheckSubflow" doc:id="f36e514e-8c09-4a07-a5d3-6b7ff45d948c" name="healthCheckSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: get:\health-check:Router" />
 	</flow>
 	<flow name="post:\admin\reprocess:application\json:Router">
-		<flow-ref doc:name="adminReprocessSubflow"
-			doc:id="10d916e4-65cb-4024-8e2b-4bac574e7170"
-			name="adminReprocessSubflow" />
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: post:\admin\reprocess:application\json:Router" />
+		<flow-ref doc:name="adminReprocessSubflow" doc:id="10d916e4-65cb-4024-8e2b-4bac574e7170" name="adminReprocessSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: post:\admin\reprocess:application\json:Router" />
 	</flow>
 	<flow name="put:\admin\watermark:application\json:Router">
-		<flow-ref doc:name="Flow Reference" doc:id="b9a1f6fd-2fde-4635-9583-836fbfafff20" name="adminUpdateWatermarkSubflow" />
-    </flow>
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: put:\admin\watermark:application\json:Router" />
+		<flow-ref doc:name="adminUpdateWatermarkSubflow" doc:id="b9a1f6fd-2fde-4635-9583-836fbfafff20" name="adminUpdateWatermarkSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: put:\admin\watermark:application\json:Router" />
+	</flow>
 </mule>

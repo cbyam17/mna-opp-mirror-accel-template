@@ -1,134 +1,96 @@
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
-    xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
-    xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-    xmlns="http://www.mulesoft.org/schema/mule/core"
-    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
         http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
         http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
         http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-
     <sub-flow name="getAcctsByIdSubflow_TGT" doc:id="a3ff0644-c8a8-49c4-959f-219c39f94948">
-        <logger level="INFO" message='#["getAcctsByIdSubflow_TGT entry"]'/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: getAcctsByIdSubflow_TGT" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
-                <ee:set-payload><![CDATA[
+                <ee:set-payload>
+                    <![CDATA[
 import buildQueryAcctsById_TGT from module::Account
 output application/java
 ---
 buildQueryAcctsById_TGT(payload.Account.Acct_Id_TGT__c)
-                ]]></ee:set-payload>
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_TGT"/>
-
-        <logger level="INFO" message='#["getAcctsByIdSubflow_TGT exit"]'/>
+        <flow-ref name="querySubflow_TGT" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: getAcctsByIdSubflow_TGT" />
     </sub-flow>
-
     <sub-flow name="getOppsByExternalIdSubflow_TGT" doc:id="12b26bd0-ddb4-46f6-bc09-88bb83ecee78">
-        <logger level="INFO" message='#["getOppsByExternalIdSubflow_TGT entry"]'/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: getOppsByExternalIdSubflow_TGT" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
-                <ee:set-payload><![CDATA[
+                <ee:set-payload>
+                    <![CDATA[
 import buildQueryOppsByExternalId_TGT from module::Opportunity
 output application/java
 ---
 buildQueryOppsByExternalId_TGT(payload.Id)
-                ]]></ee:set-payload>
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_TGT"/>
-
-        <logger level="INFO" message='#["getOppsByExternalIdSubflow_TGT exit"]'/>
+        <flow-ref name="querySubflow_TGT" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: getOppsByExternalIdSubflow_TGT" />
     </sub-flow>
-
     <sub-flow name="getOlisByOppIdSubflow_TGT" doc:id="39cfe4fc-ac74-451b-8aaa-3b4a6857f489">
-        <logger level="INFO" message='#["getOlisByOppIdSubflow_TGT entry"]'/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: getOlisByOppIdSubflow_TGT" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
-                <ee:set-payload><![CDATA[
+                <ee:set-payload>
+                    <![CDATA[
 import buildQueryOlisByOppExternalId_TGT from module::OpportunityLineItem
 output application/java
 ---
 buildQueryOlisByOppExternalId_TGT(payload.Id)
-                ]]></ee:set-payload>
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_TGT"/>
-
-        <logger level="INFO" message='#["getOlisByOppIdSubflow_TGT exit"]'/>
+        <flow-ref name="querySubflow_TGT" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: getOlisByOppIdSubflow_TGT" />
     </sub-flow>
-
     <sub-flow name="getServerTimestamp_TGT" doc:id="9aa70493-45a3-43b2-bea8-109051a7b5ef">
-        <logger level="INFO" message='#["getServerTimestamp_TGT entry"]'/>
-
-        <salesforce:get-server-timestamp config-ref="Salesforce_Config_TGT"/>
-
-        <logger level="INFO" message='#["getServerTimestamp_TGT exit"]'/>
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: getServerTimestamp_TGT" />
+        <salesforce:get-server-timestamp config-ref="Salesforce_Config_TGT" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: getServerTimestamp_TGT" />
     </sub-flow>
-
     <sub-flow name="querySubflow_TGT" doc:id="9f75a4fa-d18a-41bb-9bb1-f7c271cac71d">
-        <logger level="INFO" message='#["querySubflow_TGT entry"]'/>
-
-        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG"/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: querySubflow_TGT" />
+        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG" />
         <salesforce:query-xml-stream config-ref="Salesforce_Config_TGT">
-            <salesforce:salesforce-query><![CDATA[
-#[output application/java --- payload.query]
-            ]]></salesforce:salesforce-query>
-            <salesforce:parameters><![CDATA[
-#[output application/java --- payload.queryParams]
-            ]]></salesforce:parameters>
+            <salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]
+            ]]>
+            </salesforce:salesforce-query>
+            <salesforce:parameters><![CDATA[#[output application/java --- payload.queryParams]]]>
+            </salesforce:parameters>
         </salesforce:query-xml-stream>
-
-        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG"/>
-
-        <logger level="INFO" message='#["querySubflow_TGT exit"]'/>
+        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: querySubflow_TGT" />
     </sub-flow>
-
     <sub-flow name="deleteObjectSubflow_TGT" doc:id="e82de062-295b-4c77-9f4c-ca429f0316d2">
-        <logger level="INFO" message='#["deleteObjectSubflow_TGT entry"]'/>
-
-        <logger level="DEBUG" message="#[output application/json --- vars.recordsToDelete]" doc:name="DEBUG"/>
-
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: deleteObjectSubflow_TGT" />
+        <logger level="DEBUG" message="#[output application/json --- vars.recordsToDelete]" doc:name="DEBUG" />
         <salesforce:delete config-ref="Salesforce_Config_TGT">
-            <salesforce:ids><![CDATA[
-#[output application/java --- vars.records]
-            ]]></salesforce:ids>
+            <salesforce:ids><![CDATA[#[output application/java --- vars.records]]]>
+            </salesforce:ids>
         </salesforce:delete>
-
-        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG"/>
-
-        <logger level="INFO" message='#["deleteObjectSubflow_TGT exit"]'/>
+        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: deleteObjectSubflow_TGT" />
     </sub-flow>
-
     <sub-flow name="upsertObjectSubflow_TGT" doc:id="bc4cb947-cf9e-4566-b972-7f3e67e77778">
-        <logger level="INFO" message='#["upsertObjectSubflow_TGT entry"]'/>
-
-        <logger level="DEBUG" message="#[output application/json --- vars.recordsToCreate]" doc:name="DEBUG"/>
-
-        <salesforce:upsert 
-            config-ref="Salesforce_Config_TGT"
-            objectType="#[vars.objectType]"
-            externalIdFieldName="Id">
-            <salesforce:records><![CDATA[
-#[output application/java --- vars.records]
-            ]]></salesforce:records>
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: upsertObjectSubflow_TGT" />
+        <logger level="DEBUG" message="#[output application/json --- vars.recordsToCreate]" doc:name="DEBUG" />
+        <salesforce:upsert config-ref="Salesforce_Config_TGT" objectType="#[vars.objectType]" externalIdFieldName="Id">
+            <salesforce:records><![CDATA[#[output application/java --- vars.records]]]>
+            </salesforce:records>
         </salesforce:upsert>
-
-        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG"/>
-
-        <logger level="INFO" message='#["upsertObjectSubflow_TGT exit"]'/>
+        <logger level="DEBUG" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <logger level="INFO" doc:name="EXIT" message="EXIT: upsertObjectSubflow_TGT" />
     </sub-flow>
-
 </mule>

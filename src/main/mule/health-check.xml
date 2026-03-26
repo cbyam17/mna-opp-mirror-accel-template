@@ -1,114 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<sub-flow name="healthCheckSubflow"
-		doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
-		<flow-ref doc:name="validateSalesforceConnectionSubflow_TGT"
-			doc:id="fd426013-379a-465b-855e-2fafdf45270e"
-			name="validateSalesforceConnectionSubflow_TGT"
-			target="salesforceConnResp_TGT" />
-		<flow-ref doc:name="validateSalesforceConnectionSubflow_SRC"
-			doc:id="ab037f45-e63d-4572-a941-325618760981"
-			name="validateSalesforceConnectionSubflow_SRC"
-			target="salesforceConnResp_SRC" />
-		<flow-ref doc:name="validateErrHstplConnectionSubflow"
-			doc:id="5ad85ba7-01fd-4b5b-ae99-4aff25d3a947"
-			name="validateErrHstplConnectionSubflow" target="errHsptlConnResp" />
-		<flow-ref doc:name="validateWatermarkConnectionSubflow"
-			doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380"
-			name="validateWatermarkConnectionSubflow" target="watermarkConnResp" />
-		<ee:transform doc:name="Transform Message"
-			doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
+
+    <sub-flow name="healthCheckSubflow" doc:id="1f5a1883-9369-472b-86d7-c4d5438f9e5c">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: healthCheckSubflow" />
+
+        <flow-ref doc:name="validateSalesforceConnectionSubflow_TGT" doc:id="fd426013-379a-465b-855e-2fafdf45270e" name="validateSalesforceConnectionSubflow_TGT" target="salesforceConnResp_TGT" />
+
+        <flow-ref doc:name="validateSalesforceConnectionSubflow_SRC" doc:id="ab037f45-e63d-4572-a941-325618760981" name="validateSalesforceConnectionSubflow_SRC" target="salesforceConnResp_SRC" />
+
+        <flow-ref doc:name="validateErrHstplConnectionSubflow" doc:id="5ad85ba7-01fd-4b5b-ae99-4aff25d3a947" name="validateErrHstplConnectionSubflow" target="errHsptlConnResp" />
+
+        <flow-ref doc:name="validateWatermarkConnectionSubflow" doc:id="9fa6db1e-9702-4cf3-9ec0-1afc7e1b7380" name="validateWatermarkConnectionSubflow" target="watermarkConnResp" />
+
+        <ee:transform doc:name="Transform Message" doc:id="2a5303d0-d2ad-478b-89c9-1044cc60eca9">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
 output application/json
 import buildHealthCheckResponse from module::CommonUtils
 ---
-buildHealthCheckResponse(vars.salesforceConnResp_TGT ++ vars.salesforceConnResp_SRC ++ vars.errHsptlConnResp ++ vars.watermarkConnResp)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</sub-flow>
-	<sub-flow name="validateSalesforceConnectionSubflow_TGT"
-		doc:id="27ad2b57-2b54-43be-a6cd-5993459c9cf2">
-		<set-variable value='#["_TGT"]' doc:name="systemName"
-			doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a"
-			variableName="systemName" />
-		<try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
-			<flow-ref doc:name="getServerTimestamp_TGT"
-				doc:id="7f1cdd4b-1eec-4e1c-b74b-2cea6505d80e"
-				name="getServerTimestamp_TGT" />
-			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
-				doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88"
-				name="buildHealthCheckEndpointResponseSubflow" />
-			<error-handler ref="healthCheckErrorHandler" />
-		</try>
-	</sub-flow>
-	<sub-flow name="validateSalesforceConnectionSubflow_SRC"
-		doc:id="176b43de-c6ad-4fb4-a397-7740f6dab5cb">
-		<set-variable value='#["_SRC"]' doc:name="systemName"
-			doc:id="b4aab529-1343-4104-8bf1-f336e792a380"
-			variableName="systemName" />
-		<try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
-			<flow-ref doc:name="getServerTimestamp_SRC"
-				doc:id="0a0d5091-ba7d-4251-9476-c9d3df7a4424"
-				name="getServerTimestamp_SRC" />
-			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
-				doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe"
-				name="buildHealthCheckEndpointResponseSubflow" />
-			<error-handler ref="healthCheckErrorHandler" />
-		</try>
-	</sub-flow>
-	<sub-flow name="validateErrHstplConnectionSubflow"
-		doc:id="de0c1782-0140-44fd-8e54-9a8c6876fdc9">
-		<set-variable value='#["Error Hospital Service"]'
-			doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68"
-			variableName="systemName" />
-		<try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
-			<flow-ref doc:name="errHsptlhealthCheckSubflow"
-				doc:id="31ef9c6b-707b-49e9-87da-594184771a4e"
-				name="errHsptlhealthCheckSubflow" />
-			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
-				doc:id="aa278e33-77f1-4f8c-8022-2cbbfec85b0f"
-				name="buildHealthCheckEndpointResponseSubflow" />
-			<error-handler ref="healthCheckErrorHandler" />
-		</try>
-	</sub-flow>
-	<sub-flow name="validateWatermarkConnectionSubflow"
-		doc:id="f8b32a43-b9da-4038-9e08-18b1214438a9">
-		<set-variable value='#["Watermark Service"]'
-			doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0"
-			variableName="systemName" />
-		<try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a">
-			<flow-ref doc:name="watermarkhealthCheckSubflow"
-				doc:id="01b33600-8f44-49d6-9fe6-3cfde96aaa81"
-				name="watermarkhealthCheckSubflow" />
-			<flow-ref doc:name="buildHealthCheckEndpointResponseSubflow"
-				doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0"
-				name="buildHealthCheckEndpointResponseSubflow" />
-			<error-handler ref="healthCheckErrorHandler" />
-		</try>
-	</sub-flow>
-	<sub-flow name="buildHealthCheckEndpointResponseSubflow"
-		doc:id="adeb093c-1900-41be-9be0-554f8def1ed4">
-		<ee:transform doc:name="Transform Message"
-			doc:id="ed021c0f-e826-4811-9863-9751c2e2581a">
-			<ee:message>
-				<ee:set-payload><![CDATA[output application/json
+buildHealthCheckResponse(
+    vars.salesforceConnResp_TGT 
+    ++ vars.salesforceConnResp_SRC 
+    ++ vars.errHsptlConnResp 
+    ++ vars.watermarkConnResp
+)]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: healthCheckSubflow" />
+    </sub-flow>
+
+    <sub-flow name="validateSalesforceConnectionSubflow_TGT" doc:id="27ad2b57-2b54-43be-a6cd-5993459c9cf2">
+
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: validateSalesforceConnectionSubflow_TGT" />
+
+        <set-variable value='#["_TGT"]' doc:name="systemName" doc:id="95dbb5b7-e722-4697-a0b0-105595ab3f5a" variableName="systemName" />
+
+        <try doc:name="Try" doc:id="17761ecc-dfaf-44b3-aa60-727ff0d0f727">
+            <flow-ref doc:name="getServerTimestamp_TGT" doc:id="7f1cdd4b-1eec-4e1c-b74b-2cea6505d80e" name="getServerTimestamp_TGT" />
+
+            <flow-ref doc:name="buildHealthCheckEndpointResponseSubflow" doc:id="91203e65-a3f3-4f82-9860-0306d7f44f88" name="buildHealthCheckEndpointResponseSubflow" />
+
+            <error-handler ref="healthCheckErrorHandler" />
+        </try>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: validateSalesforceConnectionSubflow_TGT" />
+    </sub-flow>
+
+    <sub-flow name="validateSalesforceConnectionSubflow_SRC" doc:id="176b43de-c6ad-4fb4-a397-7740f6dab5cb">
+
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: validateSalesforceConnectionSubflow_SRC" />
+
+        <set-variable value='#["_SRC"]' doc:name="systemName" doc:id="b4aab529-1343-4104-8bf1-f336e792a380" variableName="systemName" />
+
+        <try doc:name="Try" doc:id="a83d8fd1-9aaf-4d96-94c5-320aa353f4e1">
+            <flow-ref doc:name="getServerTimestamp_SRC" doc:id="0a0d5091-ba7d-4251-9476-c9d3df7a4424" name="getServerTimestamp_SRC" />
+
+            <flow-ref doc:name="buildHealthCheckEndpointResponseSubflow" doc:id="e4ba6e9c-e2d3-45cb-945f-bb2f7d89e5fe" name="buildHealthCheckEndpointResponseSubflow" />
+
+            <error-handler ref="healthCheckErrorHandler" />
+        </try>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: validateSalesforceConnectionSubflow_SRC" />
+    </sub-flow>
+
+    <sub-flow name="validateErrHstplConnectionSubflow" doc:id="de0c1782-0140-44fd-8e54-9a8c6876fdc9">
+
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: validateErrHstplConnectionSubflow" />
+
+        <set-variable value='#["Error Hospital Service"]' doc:name="systemName" doc:id="c1309cfa-9c4b-4cf7-ab79-f483aaa88b68" variableName="systemName" />
+
+        <try doc:name="Try" doc:id="6af3b335-738d-4764-961a-77c21db2e3ca">
+            <flow-ref doc:name="errHsptlhealthCheckSubflow" doc:id="31ef9c6b-707b-49e9-87da-594184771a4e" name="errHsptlhealthCheckSubflow" />
+
+            <flow-ref doc:name="buildHealthCheckEndpointResponseSubflow" doc:id="aa278e33-77f1-4f8c-8022-2cbbfec85b0f" name="buildHealthCheckEndpointResponseSubflow" />
+
+            <error-handler ref="healthCheckErrorHandler" />
+        </try>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: validateErrHstplConnectionSubflow" />
+    </sub-flow>
+
+    <sub-flow name="validateWatermarkConnectionSubflow" doc:id="f8b32a43-b9da-4038-9e08-18b1214438a9">
+
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: validateWatermarkConnectionSubflow" />
+
+        <set-variable value='#["Watermark Service"]' doc:name="systemName" doc:id="8605eb95-a618-4974-8068-1367ad0ab0b0" variableName="systemName" />
+
+        <try doc:name="Try" doc:id="88242eb3-f0da-4d03-b557-e90f8022677a">
+            <flow-ref doc:name="watermarkhealthCheckSubflow" doc:id="01b33600-8f44-49d6-9fe6-3cfde96aaa81" name="watermarkhealthCheckSubflow" />
+
+            <flow-ref doc:name="buildHealthCheckEndpointResponseSubflow" doc:id="dce9f5ba-a446-49ad-9013-e86efd1c25e0" name="buildHealthCheckEndpointResponseSubflow" />
+
+            <error-handler ref="healthCheckErrorHandler" />
+        </try>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: validateWatermarkConnectionSubflow" />
+    </sub-flow>
+
+    <sub-flow name="buildHealthCheckEndpointResponseSubflow" doc:id="adeb093c-1900-41be-9be0-554f8def1ed4">
+
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: buildHealthCheckEndpointResponseSubflow" />
+
+        <ee:transform doc:name="Transform Message" doc:id="ed021c0f-e826-4811-9863-9751c2e2581a">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[output application/json
 import buildHealthCheckEndpointResponse from module::CommonUtils
 ---
-buildHealthCheckEndpointResponse(vars.systemName, null)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</sub-flow>
+buildHealthCheckEndpointResponse(vars.systemName, null)]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: buildHealthCheckEndpointResponseSubflow" />
+
+    </sub-flow>
+
 </mule>
