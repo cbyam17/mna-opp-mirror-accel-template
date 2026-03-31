@@ -1,19 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<mule
-	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
-	<sub-flow name="adminUpdateWatermarkSubflow" doc:id="a4bce3ed-dccf-429e-b605-a59696cf570c" >
-		<set-variable value="#[output application/json --- payload.lastRunDateTime &gt;&gt; Mule::p(&quot;watermark.timezone&quot;)]" doc:name="watermarklastRunDateTimeUpdated" doc:id="68b79549-513c-4f7d-8834-f53979b90b2e" variableName="watermarklastRunDateTimeUpdated" />
-		<flow-ref doc:name="updateWatermarkSubflow" doc:id="83449fac-9a02-4cb0-9c5b-d04501ac6dbb" name="updateWatermarkSubflow" />
-		<flow-ref doc:name="retrieveWatermarkSubflow" doc:id="635e379c-b6cc-41b1-bf38-c91cb4536767" name="retrieveWatermarkSubflow" target="watermarklastRunDateTime" targetValue="#[output application/json --- payload]" />
-		<ee:transform doc:name="Transform Message" doc:id="9a9f64fe-fb7c-4060-9896-057e1663a578">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+    <sub-flow doc:id="a4bce3ed-dccf-429e-b605-a59696cf570c" name="adminUpdateWatermarkSubflow">
+        <logger doc:name="ENTRY" level="INFO" message="ENTRY: adminUpdateWatermarkSubflow"></logger>
+        <set-variable doc:id="68b79549-513c-4f7d-8834-f53979b90b2e" doc:name="watermarklastRunDateTimeUpdated" value="#[output application/json --- payload.lastRunDateTime &gt;&gt; Mule::p(&quot;watermark.timezone&quot;)]" variableName="watermarklastRunDateTimeUpdated"></set-variable>
+        <flow-ref doc:id="83449fac-9a02-4cb0-9c5b-d04501ac6dbb" doc:name="updateWatermarkSubflow" name="updateWatermarkSubflow"></flow-ref>
+        <flow-ref doc:id="635e379c-b6cc-41b1-bf38-c91cb4536767" doc:name="retrieveWatermarkSubflow" name="retrieveWatermarkSubflow" target="watermarklastRunDateTime" targetValue="#[output application/json --- payload]"></flow-ref>
+        <ee:transform doc:id="9a9f64fe-fb7c-4060-9896-057e1663a578" doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -24,76 +15,66 @@ output application/json
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-	</sub-flow>
-	<sub-flow name="adminReprocessSubflow"
-		doc:id="68073e7a-a716-42b9-a6a2-186f69245812">
-		<logger level="INFO" doc:name="INFO"
-			doc:id="92b4dd64-47c9-4b46-99ca-5a241ae857ba"
-			message='#["adminReprocessSubflow entry"]' />
-		<flow-ref doc:name="validateAdminRequestSubflow"
-			doc:id="3fac6f97-f6cd-48df-a90f-9004e6e6f1ce"
-			name="validateAdminRequestSubflow" />
-		<flow-ref doc:name="healthCheckSubflow"
-			doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169"
-			name="healthCheckSubflow" target="healthCheckResponse"
-			targetValue="#[output applicatin/json --- payload]" />
-		<choice doc:name="Choice"
-			doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7">
-			<when expression='#[vars.healthCheckResponse.status == "UP"]'>
-				<remove-variable doc:name="healthCheckResponse"
-					doc:id="e9df0aab-4379-41dd-83a5-b934ec46d4f4"
-					variableName="healthCheckResponse" />
-				<async doc:name="Async"
-					doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5">
-					<try doc:name="Try"
-						doc:id="8893a0d1-f8f1-4627-bf31-79fad4964e06">
-						<flow-ref doc:name="processAdminSubflow"
-							doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b"
-							name="processAdminSubflow" />
-						<error-handler ref="batchPreprocessingErrorHandler" />
-					</try>
-				</async>
-				<ee:transform doc:name="Transform Message"
-					doc:id="16ca052e-40c7-4a0e-b6ed-0a7412715f96">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+        <logger doc:name="EXIT" level="INFO" message="EXIT: adminUpdateWatermarkSubflow"></logger>
+    </sub-flow>
+	<sub-flow doc:id="68073e7a-a716-42b9-a6a2-186f69245812" name="adminReprocessSubflow">
+        <logger doc:id="92b4dd64-47c9-4b46-99ca-5a241ae857ba" doc:name="ENTRY" level="INFO" message="ENTRY: adminReprocessSubflow"></logger>
+        <set-variable value="#[output application/java --- true]" doc:name="isRetryJob" doc:id="6c058b9d-7244-4766-b855-a2e6ad5d1222" variableName="isRetryJob" />
+		<flow-ref doc:id="3fac6f97-f6cd-48df-a90f-9004e6e6f1ce" doc:name="validateAdminReprocessRequestSubflow" name="validateAdminReprocessRequestSubflow"></flow-ref>
+        <flow-ref doc:id="5290c9ca-3fa6-40bb-8acd-c3fc804fd169" doc:name="healthCheckSubflow" name="healthCheckSubflow" target="healthCheckResponse" targetValue="#[output application/json --- payload]"></flow-ref>
+		<choice doc:id="e321c6e6-31c4-437b-bf38-1cf4a62996e7" doc:name="Choice">
+            <when expression="#[vars.healthCheckResponse.status == &quot;UP&quot;]">
+                <flow-ref doc:name="adminRemoveVarsSubflow" doc:id="8dcd081e-4b58-4c2a-9ce4-a90ab1f52b3d" name="adminRemoveVarsSubflow" />
+				<async doc:id="a7eb33fd-b56b-4fd4-966e-6ddfd9fe8cb5" doc:name="Async">
+                    <try doc:id="8893a0d1-f8f1-4627-bf31-79fad4964e06" doc:name="Try">
+                        <flow-ref doc:id="6a85d1ac-2155-481f-ade1-1cc34d02ae1b" doc:name="processAdminSubflow" name="processAdminSubflow"></flow-ref>
+                        <error-handler ref="batchPreprocessingErrorHandler"></error-handler>
+                    </try>
+                </async>
+                <ee:transform doc:id="16ca052e-40c7-4a0e-b6ed-0a7412715f96" doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
+	transactionId: correlationId,
 	status: "Success",
 	message: "Request will be processed shortly; please refer to transaction logs",
-	transactionId: correlationId
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="INFO"
-					doc:id="5851832c-6ba3-4493-aa9f-67fd183aabba"
-					message='#["At least one connection is unsuccessful; cannot proceed"]' />
-				<ee:transform doc:name="Transform Message"
-					doc:id="bbf176a5-569f-4c82-9a19-1b8a26172076">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <logger doc:id="5851832c-6ba3-4493-aa9f-67fd183aabba" doc:name="INFO" level="WARN" message="At least one connection is unsuccessful; cannot proceed"></logger>
+                <ee:transform doc:id="bbf176a5-569f-4c82-9a19-1b8a26172076" doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
+	transactionId: correlationId,
 	status: "Failure",
 	message: "At least one connection is unsuccessful; cannot proceed",
-	transactionId: correlationId,
 	connectionStatus: vars.healthCheckResponse 
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</otherwise>
-		</choice>
-	</sub-flow>
-	<sub-flow name="validateAdminRequestSubflow"
-		doc:id="08f9728b-f525-4c6a-8830-dee3b5f9942c">
-		<validation:is-not-empty-collection
-			doc:name="Is not empty collection"
-			doc:id="0270c6a1-6416-437a-8675-efac45f212e2"
-			values="#[payload.externalIds]"
-			message='#["Provide externalIds to process"]' />
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
+        </choice>
+        <logger doc:name="EXIT" level="INFO" message="EXIT: adminReprocessSubflow"></logger>
+    </sub-flow>
+	<sub-flow doc:id="08f9728b-f525-4c6a-8830-dee3b5f9942c" name="validateAdminReprocessRequestSubflow">
+        <logger doc:name="ENTRY" level="INFO" message="ENTRY: validateAdminReprocessRequestSubflow"></logger>
+        <validation:is-not-empty-collection doc:id="0270c6a1-6416-437a-8675-efac45f212e2" doc:name="Is not empty collection" message="Provide external Ids to process" values="#[payload.externalIds]"></validation:is-not-empty-collection>
+        <logger doc:name="EXIT" level="INFO" message="EXIT: validateAdminReprocessRequestSubflow"></logger>
+    </sub-flow>
+	<sub-flow name="adminRemoveVarsSubflow" doc:id="3a5a2b80-841e-4dd5-ba87-039fca14bfe4" >
+		<logger level="INFO" doc:name="ENTRY" doc:id="56d6bfa6-31e9-467e-b166-e472b76dc31b" message="ENTRY: adminRemoveVarsSubflow" />
+		<remove-variable doc:id="e9df0aab-4379-41dd-83a5-b934ec46d4f4" doc:name="healthCheckResponse" variableName="healthCheckResponse"></remove-variable>
+		<remove-variable doc:name="errHsptlConnResp" doc:id="2b61a152-76e7-42aa-929f-98b259732b44" variableName="errHsptlConnResp" />
+		<remove-variable doc:name="salesforceConnResp_SRC" doc:id="7a9e4041-274e-4d83-bae6-dbe3fd566429" variableName="salesforceConnResp_SRC" />
+		<remove-variable doc:name="salesforceConnResp_TGT" doc:id="2007dbd8-e783-49af-84d8-afe938944b54" variableName="salesforceConnResp_TGT" />
+		<remove-variable doc:name="watermarkConnResp" doc:id="d4038a4a-ac19-470f-8832-7fdd96c4d160" variableName="watermarkConnResp" />
+		<logger level="INFO" doc:name="EXIT" doc:id="cfb792ca-adc4-4dff-8853-46675844e84c" message="EXIT: adminRemoveVarsSubflow" />
 	</sub-flow>
 </mule>

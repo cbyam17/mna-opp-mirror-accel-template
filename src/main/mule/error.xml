@@ -1,199 +1,131 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
-	<error-handler name="apiErrorHandler">
-
-		<!-- 400 Bad Request -->
-		<on-error-propagate type="APIKIT:BAD_REQUEST">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+ <error-handler name="apiErrorHandler">
+  <!-- 400 Bad Request -->
+  <on-error-propagate type="APIKIT:BAD_REQUEST">
+   <set-variable doc:id="b6a1f075-60fc-4f8d-aed0-3749202ebca5" doc:name="httpStatus" value="400" variableName="httpStatus"></set-variable>
+			<flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <!-- 404 Not Found -->
+  <on-error-propagate type="APIKIT:NOT_FOUND">
+   <set-variable doc:id="eb68cbf9-c1ae-4980-b167-ab304016ac3b" doc:name="httpStatus" value="404" variableName="httpStatus"></set-variable>
+      <flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <!-- 405 Method Not Allowed -->
+  <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+   <set-variable doc:id="e73a6743-93b5-452d-a361-46054fc84002" doc:name="httpStatus" value="405" variableName="httpStatus"></set-variable>
+      <flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <!-- 406 Not Acceptable -->
+  <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+   <set-variable doc:id="acbe962a-4d3d-4406-b36f-c2e116478ba2" doc:name="httpStatus" value="406" variableName="httpStatus"></set-variable>
+      <flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <!-- 415 Unsupported Media Type -->
+  <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+   <set-variable doc:id="667e2644-c6f4-4a2b-aaeb-34286deb7772" doc:name="httpStatus" value="415" variableName="httpStatus"></set-variable>
+      <flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <!-- 501 Not Implemented -->
+  <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+   <set-variable doc:id="2ede2159-a1ae-4631-be92-f4fe1c741ab5" doc:name="httpStatus" value="501" variableName="httpStatus"></set-variable>
+      <flow-ref doc:name="buildApiErrorResponseSubflow" name="buildApiErrorResponseSubflow"/>
+  </on-error-propagate>
+  <on-error-propagate doc:id="97278de0-a374-4606-88a2-8813a0df5d65" doc:name="On Error Propagate" enableNotifications="true" logException="true" type="ANY">
+   <set-variable doc:id="e5896d1e-0bbc-4b57-acbc-a5e051a5f3da" doc:name="httpStatus" value="500" variableName="httpStatus"></set-variable>
+   <ee:transform doc:id="c844c4f2-3d90-46af-9924-56c651ba85e3" doc:name="Transform Message">
+    <ee:message>
+     <ee:set-payload><![CDATA[%dw 2.0
 output application/json
+var errCode = (error.errorType.namespace default "MULE") ++ ":" ++
+	(error.errorType.identifier default "UNKNOWN")
+var errMessage = error.description default "Unknwon error"
 ---
 {
 	transactionId: correlationId,
-	message: "Bad request"
+	code: errCode,
+	message: errMessage
 }]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-		<!-- 404 Not Found -->
-		<on-error-propagate type="APIKIT:NOT_FOUND">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	transactionId: correlationId,
-	message: "Resource not found"
-}]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-		<!-- 405 Method Not Allowed -->
-		<on-error-propagate
-			type="APIKIT:METHOD_NOT_ALLOWED">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	transactionId: correlationId,
-	message: "Method not allowed"
-}]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-		<!-- 406 Not Acceptable -->
-		<on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	transactionId: correlationId,
-	message: "Not acceptable"
-}]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[406]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-		<!-- 415 Unsupported Media Type -->
-		<on-error-propagate
-			type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	transactionId: correlationId,
-	message: "Unsupported media type"
-}]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-		<!-- 501 Not Implemented -->
-		<on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
-			<ee:transform>
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	transactionId: correlationId,
-	message: "Not implemented"
-}]]></ee:set-payload>
-				</ee:message>
-				<ee:variables>
-					<ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
-				</ee:variables>
-			</ee:transform>
-		</on-error-propagate>
-
-	</error-handler>
-	<error-handler name="healthCheckErrorHandler"
-		doc:id="baa5e588-002a-49ee-8a98-3edd103ecfa8">
-		<on-error-continue enableNotifications="true"
-			logException="true" doc:name="On Error Continue"
-			doc:id="790d98dd-1436-495a-bf1c-fb459bf01a6d" type="ANY">
-			<logger level="ERROR" doc:name="Logger" doc:id="7904728e-b689-4796-b293-88f7b7cd64c2" message='#["Health check failure"]' />
-			<ee:transform doc:name="Transform Message"
-				doc:id="2b81a4b5-aaa9-466f-bfb7-37bfa12ea2c5">
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
+    </ee:message>
+    <ee:variables>
+     <ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
+    </ee:variables>
+   </ee:transform>
+  </on-error-propagate>
+ </error-handler>
+ <error-handler doc:id="baa5e588-002a-49ee-8a98-3edd103ecfa8" name="healthCheckErrorHandler">
+  <on-error-continue doc:id="790d98dd-1436-495a-bf1c-fb459bf01a6d" doc:name="On Error Continue" enableNotifications="true" logException="true" type="ANY">
+   <logger doc:id="7904728e-b689-4796-b293-88f7b7cd64c2" doc:name="Logger" level="ERROR" message="#[&quot;Health check failure&quot;]"></logger>
+   <ee:transform doc:id="2b81a4b5-aaa9-466f-bfb7-37bfa12ea2c5" doc:name="Transform Message">
+    <ee:message>
+     <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 import buildHealthCheckEndpointResponse from module::CommonUtils
 ---
 buildHealthCheckEndpointResponse(vars.systemName, error)]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-		</on-error-continue>
-	</error-handler>
-	<error-handler name="batchPreprocessingErrorHandler"
-		doc:id="9a9101f9-555c-4bd0-be38-d3d815193de8">
-		<on-error-propagate enableNotifications="true"
-			logException="true" doc:name="On Error Propagate"
-			doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" type="ANY">
-			<logger level="ERROR" doc:name="Logger" doc:id="2e0ba7f9-39c0-4310-ad95-54d2ce350e8b" message='#["Batch pre-processing failure"]' />
-			<choice doc:name="Choice" doc:id="0981fe35-66a9-4bc6-8946-f06fee7bbad2" >
-				<when expression="#[vars.isRetryJob default false]">
-					<flow-ref doc:name="clearOsBatchStatusRetrySubflow" doc:id="3c1d6bc6-6e4a-48d9-94ec-df4c0edbdda4" name="clearOsBatchStatusRetrySubflow" />
-				</when>
-				<otherwise >
-					<flow-ref doc:name="clearOsBatchStatusSubflow" doc:id="cda78ee1-7f93-45b0-944f-dc00826fb878" name="clearOsBatchStatusSubflow" />
-				</otherwise>
-			</choice>
-			<flow-ref doc:name="sendSchedulerFailureEmailSubflow"
-				doc:id="6957d07f-2389-46c1-a3de-244a39e43418"
-				name="sendbatchPreprocessingErrorEmailSubflow" />
-		</on-error-propagate>
-	</error-handler>
-	<error-handler name="batchPostprocessingErrorHandler"
-		doc:id="46800d61-dc69-4403-9dcf-3091170d3edd">
-		<on-error-propagate enableNotifications="true"
-			logException="true" doc:name="On Error Propagate"
-			doc:id="a58a1d69-b960-4ae7-8aad-9bae8537395d" type="ANY">
-			<logger level="ERROR" doc:name="Logger" doc:id="02add75b-f653-433d-8109-2771c3cd29e4" message='#["Batch post-processing failure"]' />
-			<choice doc:name="Choice" doc:id="6d31f490-0a90-4b5f-b268-01356a544807">
-				<when expression="#[vars.isRetryJob default false]">
-					<flow-ref doc:name="clearOsBatchStatusRetrySubflow" doc:id="4ead6a05-5a67-4ecf-8677-9591003a6aa3" name="clearOsBatchStatusRetrySubflow" />
-				</when>
-				<otherwise>
-					<flow-ref doc:name="clearOsBatchStatusSubflow" doc:id="ed9c9098-5a8f-47bc-b176-1ff14ad058b5" name="clearOsBatchStatusSubflow" />
-				</otherwise>
-			</choice>
-			<flow-ref
-				doc:name="sendbatchPostprocessingErrorEmailSubflow"
-				doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955"
-				name="sendBatchPostprocessingErrorEmailSubflow" />
-		</on-error-propagate>
-	</error-handler>
-	<error-handler name="errorHospitalWriteErrorHandler" doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc">
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5db42ec7-6d74-4b61-809d-ba1378de6bc0">
-			<logger level="ERROR" doc:name="Logger" doc:id="53225cfe-e748-46e9-b21f-f80da3c6a1c1" message='#["Error hospital write failure"]' />
-			<choice doc:name="Choice" doc:id="3e74a92f-2281-40c7-8185-ae1fc2921799" >
-				<when expression="#[vars.isRetryJob default false]">
-					<flow-ref doc:name="osStoreFailureBufferSubflow" doc:id="c6266479-3731-4730-90f3-057de09d39bc" name="storeOsFailureBufferSubflow" />
-				</when>
-				<otherwise >
-					<logger level="WARN" doc:name="Logger" doc:id="45ba74f4-d787-46ac-8140-5ee593e7ca87" message='#["No need to capture error hospital write failure for retry job"]' />
-				</otherwise>
-			</choice>
-		</on-error-continue>
-	</error-handler>
-	<error-handler name="sendEmailErrorHandler" doc:id="0004a733-dd69-443f-91d3-01f989efdc80" >
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="840bedad-64f3-490c-8f7e-77b2225caa70" >
-			<logger level="ERROR" doc:name="Logger" doc:id="b967ca57-c9bd-4b4b-964d-d9283f4b6bbd" message='#["Send email failure"]' />
-		</on-error-continue>
-	</error-handler>
+    </ee:message>
+   </ee:transform>
+  </on-error-continue>
+ </error-handler>
+ <error-handler doc:id="9a9101f9-555c-4bd0-be38-d3d815193de8" name="batchPreprocessingErrorHandler">
+  <on-error-propagate doc:id="895a9366-272d-4a8c-98ca-4a83a5a3aaf8" doc:name="On Error Propagate" enableNotifications="true" logException="true" type="ANY">
+   <logger doc:id="2e0ba7f9-39c0-4310-ad95-54d2ce350e8b" doc:name="Logger" level="ERROR" message="#[&quot;Batch pre-processing failure&quot;]"></logger>
+   <choice doc:id="0981fe35-66a9-4bc6-8946-f06fee7bbad2" doc:name="Choice">
+    <when expression="#[vars.isRetryJob default false]">
+     <flow-ref doc:id="3c1d6bc6-6e4a-48d9-94ec-df4c0edbdda4" doc:name="clearOsBatchStatusRetrySubflow" name="clearOsBatchStatusRetrySubflow"></flow-ref>
+    </when>
+    <otherwise>
+     <flow-ref doc:id="cda78ee1-7f93-45b0-944f-dc00826fb878" doc:name="clearOsBatchStatusSubflow" name="clearOsBatchStatusSubflow"></flow-ref>
+    </otherwise>
+   </choice>
+   <flow-ref doc:id="6957d07f-2389-46c1-a3de-244a39e43418" doc:name="sendSchedulerFailureEmailSubflow" name="sendbatchPreprocessingErrorEmailSubflow"></flow-ref>
+  </on-error-propagate>
+ </error-handler>
+ <error-handler doc:id="46800d61-dc69-4403-9dcf-3091170d3edd" name="batchPostprocessingErrorHandler">
+  <on-error-propagate doc:id="a58a1d69-b960-4ae7-8aad-9bae8537395d" doc:name="On Error Propagate" enableNotifications="true" logException="true" type="ANY">
+   <logger doc:id="02add75b-f653-433d-8109-2771c3cd29e4" doc:name="Logger" level="ERROR" message="#[&quot;Batch post-processing failure&quot;]"></logger>
+   <choice doc:id="6d31f490-0a90-4b5f-b268-01356a544807" doc:name="Choice">
+    <when expression="#[vars.isRetryJob default false]">
+     <flow-ref doc:id="4ead6a05-5a67-4ecf-8677-9591003a6aa3" doc:name="clearOsBatchStatusRetrySubflow" name="clearOsBatchStatusRetrySubflow"></flow-ref>
+    </when>
+    <otherwise>
+     <flow-ref doc:id="ed9c9098-5a8f-47bc-b176-1ff14ad058b5" doc:name="clearOsBatchStatusSubflow" name="clearOsBatchStatusSubflow"></flow-ref>
+    </otherwise>
+   </choice>
+   <flow-ref doc:id="2a9d9528-e4d6-46e1-bad3-2f0347370955" doc:name="sendbatchPostprocessingErrorEmailSubflow" name="sendBatchPostprocessingErrorEmailSubflow"></flow-ref>
+  </on-error-propagate>
+ </error-handler>
+ <error-handler doc:id="e9903598-d52e-45ff-aed5-9048b760d6bc" name="errorHospitalWriteErrorHandler">
+  <on-error-continue doc:id="5db42ec7-6d74-4b61-809d-ba1378de6bc0" doc:name="On Error Continue" enableNotifications="true" logException="true">
+   <logger doc:id="53225cfe-e748-46e9-b21f-f80da3c6a1c1" doc:name="Logger" level="ERROR" message="#[&quot;Error hospital write failure&quot;]"></logger>
+   <choice doc:id="3e74a92f-2281-40c7-8185-ae1fc2921799" doc:name="Choice">
+    <when expression="#[vars.isRetryJob default false]">
+     <flow-ref doc:id="c6266479-3731-4730-90f3-057de09d39bc" doc:name="osStoreFailureBufferSubflow" name="storeOsFailureBufferSubflow"></flow-ref>
+    </when>
+    <otherwise>
+     <logger doc:id="45ba74f4-d787-46ac-8140-5ee593e7ca87" doc:name="Logger" level="WARN" message="#[&quot;No need to capture error hospital write failure for retry job&quot;]"></logger>
+    </otherwise>
+   </choice>
+  </on-error-continue>
+ </error-handler>
+ <error-handler doc:id="0004a733-dd69-443f-91d3-01f989efdc80" name="sendEmailErrorHandler">
+  <on-error-continue doc:id="840bedad-64f3-490c-8f7e-77b2225caa70" doc:name="On Error Continue" enableNotifications="true" logException="true">
+   <logger doc:id="b967ca57-c9bd-4b4b-964d-d9283f4b6bbd" doc:name="Logger" level="ERROR" message="#[&quot;Send email failure&quot;]"></logger>
+  </on-error-continue>
+ </error-handler>
+ <sub-flow name="buildApiErrorResponseSubflow">
+		<ee:transform doc:name="Transform" doc:id="rqgoez" >
+			<ee:message >
+				<ee:set-payload doc:name="Set payload" doc:id="zjhldo" ><![CDATA[%dw 2.0
+    output application/json
+    var errCode = (error.errorType.namespace default "MULE") ++ ":" ++
+        (error.errorType.identifier default "UNKNOWN")
+    var errMessage = error.description default "Unknown error"
+    ---
+    {
+        transactionId: correlationId,
+        status: errCode,
+        message: errMessage
+    }]]></ee:set-payload>
+			</ee:message>
+		</ee:transform></sub-flow>
 </mule>

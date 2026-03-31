@@ -1,243 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule
-	xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
-	<sub-flow name="processMainSubflow"
-		doc:id="337dd04f-8ec8-4ed2-a0d1-9cfec9914600">
-		<flow-ref doc:name="retrieveWatermarkSubflow"
-			doc:id="df0d3692-7583-4fa0-a253-f40f4d8aae97"
-			name="retrieveWatermarkSubflow" target="watermarklastRunDateTime"
-			targetValue="#[output application/json --- payload]" />
-		<set-variable
-			value='#[output application/json --- now() &gt;&gt; Mule::p("watermark.timezone")]'
-			doc:name="watermarkCurrentRunDateTime"
-			doc:id="b60fca7e-8722-4643-8f59-f6d85e9a4d2e"
-			variableName="watermarkCurrentRunDateTime" />
-		<choice doc:name="Choice"
-			doc:id="06a2f188-2bd1-43a3-a0d3-3ea2f92f6c0a">
-			<when expression="#[!isEmpty(vars.watermarklastRunDateTime)]">
-				<flow-ref doc:name="getOppsByDateSubflow_SRC"
-					doc:id="d6fbca34-9721-4218-ba1f-4cdaa0bb98b5"
-					name="getOppsByDateSubflow_SRC" target="opps"
-					targetValue="#[output application/java --- payload.payload..records default []]" />
-				<set-payload
-					value="#[output application/java --- vars.opps default []]"
-					doc:name="Set Payload"
-					doc:id="91e8887f-a08a-4db4-afc3-8dddb0c6dcfd" />
-				<choice doc:name="Choice"
-					doc:id="cfa74498-1cc4-41df-bb02-290ede913da1">
-					<when expression="#[!isEmpty(payload)]">
-						<flow-ref doc:name="storeOsCurrentRunDateTimeSubflow"
-							doc:id="2a397e46-3cf3-4d8b-a95c-0e6e090655c5"
-							name="storeOsCurrentRunDateTimeSubflow" />
-						<flow-ref doc:name="storeOsBatchStatusInProgressSubflow"
-							doc:id="fc5a4309-093a-4a67-8c76-745390809ce2"
-							name="storeOsBatchStatusInProgressSubflow" />
-						<flow-ref doc:name="processRemoveVarsSubflow"
-							doc:id="a6917636-27d6-4624-8b02-a15bc3b4de8d"
-							name="processRemoveVarsSubflow" />
-						<flow-ref doc:name="preprocessBatchOppSubflow"
-							doc:id="69af48d1-2685-49a9-aeb7-0c95c5897e6a"
-							name="preprocessBatchOppSubflow" />
-						<flow-ref doc:name="batchOppFlow"
-							doc:id="e8c39442-8d44-47cc-a456-3f025ac07d0f" name="batchOppFlow" />
-					</when>
-					<otherwise>
-						<logger level="WARN" doc:name="WARN"
-							doc:id="674a11c6-796b-40c8-879e-d1eabf1d5168"
-							message='#["No Opportunity records available to process"]' />
-					</otherwise>
-				</choice>
-			</when>
-			<otherwise>
-				<logger level="WARN" doc:name="WARN"
-					doc:id="34879b03-4a23-4833-93f2-00d9cfd83b81"
-					message='#["The watermark value watermarklastRunDateTime is not available; cannot proceed"]' />
-			</otherwise>
-		</choice>
-	</sub-flow>
-	<sub-flow name="processRetrySubflow"
-		doc:id="0756293e-ab2d-432c-b26e-8e7a22eea82a">
-		<flow-ref doc:name="getRecordsFromErrHsptlSubflow"
-			doc:id="7d8061d5-8063-4fc9-bc77-449f20b46e23"
-			name="getRecordsFromErrHsptlSubflow" target="errHsptlRecords" />
-		<choice doc:name="Choice"
-			doc:id="8827d4cd-13bc-4a81-a084-5ef12ec243a9">
-			<when expression="#[!isEmpty(vars.errHsptlRecords)]">
-				<flow-ref doc:name="getOppsByIdSubflow_SRC"
-					doc:id="704a6f89-934e-448a-a31b-67e575b12cbd"
-					name="getOppsByIdSubflow_SRC" target="opps"
-					targetValue="#[output application/java --- payload.payload..records default []]" />
-				<choice doc:name="Choice"
-					doc:id="04f47323-6cfc-483e-bf7a-cf1d0c7c8353">
-					<when
-						expression="#[sizeOf(vars.errHsptlRecords.recordId default []) &gt; sizeOf(vars.opps default [])]">
-						<ee:transform doc:name="Transform Message"
-							doc:id="e08f5ce1-bb33-4597-a459-2ae6ca51ee83">
-							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
+
+    <sub-flow name="processMainSubflow" doc:id="337dd04f-8ec8-4ed2-a0d1-9cfec9914600">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: processMainSubflow" />
+
+        <flow-ref doc:name="retrieveWatermarkSubflow" doc:id="df0d3692-7583-4fa0-a253-f40f4d8aae97" name="retrieveWatermarkSubflow" target="watermarklastRunDateTime" targetValue="#[output application/json --- payload]" />
+        <set-variable value='#[output application/json --- now() >> Mule::p("watermark.timezone")]' doc:name="watermarkCurrentRunDateTime" doc:id="b60fca7e-8722-4643-8f59-f6d85e9a4d2e" variableName="watermarkCurrentRunDateTime" />
+        <choice doc:name="Choice" doc:id="06a2f188-2bd1-43a3-a0d3-3ea2f92f6c0a">
+            <when expression="#[!isEmpty(vars.watermarklastRunDateTime)]">
+                <flow-ref doc:name="getOppsByDateSubflow_SRC" doc:id="d6fbca34-9721-4218-ba1f-4cdaa0bb98b5" name="getOppsByDateSubflow_SRC" target="opps" targetValue="#[output application/java --- payload.payload..records default []]" />
+                <choice doc:name="Choice" doc:id="cfa74498-1cc4-41df-bb02-290ede913da1">
+                    <when expression="#[!isEmpty(vars.opps)]">
+                        <flow-ref doc:name="storeOsCurrentRunDateTimeSubflow" doc:id="2a397e46-3cf3-4d8b-a95c-0e6e090655c5" name="storeOsCurrentRunDateTimeSubflow" />
+                        <flow-ref doc:name="storeOsBatchStatusInProgressSubflow" doc:id="fc5a4309-093a-4a67-8c76-745390809ce2" name="storeOsBatchStatusInProgressSubflow" />
+                        <set-payload value="#[output application/java --- vars.opps default []]" doc:name="Set Payload" doc:id="91e8887f-a08a-4db4-afc3-8dddb0c6dcfd" />
+						<flow-ref doc:name="processRemoveVarsSubflow" doc:id="a6917636-27d6-4624-8b02-a15bc3b4de8d" name="processRemoveVarsSubflow" />
+						<flow-ref doc:name="preprocessBatchOppSubflow" doc:id="69af48d1-2685-49a9-aeb7-0c95c5897e6a" name="preprocessBatchOppSubflow" />
+                        <flow-ref doc:name="batchOppFlow" doc:id="e8c39442-8d44-47cc-a456-3f025ac07d0f" name="batchOppFlow" />
+                    </when>
+                    <otherwise>
+                        <logger level="WARN" doc:name="WARN" doc:id="674a11c6-796b-40c8-879e-d1eabf1d5168" message='No Opportunity records available to process' />
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <logger level="WARN" doc:name="WARN" doc:id="34879b03-4a23-4833-93f2-00d9cfd83b81" message='The watermark value watermarklastRunDateTime is not available; cannot proceed' />
+            </otherwise>
+        </choice>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: processMainSubflow" />
+    </sub-flow>
+
+    <sub-flow name="processRetrySubflow" doc:id="0756293e-ab2d-432c-b26e-8e7a22eea82a">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: processRetrySubflow" />
+
+        <flow-ref doc:name="getRecordsFromErrHsptlSubflow" doc:id="7d8061d5-8063-4fc9-bc77-449f20b46e23" name="getRecordsFromErrHsptlSubflow" target="errHsptlRecords" />
+        <choice doc:name="Choice" doc:id="8827d4cd-13bc-4a81-a084-5ef12ec243a9">
+            <when expression="#[!isEmpty(vars.errHsptlRecords)]">
+                <flow-ref doc:name="getOppsByIdSubflow_SRC" doc:id="704a6f89-934e-448a-a31b-67e575b12cbd" name="getOppsByIdSubflow_SRC" target="opps" targetValue="#[output application/java --- payload.payload..records default []]" />
+                <choice doc:name="Choice" doc:id="04f47323-6cfc-483e-bf7a-cf1d0c7c8353">
+                    <when expression="#[sizeOf(vars.errHsptlRecords.recordId default []) > sizeOf(vars.opps default [])]">
+                        <ee:transform doc:name="Transform Message" doc:id="e08f5ce1-bb33-4597-a459-2ae6ca51ee83">
+                            <ee:message>
+                                <ee:set-payload>
+                                    <![CDATA[%dw 2.0
 output application/java
-var recordIdsToDelete = ((vars.errHsptlRecords.recordId default [])
-		-- (vars.opps.Id default [])) 
---- 
-buildDeleteRecordsFromErrHsptlRequest(recordIdsToDelete)]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-						<flow-ref doc:name="removeRecordsFromErrHsptlSubflow"
-							doc:id="c0f7acde-96a3-44d2-8db0-336da39bf5a2"
-							name="removeRecordsFromErrHsptlSubflow" />
-					</when>
-				</choice>
-				<set-payload
-					value="#[output application/java --- vars.opps default []]"
-					doc:name="Set Payload"
-					doc:id="fddb925c-10f7-4e72-a754-7a429d0e0e9b" />
-				<choice doc:name="Choice"
-					doc:id="cff370bb-c73d-4c83-a482-f54f43c16fb0">
-					<when expression="#[!isEmpty(payload)]">
-						<flow-ref
-							doc:name="storeOsBatchStatusRetryInProgressSubflow"
-							doc:id="30413803-a497-4e3f-97f1-5984f7a5bd95"
-							name="storeOsBatchStatusRetryInProgressSubflow" />
-						<flow-ref doc:name="processRemoveVarsSubflow"
-							doc:id="1f1921d4-58b0-4a1a-969e-f12c12e44f66"
-							name="processRemoveVarsSubflow" />
-						<flow-ref doc:name="preprocessBatchOppSubflow"
-							doc:id="18391d7d-251f-4592-b6e3-79985d04c980"
-							name="preprocessBatchOppSubflow" />
-						<flow-ref doc:name="batchOppFlow"
-							doc:id="5c90ac83-c6af-4849-abfc-c936697a4eb7" name="batchOppFlow" />
-					</when>
-					<otherwise>
-						<logger level="WARN" doc:name="WARN"
-							doc:id="58740bb2-1f1e-4f87-aa3f-a6b7119b3c0b"
-							message='#["No opportunity records available to process"]' />
-					</otherwise>
-				</choice>
-			</when>
-			<otherwise>
-				<logger level="WARN" doc:name="WARN"
-					doc:id="d627c2d6-d594-4b76-810e-29ef03e5bbe8"
-					message='#["No retryable opportunity records available to process"]' />
-			</otherwise>
-		</choice>
-	</sub-flow>
-	<sub-flow name="processAdminSubflow"
-		doc:id="6d15714e-94ff-4176-ad17-ac44b3a5a229">
-		<flow-ref doc:name="getOppsByIdSubflow_SRC"
-			doc:id="d4349c76-7c49-4ab1-9bb2-31654ff560da"
-			name="getOppsByIdSubflow_SRC" target="opps"
-			targetValue="#[output application/java --- payload.payload..records default []]" />
-		<set-payload
-			value="#[output application/java --- vars.opps default []]"
-			doc:name="Set Payload" doc:id="1306e93d-f45a-4755-babd-e71845430927" />
-		<choice doc:name="Choice"
-			doc:id="91e8e98c-4b85-47fd-bbf9-59775b699c70">
-			<when expression="#[!isEmpty(payload)]">
-				<set-variable value="#[true]" doc:name="isRetryJob"
-					doc:id="40da9104-9b4a-4f17-8f2a-3da9da13be85"
-					variableName="isRetryJob" />
-				<flow-ref doc:name="processRemoveVarsSubflow"
-					doc:id="eb100a5d-bfed-4617-997d-5916021e99fa"
-					name="processRemoveVarsSubflow" />
-				<flow-ref doc:name="preprocessBatchOppSubflow"
-					doc:id="c84c9d08-a90c-4406-94b8-42b55a03a14e"
-					name="preprocessBatchOppSubflow" />
-				<flow-ref doc:name="batchOppFlow"
-					doc:id="9c5de0e4-2447-4173-ad55-3f82aeb10e0c" name="batchOppFlow" />
-			</when>
-			<otherwise>
-				<logger level="WARN" doc:name="WARN"
-					doc:id="79dabfcd-d74b-4b5a-bc5f-d9202d48090b"
-					message='#["No Opportunity records available to process"]' />
-			</otherwise>
-		</choice>
-	</sub-flow>
-	<sub-flow name="processRemoveVarsSubflow"
-		doc:id="4ffa0c2d-3df1-4603-8bd4-b7875b1b2011">
-		<remove-variable doc:name="errHsptlConnResp"
-			doc:id="59af6865-16e7-475d-9206-1984b3338975"
-			variableName="errHsptlConnResp" />
-		<remove-variable doc:name="salesforceConnResp_SRC"
-			doc:id="89672875-caf3-430f-9924-84ca066e85a2"
-			variableName="salesforceConnResp_SRC" />
-		<remove-variable doc:name="salesforceConnResp_TGT"
-			doc:id="cbcef3a1-67d6-4cf1-a7c0-2277f8805f23"
-			variableName="salesforceConnResp_TGT" />
-		<remove-variable doc:name="watermarkConnResp"
-			doc:id="0ae02a3c-4561-46c6-9b5e-fdc88a59bb8d"
-			variableName="watermarkConnResp" />
-		<remove-variable
-			doc:name="watermarkCurrentRunDateTime"
-			doc:id="88690db6-2a74-4ac6-929d-f6ee4ff6169c"
-			variableName="watermarkCurrentRunDateTime" />
-		<remove-variable doc:name="watermarklastRunDateTime"
-			doc:id="b9e07f6e-819e-439a-8b0c-02ed86a51002"
-			variableName="watermarklastRunDateTime" />
-		<remove-variable doc:name="opps"
-			doc:id="a2d2a377-fdd9-48c5-807c-ffe31f723500" variableName="opps" />
-		<remove-variable doc:name="errHsptlRecords"
-			doc:id="1081395c-5b2f-4181-b78a-c7157f87ef97"
-			variableName="errHsptlRecords" />
-	</sub-flow>
-	<sub-flow name="preprocessBatchOppSubflow"
-		doc:id="3a9b01db-3bd4-4e6c-84a1-d830bfefba97">
-		<flow-ref doc:name="getRecordsFromErrHsptlByIdSubflow"
-			doc:id="9d1da399-cd13-4920-98a3-7bc8e9fb75a1"
-			name="getRecordsFromErrHsptlByIdSubflow"
-			target="existingErrHsptlRecords"
-			targetValue="#[output application/java --- payload]" />
-		<flow-ref doc:name="getAcctsByIdSubflow_TGT"
-			doc:id="ec416357-9cc8-436e-827e-1c5152a18f32"
-			name="getAcctsByIdSubflow_TGT" target="existingAccts"
-			targetValue="#[output application/java --- payload.payload..records default []]" />
-		<flow-ref doc:name="getOppsByExternalIdSubflow_TGT"
-			doc:id="85bad200-5070-490d-bfb2-409baaf9b9e2"
-			name="getOppsByExternalIdSubflow_TGT" target="existingOpps"
-			targetValue="#[output application/java --- payload.payload..records default []]" />
-		<flow-ref doc:name="getOlisByOppIdSubflow_TGT"
-			doc:id="13201d09-9e1c-4e08-a382-a7741492d9a9"
-			name="getOlisByOppIdSubflow_TGT" target="existingOlis"
-			targetValue="#[output application/java --- payload.payload..records default []]" />
-		<flow-ref doc:name="getOlisByOppIdSubflow_SRC"
-			doc:id="605aca31-eff6-40bf-869a-3c211786b75b"
-			name="getOlisByOppIdSubflow_SRC" target="olis"
-			targetValue="#[output application/java --- payload.payload..records default []]" />
-		<ee:transform doc:name="Transform Message"
-			doc:id="9af0ede4-7f0a-4d09-b6da-82efad917a8a">
-			<ee:message>
-				<ee:set-payload><![CDATA[import enrichOppsWithQueryResults from module::Opportunity
+var recordIdsToDelete =
+    ((vars.errHsptlRecords.recordId default [])
+        -- (vars.opps.Id default []))
+---
+buildDeleteRecordsFromErrHsptlRequest(recordIdsToDelete)]]>
+                                </ee:set-payload>
+                            </ee:message>
+                        </ee:transform>
+                        <flow-ref doc:name="removeRecordsFromErrHsptlSubflow" doc:id="c0f7acde-96a3-44d2-8db0-336da39bf5a2" name="removeRecordsFromErrHsptlSubflow" />
+                    </when>
+                </choice>
+                <choice doc:name="Choice" doc:id="cff370bb-c73d-4c83-a482-f54f43c16fb0">
+                    <when expression="#[!isEmpty(vars.opps)]">
+                        <flow-ref doc:name="storeOsBatchStatusRetryInProgressSubflow" doc:id="30413803-a497-4e3f-97f1-5984f7a5bd95" name="storeOsBatchStatusRetryInProgressSubflow" />
+                        <set-payload value="#[output application/java --- vars.opps default []]" doc:name="Set Payload" doc:id="fddb925c-10f7-4e72-a754-7a429d0e0e9b" />
+						<flow-ref doc:name="processRemoveVarsSubflow" doc:id="1f1921d4-58b0-4a1a-969e-f12c12e44f66" name="processRemoveVarsSubflow" />
+						<flow-ref doc:name="preprocessBatchOppSubflow" doc:id="18391d7d-251f-4592-b6e3-79985d04c980" name="preprocessBatchOppSubflow" />
+                        <flow-ref doc:name="batchOppFlow" doc:id="5c90ac83-c6af-4849-abfc-c936697a4eb7" name="batchOppFlow" />
+                    </when>
+                    <otherwise>
+                        <logger level="WARN" doc:name="WARN" doc:id="58740bb2-1f1e-4f87-aa3f-a6b7119b3c0b" message='No opportunity records available to process' />
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <logger level="WARN" doc:name="WARN" doc:id="d627c2d6-d594-4b76-810e-29ef03e5bbe8" message='No retryable Opportunity records available to process' />
+            </otherwise>
+        </choice>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: processRetrySubflow" />
+    </sub-flow>
+
+    <sub-flow name="processAdminSubflow" doc:id="6d15714e-94ff-4176-ad17-ac44b3a5a229">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: processAdminSubflow" />
+
+        <flow-ref doc:name="getOppsByIdSubflow_SRC" doc:id="d4349c76-7c49-4ab1-9bb2-31654ff560da" name="getOppsByIdSubflow_SRC" target="opps" targetValue="#[output application/java --- payload.payload..records default []]" />
+        <choice doc:name="Choice" doc:id="91e8e98c-4b85-47fd-bbf9-59775b699c70">
+            <when expression="#[!isEmpty(vars.opps)]">
+                <set-payload value="#[output application/java --- vars.opps default []]" doc:name="Set Payload" doc:id="1306e93d-f45a-4755-babd-e71845430927" />
+				<flow-ref doc:name="processRemoveVarsSubflow" doc:id="eb100a5d-bfed-4617-997d-5916021e99fa" name="processRemoveVarsSubflow" />
+				<flow-ref doc:name="preprocessBatchOppSubflow" doc:id="c84c9d08-a90c-4406-94b8-42b55a03a14e" name="preprocessBatchOppSubflow" />
+                <flow-ref doc:name="batchOppFlow" doc:id="9c5de0e4-2447-4173-ad55-3f82aeb10e0c" name="batchOppFlow" />
+            </when>
+            <otherwise>
+                <logger level="WARN" doc:name="WARN" doc:id="79dabfcd-d74b-4b5a-bc5f-d9202d48090b" message='No Opportunity records available to process' />
+            </otherwise>
+        </choice>
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: processAdminSubflow" />
+    </sub-flow>
+
+    <sub-flow name="processRemoveVarsSubflow" doc:id="4ffa0c2d-3df1-4603-8bd4-b7875b1b2011">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: processRemoveVarsSubflow" />
+        <remove-variable doc:name="watermarkCurrentRunDateTime" doc:id="88690db6-2a74-4ac6-929d-f6ee4ff6169c" variableName="watermarkCurrentRunDateTime" />
+        <remove-variable doc:name="watermarklastRunDateTime" doc:id="b9e07f6e-819e-439a-8b0c-02ed86a51002" variableName="watermarklastRunDateTime" />
+        <remove-variable doc:name="opps" doc:id="a2d2a377-fdd9-48c5-807c-ffe31f723500" variableName="opps" />
+        <remove-variable doc:name="errHsptlRecords" doc:id="1081395c-5b2f-4181-b78a-c7157f87ef97" variableName="errHsptlRecords" />
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: processRemoveVarsSubflow" />
+    </sub-flow>
+
+    <sub-flow name="preprocessBatchOppSubflow" doc:id="3a9b01db-3bd4-4e6c-84a1-d830bfefba97">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: preprocessBatchOppSubflow" />
+
+        <flow-ref doc:name="getRecordsFromErrHsptlByIdSubflow" doc:id="9d1da399-cd13-4920-98a3-7bc8e9fb75a1" name="getRecordsFromErrHsptlByIdSubflow" target="existingErrHsptlRecords" targetValue="#[output application/java --- payload]" />
+        <flow-ref doc:name="getAcctsByIdSubflow_TGT" doc:id="ec416357-9cc8-436e-827e-1c5152a18f32" name="getAcctsByIdSubflow_TGT" target="existingAccts" targetValue="#[output application/java --- payload.payload..records default []]" />
+        <flow-ref doc:name="getOppsByExternalIdSubflow_TGT" doc:id="85bad200-5070-490d-bfb2-409baaf9b9e2" name="getOppsByExternalIdSubflow_TGT" target="existingOpps" targetValue="#[output application/java --- payload.payload..records default []]" />
+        <flow-ref doc:name="getOlisByOppIdSubflow_TGT" doc:id="13201d09-9e1c-4e08-a382-a7741492d9a9" name="getOlisByOppIdSubflow_TGT" target="existingOlis" targetValue="#[output application/java --- payload.payload..records default []]" />
+        <flow-ref doc:name="getOlisByOppIdSubflow_SRC" doc:id="605aca31-eff6-40bf-869a-3c211786b75b" name="getOlisByOppIdSubflow_SRC" target="olis" targetValue="#[output application/java --- payload.payload..records default []]" />
+        <ee:transform doc:name="Transform Message" doc:id="9af0ede4-7f0a-4d09-b6da-82efad917a8a">
+            <ee:message>
+                <ee:set-payload><![CDATA[import enrichOppsWithQueryResults from module::Opportunity
 output application/java
 ---
-enrichOppsWithQueryResults(payload, vars.existingOpps, vars.olis, vars.existingOlis, vars.existingAccts, vars.existingErrHsptlRecords)]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<flow-ref doc:name="preprocessBatchRemoveVarsSubflow"
-			doc:id="c68ff6cb-f1cc-4c15-85b8-9b8eac1f43f8"
-			name="preprocessBatchRemoveVarsSubflow" />
-	</sub-flow>
-	<sub-flow name="preprocessBatchRemoveVarsSubflow"
-		doc:id="8116e2de-3db5-44ba-859a-fc4113f94a1d">
-		<remove-variable doc:name="existingErrHsptlRecords"
-			doc:id="46955868-1798-42f4-a015-44ebac6b421f"
-			variableName="existingErrHsptlRecords" />
-		<remove-variable doc:name="existingAccts"
-			doc:id="26584828-e8b7-435c-bab4-06ab44302367"
-			variableName="existingAccts" />
-		<remove-variable doc:name="existingOpps"
-			doc:id="059c6c12-95bd-4d28-89ce-2ef7095899fe"
-			variableName="existingOpps" />
-		<remove-variable doc:name="existingOlis"
-			doc:id="d96b0c43-2800-4b92-a1a3-bf4e4c39ddf8"
-			variableName="existingOlis" />
-		<remove-variable doc:name="olis"
-			doc:id="23b80ce3-06ba-483e-a345-77ced743fba7" variableName="olis" />
-	</sub-flow>
+enrichOppsWithQueryResults(
+	payload,
+	vars.existingOpps,
+	vars.olis,
+	vars.existingOlis,
+	vars.existingAccts,
+	vars.existingErrHsptlRecords
+)]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <flow-ref doc:name="preprocessBatchRemoveVarsSubflow" doc:id="c68ff6cb-f1cc-4c15-85b8-9b8eac1f43f8" name="preprocessBatchRemoveVarsSubflow" />
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: preprocessBatchOppSubflow" />
+    </sub-flow>
+
+    <sub-flow name="preprocessBatchRemoveVarsSubflow" doc:id="8116e2de-3db5-44ba-859a-fc4113f94a1d">
+        <logger level="INFO" doc:name="ENTRY" message="ENTRY: preprocessBatchRemoveVarsSubflow" />
+
+        <remove-variable doc:name="existingErrHsptlRecords" doc:id="46955868-1798-42f4-a015-44ebac6b421f" variableName="existingErrHsptlRecords" />
+        <remove-variable doc:name="existingAccts" doc:id="26584828-e8b7-435c-bab4-06ab44302367" variableName="existingAccts" />
+        <remove-variable doc:name="existingOpps" doc:id="059c6c12-95bd-4d28-89ce-2ef7095899fe" variableName="existingOpps" />
+        <remove-variable doc:name="existingOlis" doc:id="d96b0c43-2800-4b92-a1a3-bf4e4c39ddf8" variableName="existingOlis" />
+        <remove-variable doc:name="olis" doc:id="23b80ce3-06ba-483e-a345-77ced743fba7" variableName="olis" />
+
+        <logger level="INFO" doc:name="EXIT" message="EXIT: preprocessBatchRemoveVarsSubflow" />
+    </sub-flow>
+
 </mule>

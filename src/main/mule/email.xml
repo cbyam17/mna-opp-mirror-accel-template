@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
-	xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
-	<sub-flow name="sendHealthCheckErrorEmailSubflow"
-		doc:id="83546b86-1fe6-4d47-b1f7-98cee83a2fa3">
+	<sub-flow name="sendHealthCheckErrorEmailSubflow" doc:id="83546b86-1fe6-4d47-b1f7-98cee83a2fa3">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendHealthCheckErrorEmailSubflow" />
 		<ee:transform>
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -27,22 +22,21 @@ output application/java
 		transactionId: vars.transactionId,
 		healthCheckResponse: payload
 	}
-}]]></ee:set-payload>
+}]]>
+				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<parse-template doc:name="Parse Template"
-			doc:id="171d904d-60e1-46fb-90ac-10fae2b8459d"
-			location="email/healthCheckErrorTemplate.html" target="emailBody" />
-		<flow-ref doc:name="sendEmailSubflow"
-			doc:id="2a22255f-e6ff-49c2-9a3a-d79af46e0403" name="sendEmailSubflow" />
+		<parse-template doc:name="Parse Template" doc:id="171d904d-60e1-46fb-90ac-10fae2b8459d" location="email/healthCheckErrorTemplate.html" target="emailBody" />
+		<flow-ref doc:name="sendEmailSubflow" doc:id="2a22255f-e6ff-49c2-9a3a-d79af46e0403" name="sendEmailSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendHealthCheckErrorEmailSubflow" />
 	</sub-flow>
-	<sub-flow name="sendbatchPreprocessingErrorEmailSubflow"
-		doc:id="8a1a3985-6fed-4c5a-bd0f-3bb0bb458ce8">
-		<ee:transform doc:name="Transform Message"
-			doc:id="b0051411-46b1-44e5-bfd9-c9a7e5a5f07e">
+	<sub-flow name="sendbatchPreprocessingErrorEmailSubflow" doc:id="8a1a3985-6fed-4c5a-bd0f-3bb0bb458ce8">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendbatchPreprocessingErrorEmailSubflow" />
+		<ee:transform doc:name="Transform Message" doc:id="b0051411-46b1-44e5-bfd9-c9a7e5a5f07e">
 			<ee:message />
 			<ee:variables>
-				<ee:set-variable variableName="notification"><![CDATA[%dw 2.0
+				<ee:set-variable variableName="notification">
+					<![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -56,22 +50,21 @@ output application/java
 		errorType: error.errorType.namespace ++ ":" ++ error.errorType.identifier,
 		errorMessage: error.description
 	}
-}]]></ee:set-variable>
+}]]>
+				</ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<parse-template doc:name="Parse Template"
-			doc:id="35ed852c-468e-4afb-ab7f-ba52a7083004"
-			location="email/batchPreprocessErrorTemplate.html" target="emailBody" />
-		<flow-ref doc:name="sendEmailSubflow"
-			doc:id="e66c051a-a285-4f8a-aece-ce46508cf87d" name="sendEmailSubflow" />
+		<parse-template doc:name="Parse Template" doc:id="35ed852c-468e-4afb-ab7f-ba52a7083004" location="email/batchPreprocessErrorTemplate.html" target="emailBody" />
+		<flow-ref doc:name="sendEmailSubflow" doc:id="e66c051a-a285-4f8a-aece-ce46508cf87d" name="sendEmailSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendbatchPreprocessingErrorEmailSubflow" />
 	</sub-flow>
-	<sub-flow name="sendBatchPostprocessingErrorEmailSubflow"
-		doc:id="725c3579-e465-4653-a8ae-8f583489e8d6">
-		<ee:transform doc:name="Transform Message"
-			doc:id="f839c190-0206-48b9-a9e5-d0af86083a44">
+	<sub-flow name="sendBatchPostprocessingErrorEmailSubflow" doc:id="725c3579-e465-4653-a8ae-8f583489e8d6">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendBatchPostprocessingErrorEmailSubflow" />
+		<ee:transform doc:name="Transform Message" doc:id="f839c190-0206-48b9-a9e5-d0af86083a44">
 			<ee:message />
 			<ee:variables>
-				<ee:set-variable variableName="notification"><![CDATA[%dw 2.0
+				<ee:set-variable variableName="notification">
+					<![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -85,23 +78,21 @@ output application/java
 		errorType: error.errorType.namespace ++ ":" ++ error.errorType.identifier,
 		errorMessage: error.description
 	}
-}]]></ee:set-variable>
+}]]>
+				</ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<parse-template doc:name="Parse Template"
-			doc:id="ed38265d-7088-4d8c-b058-5b885c88ed9f"
-			location="email/batchPostprocessErrorTemplate.html"
-			target="emailBody" />
-		<flow-ref doc:name="sendEmailSubflow"
-			doc:id="ace05f06-b79d-4559-b6b3-b051e0f97316" name="sendEmailSubflow" />
+		<parse-template doc:name="Parse Template" doc:id="ed38265d-7088-4d8c-b058-5b885c88ed9f" location="email/batchPostprocessErrorTemplate.html" target="emailBody" />
+		<flow-ref doc:name="sendEmailSubflow" doc:id="ace05f06-b79d-4559-b6b3-b051e0f97316" name="sendEmailSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendBatchPostprocessingErrorEmailSubflow" />
 	</sub-flow>
-	<sub-flow name="sendBatchSummaryEmailSubflow"
-		doc:id="88f32288-fa95-4c65-a1a8-bfde365439fb">
-		<ee:transform doc:name="Transform Message"
-			doc:id="fc1ec692-c1af-431e-b400-aeec2593f4d9">
+	<sub-flow name="sendBatchSummaryEmailSubflow" doc:id="88f32288-fa95-4c65-a1a8-bfde365439fb">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendBatchSummaryEmailSubflow" />
+		<ee:transform doc:name="Transform Message" doc:id="fc1ec692-c1af-431e-b400-aeec2593f4d9">
 			<ee:message />
 			<ee:variables>
-				<ee:set-variable variableName="notification"><![CDATA[%dw 2.0
+				<ee:set-variable variableName="notification">
+					<![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -128,22 +119,21 @@ output application/java
 		onCompletePhaseException: payload.onCompletePhaseException default "N/A",
 		loadingPhaseException: payload.loadingPhaseException default "N/A"
 	}
-}]]></ee:set-variable>
+}]]>
+				</ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<parse-template doc:name="Parse Template"
-			doc:id="0a9ba6a8-d7ec-450e-93ae-9b27ac8cd30d"
-			location="email/batchSummaryErrorTemplate.html" target="emailBody" />
-		<flow-ref doc:name="sendEmailSubflow"
-			doc:id="0e3cb5b5-432f-4853-8a26-2564920b585b" name="sendEmailSubflow" />
+		<parse-template doc:name="Parse Template" doc:id="0a9ba6a8-d7ec-450e-93ae-9b27ac8cd30d" location="email/batchSummaryErrorTemplate.html" target="emailBody" />
+		<flow-ref doc:name="sendEmailSubflow" doc:id="0e3cb5b5-432f-4853-8a26-2564920b585b" name="sendEmailSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendBatchSummaryEmailSubflow" />
 	</sub-flow>
-	<sub-flow name="sendErrHsptlWriteErrorEmailSubflow"
-		doc:id="c7cfe417-db3d-40b3-a17b-8aa0bfcf7b53">
-		<ee:transform doc:name="Transform Message"
-			doc:id="57743219-af25-4828-8817-357b10448ab0">
+	<sub-flow name="sendErrHsptlWriteErrorEmailSubflow" doc:id="c7cfe417-db3d-40b3-a17b-8aa0bfcf7b53">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendErrHsptlWriteErrorEmailSubflow" />
+		<ee:transform doc:name="Transform Message" doc:id="57743219-af25-4828-8817-357b10448ab0">
 			<ee:message />
 			<ee:variables>
-				<ee:set-variable variableName="notification"><![CDATA[%dw 2.0
+				<ee:set-variable variableName="notification">
+					<![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -156,37 +146,33 @@ output application/java
 		transactionId: correlationId,
 		failedRecordCount: sizeOf(vars.flattenedFailures)
 	}
-}]]></ee:set-variable>
+}]]>
+				</ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<parse-template doc:name="Parse Template"
-			doc:id="54e45530-25bd-4472-9905-ebf5773587ce"
-			location="email/errorHospitalWriteErrorTemplate.html"
-			target="emailBody" />
-		<flow-ref doc:name="sendEmailSubflow"
-			doc:id="fb7e501f-38f5-4064-bb20-b6c414b3bd84" name="sendEmailSubflow" />
+		<parse-template doc:name="Parse Template" doc:id="54e45530-25bd-4472-9905-ebf5773587ce" location="email/errorHospitalWriteErrorTemplate.html" target="emailBody" />
+		<flow-ref doc:name="sendEmailSubflow" doc:id="fb7e501f-38f5-4064-bb20-b6c414b3bd84" name="sendEmailSubflow" />
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendErrHsptlWriteErrorEmailSubflow" />
 	</sub-flow>
-	<sub-flow name="sendEmailSubflow"
-		doc:id="a08c4fb6-2e78-4eb4-b151-342e5a2cacb7">
-		<choice doc:name="Choice"
-			doc:id="89ee9dad-1705-46ac-968e-1c94e4352fbd">
-			<when
-				expression='#[(Mule::p("smtp.enable") as Boolean default false) == true]'>
-				<try doc:name="Try"
-					doc:id="fe3b008d-9d98-4e1e-a8ea-0dfa22367260">
-					<email:send doc:name="Send" doc:id="70635e43-6646-40fe-8969-04e9bcfc8c38" 
-						config-ref="Email_SMTP" subject="#[vars.notification.properties.subject]" 
-						toAddresses="#[vars.notification.properties.toAddresses]"> <email:body 
-						contentType="text/html"> <email:content><![CDATA[#[vars.emailBody]]]></email:content> 
-						</email:body> </email:send>
+	<sub-flow name="sendEmailSubflow" doc:id="a08c4fb6-2e78-4eb4-b151-342e5a2cacb7">
+		<logger level="INFO" doc:name="ENTRY" message="ENTRY: sendEmailSubflow" />
+		<choice doc:name="Choice" doc:id="89ee9dad-1705-46ac-968e-1c94e4352fbd">
+			<when expression='#[(Mule::p("smtp.enable") as Boolean default false) == true]'>
+				<try doc:name="Try" doc:id="fe3b008d-9d98-4e1e-a8ea-0dfa22367260">
+					<email:send doc:name="Send" doc:id="70635e43-6646-40fe-8969-04e9bcfc8c38" config-ref="Email_SMTP" subject="#[vars.notification.properties.subject]" toAddresses="#[vars.notification.properties.toAddresses]">
+						<email:body contentType="text/html">
+							<email:content>
+								<![CDATA[#[vars.emailBody]]]>
+							</email:content>
+						</email:body>
+					</email:send>
 					<error-handler ref="sendEmailErrorHandler" />
 				</try>
 			</when>
 			<otherwise>
-				<logger level="WARN" doc:name="Logger"
-					doc:id="fb89d1ef-0474-460c-aa55-f134a5b0b100"
-					message='#["Send email disabled"]' />
+				<logger level="WARN" doc:name="Logger" doc:id="fb89d1ef-0474-460c-aa55-f134a5b0b100" message='#["Send email disabled"]' />
 			</otherwise>
 		</choice>
+		<logger level="INFO" doc:name="EXIT" message="EXIT: sendEmailSubflow" />
 	</sub-flow>
 </mule>

@@ -1,118 +1,86 @@
-<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-    xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite"
-    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-    xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-    xmlns="http://www.mulesoft.org/schema/mule/core"
-    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
         http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
         http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
         http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
-
     <sub-flow name="getOppsByDateSubflow_SRC" doc:id="3d3f4d2e-0f31-4b22-911d-391b7fe6e2f2">
-        <logger level="INFO" message='#["getOppsByDateSubflow_SRC entry"]'/>
-
+        <logger level="INFO" message="ENTRY: getOppsByDateSubflow_SRC" doc:name="ENTRY" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[
 import buildQueryOppsByDate_SRC from module::Opportunity
-output application/json
+output application/java
 ---
 buildQueryOppsByDate_SRC(vars.watermarklastRunDateTime, vars.watermarkCurrentRunDateTime)
-                ]]></ee:set-payload>
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_SRC"/>
-
-        <logger level="INFO" message='#["getOppsByDateSubflow_SRC exit"]'/>
+        <flow-ref name="querySubflow_SRC" />
+        <logger level="INFO" message='EXIT: getOppsByDateSubflow_SRC exit' doc:name="EXIT" />
     </sub-flow>
-
     <sub-flow name="getOppsByIdSubflow_SRC" doc:id="e84678de-b208-477e-8ef4-76ed704c96ce">
-        <logger level="INFO" message='#["getOppsByIdSubflow_SRC entry"]'/>
-
+        <logger level="INFO" message='ENTRY: getOppsByIdSubflow_SRC entry' doc:name="ENTRY" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[
 import buildQueryOppsById_SRC from module::Opportunity
-output application/json
+output application/java
 ---
-if (!isEmpty(payload.*externalIds)) 
-    buildQueryOppsById_SRC(payload.*externalIds)
+if (!isEmpty(payload.externalIds)) 
+    buildQueryOppsById_SRC(payload.externalIds)
 else 
-    buildQueryOppsById_SRC(vars.errHsptlRecords.*recordId)
-                ]]></ee:set-payload>
+    buildQueryOppsById_SRC(vars.errHsptlRecords.recordId)
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_SRC"/>
-
-        <logger level="INFO" message='#["getOppsByIdSubflow_SRC exit"]'/>
+        <flow-ref name="querySubflow_SRC" />
+        <logger level="INFO" message='EXIT: getOppsByIdSubflow_SRC' doc:name="EXIT" />
     </sub-flow>
-
     <sub-flow name="getOlisByOppIdSubflow_SRC" doc:id="5ca18ed3-1099-407f-ac9e-cff8ac540617">
-        <logger level="INFO" message='#["getOlisByOppIdSubflow_SRC entry"]'/>
-
+        <logger level="INFO" message='"ENTRY: getOlisByOppIdSubflow_SRC' doc:name="ENTRY" />
         <ee:transform doc:name="Transform Message">
             <ee:message>
-                <ee:set-payload><![CDATA[
+                <ee:set-payload>
+                    <![CDATA[
 import buildQueryOlisByOppId_SRC from module::OpportunityLineItem
 output application/java
 ---
 buildQueryOlisByOppId_SRC(payload.Id)
-                ]]></ee:set-payload>
+                ]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <flow-ref name="querySubflow_SRC"/>
-
-        <logger level="INFO" message='#["getOlisByOppIdSubflow_SRC exit"]'/>
+        <flow-ref name="querySubflow_SRC" />
+        <logger level="INFO" message='EXIT: getOlisByOppIdSubflow_SRC' doc:name="EXIT" />
     </sub-flow>
-
     <sub-flow name="getServerTimestamp_SRC" doc:id="a5b3484c-6178-4425-afaf-e1b907bb6a97">
-        <logger level="INFO" message='#["getServerTimestamp_SRC entry"]'/>
-
-        <salesforce:get-server-timestamp config-ref="Salesforce_Config_SRC"/>
-
-        <logger level="INFO" message='#["getServerTimestamp_SRC exit"]'/>
+        <logger level="INFO" message='ENTRY: getServerTimestamp_SRC' doc:name="ENTRY" />
+        <salesforce:get-server-timestamp config-ref="Salesforce_Config_SRC" />
+        <logger level="INFO" message='EXIT: getServerTimestamp_SRC' doc:name="EXIT" />
     </sub-flow>
-
     <sub-flow name="querySubflow_SRC" doc:id="bbd6872d-e39e-4212-bb1f-f938b4ba65f7">
-        <logger level="INFO" message='#["querySubflow_SRC entry"]'/>
-
-        <logger level="INFO" message="#[output application/json --- payload]"/>
-
-        <salesforce:query-xml-stream config-ref="Salesforce_Config_SRC">
-            <salesforce:salesforce-query><![CDATA[
-#[output application/java --- payload.query]
-            ]]></salesforce:salesforce-query>
-            <salesforce:parameters><![CDATA[
-#[output application/java --- payload.queryParams]
-            ]]></salesforce:parameters>
+        <logger level="INFO" message='ENTRY: querySubflow_SRC' doc:name="ENTRY" />
+        <logger level="INFO" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <salesforce:query-xml-stream config-ref="Salesforce_Config_SRC" doc:name="Query-xml-stream">
+            <salesforce:salesforce-query><![CDATA[#[output application/java --- payload.query]
+            ]]>
+            </salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java --- payload.queryParams]]]></salesforce:parameters>
         </salesforce:query-xml-stream>
-
-        <logger level="INFO" message="#[output application/json --- payload]"/>
-
-        <logger level="INFO" message='#["querySubflow_SRC exit"]'/>
+        <logger level="INFO" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <logger level="INFO" message='EXIT: querySubflow_SRC' doc:name="EXIT" />
     </sub-flow>
-
     <sub-flow name="updateObjectSubflow_SRC" doc:id="ef177266-7489-4b74-9b5d-c5d0be6c5c84">
-        <logger level="INFO" message='#["updateObjectSubflow_SRC entry"]'/>
-
-        <logger level="INFO" message="#[output application/json --- vars.recordsToUpdate]"/>
-
+        <logger level="INFO" message='ENTRY: updateObjectSubflow_SRC' doc:name="ENTRY" />
+        <logger level="INFO" message="#[output application/json --- vars.recordsToUpdate]" doc:name="DEBUG" />
         <salesforce:update type="#[vars.objectType]" config-ref="Salesforce_Config_SRC">
-            <salesforce:records><![CDATA[
-#[output application/java --- vars.records]
-            ]]></salesforce:records>
+            <salesforce:records><![CDATA[#[output application/java --- vars.records]]]>
+            </salesforce:records>
         </salesforce:update>
-
-        <logger level="INFO" message="#[output application/json --- payload]"/>
-
-        <logger level="INFO" message='#["updateObjectSubflow_SRC exit"]'/>
+        <logger level="INFO" message="#[output application/json --- payload]" doc:name="DEBUG" />
+        <logger level="INFO" message='EXIT: updateObjectSubflow_SRC' doc:name="EXIT" />
     </sub-flow>
-
 </mule>

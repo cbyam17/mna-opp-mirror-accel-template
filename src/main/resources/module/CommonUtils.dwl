@@ -50,9 +50,9 @@ fun buildHealthCheckResponse(endpointResponses) =
 
 fun generateIdInClause(ids) =
   ((ids default [])
-    distinctBy ($)
-      map ((item, index) -> ("':idArg" ++ index ++ "'")))
-  joinBy ", "
+      distinctBy ($)
+    map ((item, index) -> ("':idArg" ++ index ++ "'")))
+    joinBy ", "
 
 fun toArray(v) =
   if (v is Array)
@@ -60,7 +60,7 @@ fun toArray(v) =
   else if (v == null)
     []
   else
-    [v]
+    [ v ]
 
 fun firstOrNull(arr) =
   ((arr default []) as Array)[0] default null

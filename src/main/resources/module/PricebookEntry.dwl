@@ -18,9 +18,9 @@ fun readPbePropertyAsJson() =
 // Construct reverse map (value->key) from a forward map (key->value)
 fun reverseMap(o) =
   (
-    (o default {})
-      pluck ((v, k) -> { (v as String): (k as String) })
-        reduce ((acc = {}, item) -> acc ++ item)
+  (o default {})
+    pluck ((v, k) -> { (v as String): (k as String) })
+    reduce ((acc = {}, item) -> acc ++ item)
   ) default {}
 
 // Normalize map structure and ensure both directions are present (SRC->TGT and TGT->SRC)
