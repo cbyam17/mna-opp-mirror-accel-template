@@ -266,11 +266,14 @@ payload ++ {
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete>
-				<flow-ref doc:name="batchOnCompleteSubflow" doc:id="073fbf8c-adcb-42fa-b2a3-bb91ac271b5b" name="batchOnCompleteSubflow" />
+				<try doc:name="Try" doc:id="d8d566ca-f51a-4478-9449-90e5c080effd" >
+					<flow-ref doc:name="batchOnCompleteSubflow" doc:id="073fbf8c-adcb-42fa-b2a3-bb91ac271b5b" name="batchOnCompleteSubflow" />
+					<error-handler ref="batchPostprocessingErrorHandler" />
+				</try>
 			</batch:on-complete>
 		</batch:job>
 		<logger level="INFO" doc:name="EXIT" message="EXIT: batchOppFlow" />
-		<error-handler ref="batchPostprocessingErrorHandler" />
+		<error-handler/>
 	</flow>
 	<sub-flow name="batchOnCompleteSubflow" doc:id="8455c12d-efb1-40c6-b4fc-dac571830301">
 		<logger level="INFO" doc:name="ENTRY" message="ENTRY: batchOnCompleteSubflow" />
@@ -334,7 +337,7 @@ flatten(valuesOf(vars.failureEntries) map $.failedRecords)]]>
 				<os:clear doc:name="Clear" doc:id="szaomd" objectStore="Object_Store_FailureBuffer" />
 			</when>
 			<otherwise>
-				<logger doc:name="Logger" doc:id="kqexkp" message='#["No error hospital write failures were recorded"]' />
+				<logger doc:name="Logger" doc:id="kqexkp" message='No error hospital write failures were recorded' level="INFO"/>
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="EXIT" doc:id="4c28e875-c480-4f93-9ef1-68b15bd77e63" message="EXIT: batchOnCompleteCheckFailureBuffer" />
