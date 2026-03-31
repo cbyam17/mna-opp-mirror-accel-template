@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
 	<flow name="batchOppFlow" doc:id="f9d4c643-c4c6-4cef-b546-72c118311eb1">
 		<logger level="INFO" doc:name="ENTRY" message="ENTRY: batchOppFlow" />
-		<batch:job jobName="oppBatch" doc:id="e850532a-d8c3-4fbe-a642-090fa9afd132" maxFailedRecords="-1">
+		<batch:job jobName="oppBatch" doc:id="e850532a-d8c3-4fbe-a642-090fa9afd132" maxFailedRecords="-1" blockSize="${batch.blockSize}">
 			<batch:process-records>
 				<batch:step name="Batch_Step_Upsert_Opportunities_TGT" doc:id="c767dcfc-9d68-471a-beed-3a85e2cc7e1f">
 					<batch:aggregator doc:name="Batch Aggregator" doc:id="a94fa59e-5b06-45b3-b191-379185753968" size="${batch.aggregatorSize.opp}" preserveMimeTypes="true">
