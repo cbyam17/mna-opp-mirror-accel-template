@@ -273,7 +273,6 @@ payload ++ {
 			</batch:on-complete>
 		</batch:job>
 		<logger level="INFO" doc:name="EXIT" message="EXIT: batchOppFlow" />
-		<error-handler/>
 	</flow>
 	<sub-flow name="batchOnCompleteSubflow" doc:id="8455c12d-efb1-40c6-b4fc-dac571830301">
 		<logger level="INFO" doc:name="ENTRY" message="ENTRY: batchOnCompleteSubflow" />

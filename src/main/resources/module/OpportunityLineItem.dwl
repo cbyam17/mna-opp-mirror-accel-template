@@ -55,7 +55,7 @@ fun transformUpsertOlis_TGT(opps) =
 
                 var transformed =
                   {
-                    Id: tgtOliId,
+                    (Id: tgtOliId) if (!isEmpty(tgtOliId)),
                     Oli_Id_SRC__c: srcOliId,
                     OpportunityId: oppId,
                     PricebookEntryId: pbeId,

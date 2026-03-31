@@ -115,7 +115,7 @@ fun transformUpsertOpps_TGT(opps) =
 
           var transformed =
             {
-              Id: tgtOppId,
+              (Id: tgtOppId) if (!isEmpty(tgtOppId)),
               Opp_Id_SRC__c: srcOppId,
               AccountId: acctId,
               OwnerId: ownerId,
