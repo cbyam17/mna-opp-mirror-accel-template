@@ -1,56 +1,55 @@
 amq:
-  clientId: "4e9fee5567394e3baaa0daf8c5ccec3c"
-  errHsptlWriteFailureQueue: "errHsptlWriteFailurQueue"
-  url: "https://mq-us-east-1.anypoint.mulesoft.com/api/v1/organizations/a0341e01-9078-43f6-86f4-72a5cfb1db90/environments/a796e386-3ec6-4ce5-935a-377353244b2c"
+  clientId: "YOUR_AMQ_CLIENT_ID"
+  errHsptlWriteFailureQueue: "YOUR_AMQ_QUEUE_NAME"
+  url: "YOUR_AMQ_URL"
 batch:
   aggregatorSize:
-    errHsptl: "100"
-    opp: "100"
-    oli: "50"
-  blockSize: "100"
+    errHsptl: "YOUR_AGGREGATOR_SIZE_FOR_ERR_HSPTL"
+    opp: "YOUR_AGGREGATOR_SIZE_FOR_OPP"
+    oli: "YOUR_AGGREGATOR_SIZE_FOR_OLI"
+  blockSize: "YOUR_BLOCK_SIZE"
 errHsptl:
-  maxRetries: "5"
-  retrieveLimit: "100"
+  maxRetries: "YOUR_MAX_RETRIES"
+  retrieveLimit: "YOUR_RETRIEVE_LIMIT"
 error:
-  defaultDescription: "An error occurred during the Opportunity mirroring process; please check integration logs with this transaction Id for more details"
-  defaultMessage: "An unknown error occurred"
-  defaultType: "UNKNOWN_ERROR"
+  defaultDescription: "YOUR_DEFAULT_DESCRIPTION"
+  defaultMessage: "YOUR_DEFAULT_MESSAGE"
+  defaultType: "YOUR_DEFAULT_TYPE"
 httpListener:
-  port: "8081"
-  readTimeout: "30000"
-orgName: "MNA-Tech"
+  port: "YOUR_HTTP_LISTENER_PORT"
+  readTimeout: "YOUR_HTTP_LISTENER_READ_TIMEOUT"
+orgName: "YOUR_ORG_NAME"
 pbe.map.json: >
   {
     "SRC_to_TGT": {
-      "01uKa00000AeCAcIAN":  "01ugL000002WgsbQAC",
-      "01uKa00000AeCAeIAN": "01ugL000002WgkXQAS",
-      "01uKa00000AeCAdIAN": "01ugL000002WgkYQAS",
-      "01uKa00000AeqiSIAR": "01ugL000002X6OrQAK"
+      "YOUR_SRC_ID_1":  "YOUR_TGT_ID_1",
+      "YOUR_SRC_ID_2": "YOUR_TGT_ID_2",
+      "YOUR_SRC_ID_3": "YOUR_TGT_ID_3",
+      "YOUR_SRC_ID_N": "YOUR_TGT_ID_N"
     }
   }
-projectName: "mna-oppty-mirror-accel"
+projectName: "YOUR_PROJECT_NAME"
 scheduler:
   main:
-    cronExpression: "0 0 * * * ?"
+    cronExpression: "YOUR_MAIN_CRON_EXPRESSION"
     timezone: "UTC"
   retry:
-    cronExpression: "0 0/10 * * * ?"
+    cronExpression: "YOUR_RETRY_CRON_EXPRESSION"
     timezone: "UTC"
 smtp:
-  enable: "false"
-  host: ""
-  port: ""
+  enable: "TRUE_OR_FALSE"
+  host: "YOUR_SMTP_HOST"
+  port: "YOUR_SMTP_PORT"
   subject:
-    errHsptlError: "[mna-oppty-mirror-accel] Error Hospital Write Error"
-    batchSummary: "[mna-oppty-mirror-accel] Batch Completion Error Summary"
-    batchPreprocessingError: "[mna-oppty-mirror-accel] Batch Pre-processing Error"
-    batchPostprocessingError: "[mna-oppty-mirror-accel] Batch Post-processing Error"
-    errHsptlError: "[mna-oppty-mirror-accel] Error Hospital Write Error"
-    healthCheckError: "[mna-oppty-mirror-accel] Health Check Error"
-  toEmailAddresses: "notifications@mycompany.com"
+    errHsptlError: "[YOUR_PROJECT_NAME] Error Hospital Write Error"
+    batchSummary: "[YOUR_PROJECT_NAME] Batch Completion Error Summary"
+    batchPreprocessingError: "[YOUR_PROJECT_NAME] Batch Pre-processing Error"
+    batchPostprocessingError: "[YOUR_PROJECT_NAME] Batch Post-processing Error"
+    healthCheckError: "[YOUR_PROJECT_NAME] Health Check Error"
+  toEmailAddresses: "YOUR_TO_EMAIL_ADDRESSES"
 src:
-  authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
+  authUrl: "YOUR_SRC_SFDC_AUTH_URL"
 tgt:
-  authUrl: "https://login.salesforce.com/services/Soap/u/64.0"
+  authUrl: "YOUR_TGT_SFDC_AUTH_URL"
 watermark:
   timezone: "UTC"

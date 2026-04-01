@@ -1,13 +1,13 @@
 amq:
-  clientSecret: "![e+65sVn4JGQBOvi3DzHRYNWf90KZu6C1okZB6huZ1QEpVCWuzhoAOF/bnMqG9qUs]"
+  clientSecret: "![YOUR_ENCRYPTED_AMQ_CLIENT_SECRET]"
 smtp:
-  password: "![trFuHfWWH7Lu1HkEud3pSkA4XyyAS2oV0lWREcAMYAk=]"
-  user: "![Wg5+UMpHhOBWxVzbfCJUim4xaZdsofAWmUBQ6YRA8Lw=]"
+  password: "![YOUR_ENCRYPTED_SMTP_PASSWORD]"
+  user: "![YOUR_ENCRYPTED_SMTP_USER]"
 src:
-  password: "![ool73ANjwr8e5ijlx84Xnbo1r4wR7lwrXQj2r2KO9j4=]"
-  securityToken: "![kjZpHB/djraT2yDo/ORkEryLpsW3WBJpR84rcO4PhOc=]"
-  username: "![feep8wwauiCMo2DNSQ35vRZMNTuwY8Ouk6Mghw1jOLs=]"
+  password: "![YOUR_ENCRYPTED_SRC_SFDC_PASSWORD]"
+  securityToken: "![YOUR_ENCRYPTED_SRC_SFDC_SECURITY_TOKEN]"
+  username: "![YOUR_ENCRYPTED_SRC_SFDC_USERNAME]"
 tgt:
-  password: "![8HS0lZOvobP6HArfI0QLLzwI4mkayO2MooM8Rh2Ulv4=]"
-  securityToken: "![oAL/WGX/kETlfgnmFnZ+943fX5wv0IrG/Rmmw27Nysc=]"
-  username: "![feep8wwauiCMo2DNSQ35vX2k5qaJODrJq5ciDOKaull4gZpjqzaOoYxoLa3WoF6M]"
+  password: "![YOUR_ENCRYPTED_TGT_SFDC_PASSWORD]"
+  securityToken: "![YOUR_ENCRYPTED_TGT_SFDC_SECURITY_TOKEN]"
+  username: "![YOUR_ENCRYPTED_TGT_SFDC_USERNAME]"
