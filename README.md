@@ -11,12 +11,6 @@ There are 3 main flows that fetch Opportunities and OLIs in scope for mirroring 
 | Retry Scheduler   | Scheduler         | Regularly scheduled job that fetches failed records from the error hospital and attempts to reprocess them a configurable number of times |
 | Admin Reprocess   | HTTP Request      | HTTP endpoint that supports ad hoc reprocessing of records by Id |
 
-| Flow            | Event Source | Description |
-|-----------------|--------------|-------------|
-| Main Scheduler  | Scheduler    | Regularly scheduled job that processes records from the source Salesforce instance based on the watermark lastRunDateTime value |
-| Retry Scheduler | Scheduler    | Regularly scheduled job that fetches failed records from the error hospital and attempts to reprocess them a configurable number of times |
-| Admin Reprocess | HTTP Request | HTTP endpoint that supports ad hoc reprocessing of records by Id|
-
 The process can be broken down into 4 phases. The watermark service is only used by the main scheduler flow — both the retry scheduler and admin reprocess flows use record Ids to fetch Opportunities from the source Salesforce instance, sourced from the error hospital and HTTP request body.
 
 1. Preprocessing
