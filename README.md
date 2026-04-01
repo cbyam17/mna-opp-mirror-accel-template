@@ -48,6 +48,9 @@ The process can be broken down into 4 phases. The watermark service is only used
 - Java 17
 - Mule runtime 4.11.0
 
+**Note on Mule Runtime Compatibility:** Mule runtime 4.11.0 introduced improved batch processing error‑handling and also resolved a known Java 17–related serialization issue that affects exceptions thrown by the Salesforce connector during batch execution.
+You can run this template on earlier Mule runtimes; however, if you do, you may need to adjust certain error‑handling paths—specifically those that manage exceptions raised inside batch jobs—because older runtimes do not include the fixes provided in 4.11.0.
+
 ### Salesforce Source Instance
 
 Fields required on **Opportunity**:
