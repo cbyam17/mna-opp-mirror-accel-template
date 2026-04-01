@@ -1,10 +1,9 @@
 {
-  "main": "mna-oppty-mirror-accel",
-  "name": "mna-oppty-mirror-accel",
+  "main": "mna-opp-mirror-accel",
   "version": "1.0.0-SNAPSHOT",
   "classifier": "template",
   "groupId": "com.mycompany",
-  "assetId": "mna-oppty-mirror-accel-template",
+  "assetId": "mna-opp-mirror-accel-template",
   "apiVersion": "v1",
   "description": "This is a reusable MuleSoft template for the Opportunity Mirror Accelerator.",
   "tags": [
@@ -15,14 +14,13 @@
     "salesforce"
   ],
   "properties": {
-    "runtimeVersion": "4.9.9",
-    "minMuleVersion": "4.4.0".
+    "runtimeVersion": "4.11.0",
+    "minMuleVersion": "4.11.0"
   },
-  "icon": "icon.png",
   "documentation": [
     {
       "type": "markdown",
-      "location": "docs/README.md"
+      "location": "exchange-docs/home.md"
     }
   ]
 }
