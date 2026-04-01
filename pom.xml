@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>a0341e01-9078-43f6-86f4-72a5cfb1db90</groupId>
 	<artifactId>mna-opp-mirror-accel-template</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<packaging>mule-application</packaging>
 	<name>mna-opp-mirror-accel-template</name>
 	<properties>
@@ -149,7 +149,7 @@
 	</pluginRepositories>		 
 	<distributionManagement>
 		<repository>
-			<id>Repository</id>
+			<id>anypoint-exchange-v3</id>
 			<name>Slalom Accelerators Repository</name>
 			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/a0341e01-9078-43f6-86f4-72a5cfb1db90/maven</url>
 		</repository>
