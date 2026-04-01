@@ -93,15 +93,15 @@ Fields required on **Opportunity Line Item**:
 | batch.xml          | Batch processing implementation |
 | email.xml          | Email implementation |
 | error.xml          | Error handling implementation |
-| error-hospital.xml | Error hospital implementation |
+| error-hospital.xml | Error hospital implementation (could be replaced by an external service) |
 | global.xml         | Global configurations |
 | health-check.xml   | Health check implementation |
 | os.xml             | ObjectStore v2 implementation |
-| process.xml        | Process orchestration |
-| scheduler.xml      | Scheduler flows |
+| process.xml        | Process orchestration implementation |
+| scheduler.xml      | Scheduler flows implementation |
 | source.xml         | Source Salesforce implementation |
 | target.xml         | Target Salesforce implementation |
-| watermark.xml      | Watermark implementation |
+| watermark.xml      | Watermark implementation (could be replaced by an external service) |
 
 ## DataWeave Modules (src/main/resources/module)
 
@@ -148,6 +148,6 @@ File: mna-opp-mirror-accel-template-api.raml
 
 ## Considerations
 
-- Externalizing configuration via CPS is recommended for production.
-- Consider replacing ObjectStore-based services with durable external services.
+- Externalizing configuration properties via CPS is recommended for production.
+- Consider replacing persistent ObjectStore-based services (watermark and error hospital) with durable external services.
 - Mule runtimes before 4.11.0 may experience batch serialization issues.
