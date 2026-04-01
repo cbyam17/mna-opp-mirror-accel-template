@@ -5,8 +5,8 @@ This is an accelerator template for an integration solution that mirrors Opportu
 ## Process Overview
 
 There are 3 main flows that fetch Opportunities and OLIs in scope for mirroring from the source Salesforce instance, write them to the target Salesforce instance, and write the Opportunity Ids back to the source Salesforce instance.
-| Flow              | Event Source      | Description
-| :-------------    | :--------------   | :--------------
+| Flow              | Event Source      | Description |
+|-------------    |--------------   |-------------- |
 | Main Scheduler    | Scheduler         | Regularly scheduled job that processes records from the source Salesforce instance based on the watermark lastRunDateTime value |
 | Retry Scheduler   | Scheduler         | Regularly scheduled job that fetches failed records from the error hospital and attempts to reprocess them a configurable number of times |
 | Admin Reprocess   | HTTP Request      | HTTP endpoint that supports ad hoc reprocessing of records by Id |
