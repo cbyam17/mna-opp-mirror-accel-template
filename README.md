@@ -146,6 +146,17 @@ File: mna-opp-mirror-accel-template-api.raml
 | errorHospitalWriteErrorTemplate.html| Error hospital write error notification |
 | healthCheckErrorTemplate.html       | Health check error notification |
 
+## Error Handling (src/main/mule/error.xml)
+
+| Error Handler                    | Description |
+|----------------------------------|-------------|
+| apiErrorHandler                  | Handle exceptions encountered in API implementation |
+| batchPostprocessingErrorHandler  | Handle exceptions encountered in batch on-complete phase |
+| batchPreprocessingErrorHandler   | Handle exceptions encountered in batch pre-processing phase |
+| errorHospitalWriteErrorHandler   | Handle exceptions encountered writing to the error hospital|
+| healthCheckErrorHandler          | Handle exceptions encountered during the health check|
+| sendEmailErrorHandler            | Handle exceptions encountered sending emails |
+
 ## Considerations
 
 - Externalizing configuration properties via CPS is recommended for production.
