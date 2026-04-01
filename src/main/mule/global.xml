@@ -25,6 +25,4 @@
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
-	<global-property doc:name="Global Property" doc:id="1dc1b998-1d4b-4a6f-b6da-be4123802c06" name="mule.env" value="dev" />
-	<global-property doc:name="Global Property" doc:id="aa4e2879-d9bd-4c10-a011-de4781b0ad9b" name="mule.key" value="accelerator12345" />
 </mule>
