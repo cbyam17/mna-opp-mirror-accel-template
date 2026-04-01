@@ -81,8 +81,8 @@ Fields required on **Opportunity Line Item**:
 
 ## Data Dependencies
 
-- Products & Pricebook Entries must be preloaded into target instance.
-- Account data must be migrated from target to source manually or via separate integration.
+- Products and Pricebook Entries corresponding to the source Product offerings must be preloaded into the target Salesforce instance.
+- Accounts must be mapped from the target Salesforce instance to the source Salesforce instance either manually or via a separate integration.
 
 ## Mule Implementation Files (src/main/mule)
 
@@ -114,7 +114,7 @@ Fields required on **Opportunity Line Item**:
 | ErrorHospital.dwl       | Error hospital transformations |
 | CommonUtils.dwl         | Reusable utilities |
 
-## Configuration Properties
+## Configuration Properties (src/main/resources/config)
 
 Runtime arguments: mule.env, mule.key
 - dev.yaml
