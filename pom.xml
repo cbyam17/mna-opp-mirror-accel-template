@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>a0341e01-9078-43f6-86f4-72a5cfb1db90</groupId>
+	<groupId>${groupId}</groupId>
 	<artifactId>mna-opp-mirror-accel-template</artifactId>
 	<version>1.0.3</version>
 	<packaging>mule-application</packaging>
@@ -151,7 +151,7 @@
 		<repository>
 			<id>anypoint-exchange-v3</id>
 			<name>Slalom Accelerators Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/a0341e01-9078-43f6-86f4-72a5cfb1db90/maven</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${groupId}>/maven</url>
 		</repository>
 	</distributionManagement>
 
